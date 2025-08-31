@@ -47,7 +47,7 @@ await db.use({
 });
 
 // Fetch recipes with related data
-const { data: recipes, pending, error, refresh } = await useAsyncData<Recipe[]>('recipes', async () => {
+const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('recipes', async () => {
   const [result] = await db.query<[Recipe[]]>(surql`
     SELECT
       id,
@@ -80,7 +80,6 @@ function getEstimatedTime(stepCount: number) {
 
 <template>
   <div class="recipe-index">
-    <!-- Header -->
     <header class="page-header">
       <div class="header-content">
         <h1>Recipes</h1>
@@ -95,119 +94,96 @@ function getEstimatedTime(stepCount: number) {
       </div>
     </header>
 
-    <!-- Content -->
     <main class="main-content">
-      <!-- Loading State -->
-      <neb-loading-state v-if="pending" />
-      
-      <!-- Error State -->
-      <neb-error-state 
-        v-else-if="error"
-        title="Failed to load recipes"
-        :description="error.message"
-      >
-        <neb-button type="secondary" @click="refresh()">
-          <icon name="material-symbols:refresh-rounded" />
-          Try Again
-        </neb-button>
-      </neb-error-state>
-      
-      <!-- Empty State -->
-      <neb-empty-state 
-        v-else-if="!recipes || recipes.length === 0"
-        icon="material-symbols:restaurant-menu-rounded"
-        title="No recipes yet"
-        description="Start building your recipe collection by adding your first recipe"
-      >
-        <neb-button type="primary">
-          <icon name="material-symbols:add-rounded" />
-          Add Your First Recipe
-        </neb-button>
-      </neb-empty-state>
-      
-      <!-- Recipe Grid -->
-      <div v-else class="recipe-grid">
-        <article 
-          v-for="recipe in recipes" 
-          :key="recipe.id" 
-          class="recipe-card"
+      <neb-state-content :status :refresh error-title="Failed to load recipes" :error-description="error?.message">
+        <neb-empty-state 
+          v-if="!recipes || recipes.length === 0"
+          icon="material-symbols:restaurant-menu-rounded"
+          title="No recipes yet"
+          description="Start building your recipe collection by adding your first recipe"
         >
-          <!-- Recipe Image Placeholder -->
-          <div class="recipe-image">
-            <div class="image-placeholder">
-              <icon name="material-symbols:restaurant-rounded" />
+          <neb-button type="primary">
+            <icon name="material-symbols:add-rounded" />
+            Add Your First Recipe
+          </neb-button>
+        </neb-empty-state>
+        
+        <div v-else class="recipe-grid">
+          <div 
+            v-for="recipe in recipes" 
+            :key="recipe.id" 
+            class="recipe-card"
+          >
+            <div class="recipe-image">
+              <div class="image-placeholder">
+                <icon name="material-symbols:restaurant-rounded" />
+              </div>
+              
+              <div v-if="recipe.cuisine" class="cuisine-badge">
+                <neb-badge :style="{ background: recipe.cuisine.color + '20', color: recipe.cuisine.color }">
+                  <span v-if="recipe.cuisine.flag">{{ recipe.cuisine.flag }}</span>
+                  {{ recipe.cuisine.name }}
+                </neb-badge>
+              </div>
             </div>
             
-            <!-- Cuisine Badge -->
-            <div v-if="recipe.cuisine" class="cuisine-badge">
-              <neb-badge :style="{ background: recipe.cuisine.color + '20', color: recipe.cuisine.color }">
-                <span v-if="recipe.cuisine.flag">{{ recipe.cuisine.flag }}</span>
-                {{ recipe.cuisine.name }}
-              </neb-badge>
+            <div class="recipe-content">
+              <div class="recipe-header">
+                <h3 class="recipe-title">{{ recipe.name }}</h3>
+                <neb-avatar-card
+                  v-if="recipe.author"
+                  :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '32px' }"
+                  :title="recipe.author?.username || 'Unknown'"
+                  :text="dayjs(recipe.created_at).format('YYYY-MM-DD')"
+                />
+              </div>
+              
+              <div class="recipe-meta">
+                <div class="meta-item">
+                  <icon name="material-symbols:inventory-2-outline-rounded" />
+                  <span>{{ recipe.ingredients }} ingredients</span>
+                </div>
+                
+                <div class="meta-item">
+                  <icon name="material-symbols:format-list-numbered-rounded" />
+                  <span>{{ recipe.steps }} steps</span>
+                </div>
+                
+                <div class="meta-item">
+                  <icon name="material-symbols:schedule-outline-rounded" />
+                  <span>{{ getEstimatedTime(recipe.steps) }}</span>
+                </div>
+              </div>
+              
+              <div v-if="recipe.tags && recipe.tags.length > 0" class="recipe-tags">
+                <neb-tag
+                  v-for="tag in recipe.tags" 
+                  :key="tag.name"
+                  :style="{ background: tag.color + '20', color: tag.color }"
+                >
+                  {{ tag.icon }}
+                  {{ tag.name }}
+                </neb-tag>
+                
+                <neb-badge v-if="recipe.tags.length > 3" small>
+                  +{{ recipe.tags.length - 3 }} more
+                </neb-badge>
+              </div>
+              
+              <div v-if="recipe.meal && recipe.meal.length > 0" class="meal-types">
+                <neb-badge 
+                  v-for="meal in recipe.meal" 
+                  :key="meal.name"
+                  small
+                  :style="{ background: meal.color + '20', color: meal.color }"
+                >
+                  {{ meal.name }}
+                </neb-badge>
+              </div>
             </div>
           </div>
-          
-          <!-- Recipe Content -->
-          <div class="recipe-content">
-            <!-- Title and Author -->
-            <div class="recipe-header">
-              <h3 class="recipe-title">{{ recipe.name }}</h3>
-              <neb-avatar-card
-                v-if="recipe.author"
-                :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '32px' }"
-                :title="recipe.author?.username || 'Unknown'"
-                :text="dayjs(recipe.created_at).format('YYYY-MM-DD')"
-              />
-            </div>
-            
-            <!-- Recipe Meta -->
-            <div class="recipe-meta">
-              <div class="meta-item">
-                <icon name="material-symbols:inventory-2-outline-rounded" />
-                <span>{{ recipe.ingredients }} ingredients</span>
-              </div>
-              
-              <div class="meta-item">
-                <icon name="material-symbols:format-list-numbered-rounded" />
-                <span>{{ recipe.steps }} steps</span>
-              </div>
-              
-              <div class="meta-item">
-                <icon name="material-symbols:schedule-outline-rounded" />
-                <span>{{ getEstimatedTime(recipe.steps) }}</span>
-              </div>
-            </div>
-            
-            <!-- Tags -->
-            <div v-if="recipe.tags && recipe.tags.length > 0" class="recipe-tags">
-              <neb-tag 
-                v-for="tag in recipe.tags.slice(0, 3)" 
-                :key="tag.name"
-                :style="{ background: tag.color + '20', color: tag.color }"
-              >
-                {{ tag.icon }}
-                {{ tag.name }}
-              </neb-tag>
-              
-              <neb-badge v-if="recipe.tags.length > 3" small>
-                +{{ recipe.tags.length - 3 }} more
-              </neb-badge>
-            </div>
-            
-            <!-- Meal Types -->
-            <div v-if="recipe.meal && recipe.meal.length > 0" class="meal-types">
-              <neb-badge 
-                v-for="meal in recipe.meal" 
-                :key="meal.name"
-                small
-                :style="{ background: meal.color + '20', color: meal.color }"
-              >
-                {{ meal.name }}
-              </neb-badge>
-            </div>
-          </div>
-        </article>
-      </div>
+        </div>
+      </neb-state-content>
     </main>
   </div>
 </template>
@@ -358,7 +334,6 @@ function getEstimatedTime(stepCount: number) {
   gap: var(--space-2);
 }
 
-/* Responsive Design */
 @media (--tablet-viewport) {
   .recipe-index {
     padding: var(--space-4);
@@ -402,7 +377,6 @@ function getEstimatedTime(stepCount: number) {
   }
 }
 
-/* Dark Mode Support */
 .dark-mode {
   .recipe-index {
     background: var(--neutral-color-950);

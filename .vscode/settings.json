@@ -1,0 +1,10 @@
+{
+  "chat.mcp.serverSampling": {
+    "recet/.vscode/mcp.json: SurrealDB": {
+      "allowedModels": [
+        "copilot/gpt-4.1",
+        "copilot/claude-sonnet-4"
+      ]
+    }
+  }
+}

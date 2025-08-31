@@ -1,0 +1,23 @@
+{
+  "name": "nuxt-app",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "generate-types": "surreal-ts -n recet -d recet -o ./db.ts"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.18",
+    "nebula": "../nebula",
+    "nuxt": "^4.0.3",
+    "surreal-ts": "^3.0.0",
+    "surrealdb": "^1.3.2",
+    "vue": "^3.5.20",
+    "vue-router": "^4.5.1"
+  },
+  "packageManager": "pnpm@10.6.1+sha512.40ee09af407fa9fbb5fbfb8e1cb40fbb74c0af0c3e10e9224d7b53c7658528615b2c92450e74cfad91e3a2dcafe3ce4050d80bda71d757756d2ce2b66213e9a3"
+}

@@ -30,23 +30,16 @@ interface Recipe {
 }
 
 const db = new Surreal();
-
-// Connect to the database
 await db.connect("http://localhost:8000/rpc");
-
-// Signin as a namespace, database, or root user
 await db.signin({
     username: "root",
     password: "root",
 });
-
-// Select a specific namespace / database
 await db.use({
     namespace: "recet",
     database: "recet"
 });
 
-// Fetch recipes with related data
 const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('recipes', async () => {
   const [result] = await db.query<[Recipe[]]>(surql`
     SELECT
@@ -155,7 +148,7 @@ function getEstimatedTime(stepCount: number) {
                 </div>
               </div>
               
-              <div v-if="recipe.tags && recipe.tags.length > 0" class="recipe-tags">
+              <div v-if="recipe.tags?.length" class="recipe-tags">
                 <neb-tag
                   v-for="tag in recipe.tags" 
                   :key="tag.name"
@@ -164,13 +157,9 @@ function getEstimatedTime(stepCount: number) {
                   {{ tag.icon }}
                   {{ tag.name }}
                 </neb-tag>
-                
-                <neb-badge v-if="recipe.tags.length > 3" small>
-                  +{{ recipe.tags.length - 3 }} more
-                </neb-badge>
               </div>
               
-              <div v-if="recipe.meal && recipe.meal.length > 0" class="meal-types">
+              <div v-if="recipe.meal" class="meal-types">
                 <neb-badge 
                   v-for="meal in recipe.meal" 
                   :key="meal.name"

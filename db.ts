@@ -28,7 +28,7 @@ export type OutHousehold = {
   created_at: string,
   name: string,
   updated_at: string,
-  users: Array<OutUser | OutUser['id']>,
+  users: Array<OutUser>,
 }
 
 export type InIngredient = {
@@ -40,7 +40,7 @@ export type InIngredient = {
 
 export type OutIngredient = {
   id: RecordId<"ingredient">,
-  category?: OutIngredientCategory | OutIngredientCategory['id'] | undefined,
+  category?: OutIngredientCategory | undefined,
   name: string,
   skip_from_shopping_list: boolean,
 }
@@ -87,19 +87,19 @@ export type InRecipe = {
 
 export type OutRecipe = {
   id: RecordId<"recipe">,
-  author: OutUser | OutUser['id'],
+  author: OutUser,
   created_at: string,
-  cuisine?: OutCuisine | OutCuisine['id'] | undefined,
+  cuisine?: OutCuisine | undefined,
   ingredients: Array<{
     amount?: number | undefined,
     description?: string | undefined,
-    ingredient: OutIngredient | OutIngredient['id'],
-    unit?: OutUnit | OutUnit['id'] | undefined,
+    ingredient: OutIngredient,
+    unit?: OutUnit | undefined,
   }>,
-  meal: Array<OutMeal | OutMeal['id']>,
+  meal: Array<OutMeal>,
   name: string,
   steps: Array<string>,
-  tags: Array<OutRecipeTag | OutRecipeTag['id']>,
+  tags: Array<OutRecipeTag>,
   updated_at: string,
 }
 
@@ -133,13 +133,13 @@ export type InShoppingList = {
 
 export type OutShoppingList = {
   id: RecordId<"shopping_list">,
-  household: OutHousehold | OutHousehold['id'],
+  household: OutHousehold,
   items: Array<{
     amount?: number | undefined,
     checked: boolean,
     flagged: boolean,
-    ingredient: OutIngredient | OutIngredient['id'],
-    unit?: OutUnit | OutUnit['id'] | undefined,
+    ingredient: OutIngredient,
+    unit?: OutUnit | undefined,
   }>,
   name: string,
   updated_at: string,
@@ -310,129 +310,129 @@ export type OutWeeklyPlan = {
   id: RecordId<"weekly_plan">,
   friday: {
     breakfast: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     dinner: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     lunch: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     other: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
   },
   monday: {
     breakfast: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     dinner: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     lunch: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     other: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
   },
   name: string,
   saturday: {
     breakfast: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     dinner: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     lunch: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     other: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
   },
   sunday: {
     breakfast: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     dinner: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     lunch: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     other: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
   },
   thursday: {
     breakfast: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     dinner: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     lunch: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     other: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
   },
   tuesday: {
     breakfast: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     dinner: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     lunch: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     other: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
   },
   wednesday: {
     breakfast: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     dinner: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     lunch: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
     other: {
-      recipes: Array<OutRecipe | OutRecipe['id']>,
-      rules: Array<OutRecipeTag | OutRecipeTag['id']>,
+      recipes: Array<OutRecipe>,
+      rules: Array<OutRecipeTag>,
     },
   },
 }

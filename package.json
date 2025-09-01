@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "generate-types": "surreal-ts -n recet -d recet -o ./db.ts"
+    "generate-types": "surreal-ts -n recet -d recet --links-fetched -o ./db.ts"
   },
   "dependencies": {
     "dayjs": "^1.11.18",
@@ -21,6 +21,8 @@
   },
   "packageManager": "pnpm@10.6.1+sha512.40ee09af407fa9fbb5fbfb8e1cb40fbb74c0af0c3e10e9224d7b53c7658528615b2c92450e74cfad91e3a2dcafe3ce4050d80bda71d757756d2ce2b66213e9a3",
   "devDependencies": {
-    "@nuxtjs/color-mode": "^3.5.2"
+    "@nuxtjs/color-mode": "^3.5.2",
+    "@antfu/eslint-config": "^5.2.1",
+    "eslint": "^9.33.0"
   }
 }

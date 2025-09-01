@@ -67,15 +67,4 @@ async function handleCreate(formData: Record<string, any>) {
   font-size: var(--text-sm);
   color: var(--neutral-color-600);
 }
-
-.action-icon {
-  font-size: 20px !important;
-  color: var(--neutral-color-600);
-  cursor: pointer;
-  transition: all var(--duration-default);
-}
-
-.action-icon:hover {
-  color: var(--neutral-color-900);
-}
 </style>

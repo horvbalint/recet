@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import type { OutIngredient } from '~/db'
+import type { InIngredient, OutIngredient, OutIngredientCategory } from '~/db'
 
 const { data, status, refresh } = await useAsyncData('ingredients', async () => {
   const [result] = await db.query<[OutIngredient[]]>(surql`SELECT * FROM ingredient ORDER BY name ASC FETCH category`)
+  return result || []
+})
+
+const { data: categories } = await useAsyncData('ingredient-categories-options', async () => {
+  const [result] = await db.query<[OutIngredientCategory[]]>(surql`SELECT id, name FROM ingredient_category ORDER BY name ASC`)
   return result || []
 })
 
@@ -11,9 +16,12 @@ const columns = {
   category: { text: 'Category' }
 }
 
-async function handleCreate(formData: Record<string, any>) {
+async function handleCreate(formData: InIngredient) {
   try {
-    await db.query(surql`INSERT INTO ingredient ${formData}`)
+    await db.query(surql`INSERT INTO ingredient ${{
+      ...formData,
+      category: formData.category?.id
+    }}`)
     await refresh()
   } catch (error) {
     console.error('Failed to create ingredient:', error)
@@ -40,7 +48,15 @@ async function handleCreate(formData: Record<string, any>) {
     <template #modal-form="{ data }">
       <neb-input v-model="data.name" label="Name" required />
       
-      <neb-input v-model="data.category" label="Category" />
+      <neb-select 
+        v-model="data.category" 
+        label="Category" 
+        :options="categories!"
+        label-key="name"        
+        track-by-key="name"
+        placeholder="Select a category"
+        allow-empty
+      />
     </template>
   </master-data-layout>
 </template>
@@ -49,16 +65,5 @@ async function handleCreate(formData: Record<string, any>) {
 .no-category {
   color: var(--neutral-color-400);
   font-style: italic;
-}
-
-.action-icon {
-  font-size: 20px !important;
-  color: var(--neutral-color-600);
-  cursor: pointer;
-  transition: all var(--duration-default);
-}
-
-.action-icon:hover {
-  color: var(--neutral-color-900);
 }
 </style>

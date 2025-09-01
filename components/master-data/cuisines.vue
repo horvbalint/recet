@@ -65,40 +65,6 @@ async function handleCreate(formData: Record<string, any>) {
 </template>
 
 <style scoped>
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.field-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--neutral-color-700);
-}
-
-.required {
-  color: var(--error-color-500);
-}
-
-.color-input-group {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.color-picker {
-  width: 60px;
-  height: 40px;
-  border: 1px solid var(--neutral-color-300);
-  border-radius: var(--radius-default);
-  cursor: pointer;
-}
-
-.color-input {
-  flex: 1;
-}
-
 .color-display {
   display: flex;
   align-items: center;

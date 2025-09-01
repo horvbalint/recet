@@ -36,21 +36,3 @@ async function handleCreate(formData: InUnit) {
     </template>
   </master-data-layout>
 </template>
-
-<style scoped>
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.field-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--neutral-color-700);
-}
-
-.required {
-  color: var(--error-color-500);
-}
-</style>

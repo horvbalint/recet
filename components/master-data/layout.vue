@@ -10,9 +10,12 @@ const props = defineProps<{
   createModalTitle: string
   createModalIcon?: string
   handleCreate: (data: T) => Promise<void>
+  handleEdit?: (data: T) => Promise<void>
+  handleDelete?: (data: T) => Promise<void>
 }>()
 
 const showCreateModal = ref(false)
+const showEditModal = ref(false)
 const formData = ref<Partial<T>>({})
 const isFormValid = ref(false)
 
@@ -20,6 +23,7 @@ async function handleCreateSubmit() {
   try {
     await props.handleCreate(formData.value)
     showCreateModal.value = false
+    formData.value = {}
   } catch (error) {
     console.error('Failed to create item:', error)
   }
@@ -28,6 +32,36 @@ async function handleCreateSubmit() {
 function handleCreateCancel() {
   showCreateModal.value = false
   formData.value = {}
+}
+
+function handleEditClick(item: T) {
+  formData.value = { ...item }
+  showEditModal.value = true
+}
+
+async function handleEditSubmit() {
+  try {
+    await props.handleEdit!(formData.value)
+    showEditModal.value = false
+    formData.value = {}
+  } catch (error) {
+    console.error('Failed to edit item:', error)
+  }
+}
+
+function handleEditCancel() {
+  showEditModal.value = false
+  formData.value = {}
+}
+
+async function handleDeleteClick(item: T) {
+  try {
+    if (await useNebConfirm({title: 'Are you sure you want to delete this item?', description: 'This action cannot be undone.'})) {
+      await props.handleDelete!(item)
+    }
+  } catch (error) {
+    console.error('Failed to delete item:', error)
+  }
 }
 </script>
 
@@ -46,9 +80,19 @@ function handleCreateCancel() {
         </neb-button>
       </template>
 
-      <template #row-actions>
-        <icon name="material-symbols:edit-outline-rounded" class="action-icon" />
-        <icon name="material-symbols:delete-outline-rounded" class="action-icon" />
+      <template #row-actions="{ data }">
+        <icon 
+          v-if="handleEdit"
+          name="material-symbols:edit-outline-rounded" 
+          class="action-icon" 
+          @click="handleEditClick(data.original)"
+        />
+        <icon 
+          v-if="handleDelete"
+          name="material-symbols:delete-outline-rounded" 
+          class="action-icon delete-icon" 
+          @click="handleDeleteClick(data.original)"
+        />
       </template>
 
       <template v-for="slot in Object.keys($slots).filter(name => name.startsWith('td-'))" :key="slot" #[slot]="slotProps">
@@ -81,6 +125,32 @@ function handleCreateCancel() {
         </neb-button>
       </template>
     </neb-modal>
+
+    <neb-modal 
+      v-model="showEditModal"
+      title="Edit Item"
+      :header-icon="createModalIcon"
+      max-width="500px"
+      :close-on-background-click="false"
+    >
+      <template #content>
+        <neb-validator v-model="isFormValid">
+          <div class="modal-form-content">
+            <slot name="modal-form" :data="formData" />
+          </div>
+        </neb-validator>
+      </template>
+      
+      <template #actions>
+        <neb-button type="tertiary-neutral" @click="handleEditCancel">
+          Cancel
+        </neb-button>
+
+        <neb-button type="primary" @click="handleEditSubmit" :disabled="!isFormValid">
+          Save Changes
+        </neb-button>
+      </template>
+    </neb-modal>
   </div>
 </template>
 
@@ -98,6 +168,10 @@ function handleCreateCancel() {
 
 .action-icon:hover {
   color: var(--neutral-color-900);
+}
+
+.delete-icon:hover {
+  color: var(--error-color-600);
 }
 
 .modal-form-content {

@@ -29,6 +29,24 @@ async function handleCreate(formData: Record<string, any>) {
     console.error('Failed to create cuisine:', error)
   }
 }
+
+async function handleEdit(formData: Record<string, any>) {
+  try {
+    await db.query(surql`UPDATE ${formData.id} MERGE ${formData}`)
+    await refresh()
+  } catch (error) {
+    console.error('Failed to edit cuisine:', error)
+  }
+}
+
+async function handleDelete(formData: Record<string, any>) {
+  try {
+    await db.query(surql`DELETE ${formData.id}`)
+    await refresh()
+  } catch (error) {
+    console.error('Failed to delete cuisine:', error)
+  }
+}
 </script>
 
 <template>
@@ -41,6 +59,8 @@ async function handleCreate(formData: Record<string, any>) {
     create-modal-title="Create New Cuisine"
     create-modal-icon="material-symbols:public"
     :handle-create
+    :handle-edit
+    :handle-delete
   >
     <template #td-flag="{ original }">
       <span v-if="original" class="flag-emoji">{{ original }}</span>

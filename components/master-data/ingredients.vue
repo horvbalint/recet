@@ -27,6 +27,27 @@ async function handleCreate(formData: InIngredient) {
     console.error('Failed to create ingredient:', error)
   }
 }
+
+async function handleEdit(formData: InIngredient) {
+  try {
+    await db.query(surql`UPDATE ${formData.id} MERGE ${{
+      ...formData,
+      category: formData.category?.id
+    }}`)
+    await refresh()
+  } catch (error) {
+    console.error('Failed to edit ingredient:', error)
+  }
+}
+
+async function handleDelete(formData: InIngredient) {
+  try {
+    await db.query(surql`DELETE ${formData.id}`)
+    await refresh()
+  } catch (error) {
+    console.error('Failed to delete ingredient:', error)
+  }
+}
 </script>
 
 <template>
@@ -39,6 +60,8 @@ async function handleCreate(formData: InIngredient) {
     create-modal-title="Create New Ingredient"
     create-modal-icon="material-symbols:inventory-2-outline-rounded"
     :handle-create
+    :handle-edit
+    :handle-delete
   >
     <template #td-category="{ original }">
       <neb-tag v-if="original" small>{{ original.name }}</neb-tag>
@@ -49,11 +72,11 @@ async function handleCreate(formData: InIngredient) {
       <neb-input v-model="data.name" label="Name" required />
       
       <neb-select 
-        v-model="data.category" 
+        v-model="data.categorySelection"
         label="Category" 
         :options="categories!"
         label-key="name"        
-        track-by-key="name"
+        track-by-key="id"
         placeholder="Select a category"
         allow-empty
       />

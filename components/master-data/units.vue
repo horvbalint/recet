@@ -18,6 +18,24 @@ async function handleCreate(formData: InUnit) {
     console.error('Failed to create unit:', error)
   }
 }
+
+async function handleEdit(formData: InUnit) {
+  try {
+    await db.query(surql`UPDATE ${formData.id} MERGE ${formData}`)
+    await refresh()
+  } catch (error) {
+    console.error('Failed to edit unit:', error)
+  }
+}
+
+async function handleDelete(formData: InUnit) {
+  try {
+    await db.query(surql`DELETE ${formData.id}`)
+    await refresh()
+  } catch (error) {
+    console.error('Failed to delete unit:', error)
+  }
+}
 </script>
 
 <template>
@@ -30,6 +48,8 @@ async function handleCreate(formData: InUnit) {
     create-modal-title="Create New Unit"
     create-modal-icon="material-symbols:straighten-outline"
     :handle-create
+    :handle-edit
+    :handle-delete
   >
     <template #modal-form="{ data }">
       <neb-input v-model="data.name" label="Name" required />

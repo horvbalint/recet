@@ -23,6 +23,24 @@ async function handleCreate(formData: Record<string, any>) {
     console.error('Failed to create ingredient category:', error)
   }
 }
+
+async function handleEdit(formData: Record<string, any>) {
+  try {
+    await db.query(surql`UPDATE ${formData.id} MERGE ${formData}`)
+    await refresh()
+  } catch (error) {
+    console.error('Failed to edit ingredient category:', error)
+  }
+}
+
+async function handleDelete(formData: Record<string, any>) {
+  try {
+    await db.query(surql`DELETE ${formData.id}`)
+    await refresh()
+  } catch (error) {
+    console.error('Failed to delete ingredient category:', error)
+  }
+}
 </script>
 
 <template>
@@ -35,6 +53,8 @@ async function handleCreate(formData: Record<string, any>) {
     create-modal-title="Create New Ingredient Category"
     create-modal-icon="material-symbols:category-rounded"
     :handle-create
+    :handle-edit
+    :handle-delete
   >
     <template #modal-form="{ data }">
       <neb-input v-model="data.name" label="Name" required />

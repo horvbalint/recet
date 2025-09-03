@@ -1,56 +1,22 @@
 <script setup lang="ts">
+import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
 import type { OutMeal } from '~/db'
 
-const { data, status, refresh } = await useAsyncData('meals', async () => {
-  const [result] = await db.query<[OutMeal[]]>(surql`SELECT * FROM meal ORDER BY name ASC`)
-  return result || []
-})
+const getQuery = surql`SELECT * FROM meal ORDER BY name ASC`
 
-const columns = {
+const columns: Columns<OutMeal> = {
   name: { text: 'Name' },
   color: { text: 'Color' }
-}
-
-async function handleCreate(formData: Record<string, any>) {
-  try {
-    await db.query(surql`CREATE meal CONTENT ${formData}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to create meal:', error)
-  }
-}
-
-async function handleEdit(formData: Record<string, any>) {
-  try {
-    await db.query(surql`UPDATE ${formData.id} MERGE ${formData}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to edit meal:', error)
-  }
-}
-
-async function handleDelete(formData: Record<string, any>) {
-  try {
-    await db.query(surql`DELETE ${formData.id}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to delete meal:', error)
-  }
 }
 </script>
 
 <template>
   <master-data-layout
-    :data="data"
-    :status="status"
-    :refresh="refresh"
+    table="meal"
+    name="meal type"
+    icon="material-symbols:restaurant-rounded"
+    :get-query
     :columns="columns"
-    create-button-text="Add Meal Type"
-    create-modal-title="Create New Meal Type"
-    create-modal-icon="material-symbols:restaurant-rounded"
-    :handle-create
-    :handle-edit
-    :handle-delete
   >
     <template #td-color="{ original }">
       <div class="color-display">

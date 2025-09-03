@@ -1,31 +1,42 @@
-<script setup lang="ts" generic="T extends Record<string, any> = Record<string, any>">
+<script setup lang="ts" generic="T extends Record<string, any>">
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue';
+import type { PreparedQuery } from 'surrealdb';
 
-const props = defineProps<{
-  data: any[] | null | undefined
-  status: 'idle' | 'pending' | 'success' | 'error'
-  refresh: () => Promise<void>
+const props = withDefaults(defineProps<{
+  table: string,
   columns: Columns<T>
-  createButtonText: string
-  createModalTitle: string
-  createModalIcon?: string
-  handleCreate: (data: T) => Promise<void>
-  handleEdit?: (data: T) => Promise<void>
-  handleDelete?: (data: T) => Promise<void>
-}>()
+  getQuery: PreparedQuery,
+  name: string
+  icon: string
+  transformBeforeCreate?: (data: T) => any
+  transformBeforeEdit?: (data: T) => any
+}>(), {
+  transformBeforeCreate: (data: T) => data, 
+  transformBeforeEdit: (data: T) => data, 
+})
 
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const formData = ref<Partial<T>>({})
 const isFormValid = ref(false)
 
+const { data, status, refresh } = await useAsyncData('ingredient-categories', async () => {
+  const [result] = await db.query<[T[]]>(props.getQuery)
+  return result || []
+})
+
 async function handleCreateSubmit() {
   try {
-    await props.handleCreate(formData.value)
+    await db.query(`INSERT INTO ${props.table} $data`, {data: props.transformBeforeCreate(formData.value)})
+    await refresh()
+
+    useNebToast({type: 'success', title: 'Item created!', description: 'The item was saved into the database.'})
+    
     showCreateModal.value = false
     formData.value = {}
   } catch (error) {
-    console.error('Failed to create item:', error)
+    console.error(error)
+    useNebToast({type: 'error', title: 'Creation failed!', description: 'We could not save the item into the database.'})
   }
 }
 
@@ -40,12 +51,18 @@ function handleEditClick(item: T) {
 }
 
 async function handleEditSubmit() {
+
   try {
-    await props.handleEdit!(formData.value)
+    await db.query(surql`UPDATE ${formData.value.id} MERGE ${props.transformBeforeEdit(formData.value)}`)
+    await refresh()
+
+    useNebToast({type: 'success', title: 'Modification saved!', description: 'The modifications were saved into the database.'})
+
     showEditModal.value = false
     formData.value = {}
   } catch (error) {
-    console.error('Failed to edit item:', error)
+    console.error(error)
+    useNebToast({type: 'error', title: 'Edit failed!', description: 'We could not save the item into the database.'})
   }
 }
 
@@ -56,11 +73,16 @@ function handleEditCancel() {
 
 async function handleDeleteClick(item: T) {
   try {
-    if (await useNebConfirm({title: 'Are you sure you want to delete this item?', description: 'This action cannot be undone.'})) {
-      await props.handleDelete!(item)
-    }
+    if (!await useNebConfirm({title: 'Are you sure you want to delete this item?', description: 'This action cannot be undone.'}))
+      return
+
+    await db.query(surql`DELETE ${formData.value.id}`)
+    await refresh()
+
+    useNebToast({type: 'success', title: 'Succesfully deleted!', description: 'The item got removed from the database.'})
   } catch (error) {
-    console.error('Failed to delete item:', error)
+    console.error(error)
+    useNebToast({type: 'error', title: 'Deletion failed!', description: 'We could not remove the item from the database.'})
   }
 }
 </script>
@@ -76,19 +98,17 @@ async function handleDeleteClick(item: T) {
       <template #actions>
         <neb-button @click="showCreateModal = true" small>
           <icon name="material-symbols:add-rounded" />
-          {{ createButtonText }}
+          Add {{ props.name }}
         </neb-button>
       </template>
 
       <template #row-actions="{ data }">
         <icon 
-          v-if="handleEdit"
           name="material-symbols:edit-outline-rounded" 
           class="action-icon" 
           @click="handleEditClick(data.original)"
         />
         <icon 
-          v-if="handleDelete"
           name="material-symbols:delete-outline-rounded" 
           class="action-icon delete-icon" 
           @click="handleDeleteClick(data.original)"
@@ -102,8 +122,8 @@ async function handleDeleteClick(item: T) {
 
     <neb-modal 
       v-model="showCreateModal"
-      :title="createModalTitle"
-      :header-icon="createModalIcon"
+      :title="`Create new ${props.name}`"
+      :header-icon="icon"
       max-width="500px"
       :close-on-background-click="false"
     >
@@ -128,8 +148,8 @@ async function handleDeleteClick(item: T) {
 
     <neb-modal 
       v-model="showEditModal"
-      title="Edit Item"
-      :header-icon="createModalIcon"
+      :title="`Edit ${props.name}`"
+      :header-icon="icon"
       max-width="500px"
       :close-on-background-click="false"
     >

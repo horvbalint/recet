@@ -9,6 +9,11 @@ export default defineNuxtConfig({
     primaryColor: '#BE2577'
   },
 
+  i18n: {
+    defaultLocale: 'en',
+    detectBrowserLanguage: false,
+  },
+
   devtools: { enabled: true },
   modules: ['@nuxtjs/color-mode']
 })

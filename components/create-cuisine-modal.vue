@@ -1,0 +1,52 @@
+<script setup lang="ts">
+import type { OutCuisine } from '~/db'
+
+const props = defineProps<{
+  searchTerm?: string
+}>()
+
+const modelValue = defineModel<boolean>({ required: true })
+
+const emit = defineEmits<{
+  'created': [item: OutCuisine]
+}>()
+
+// Flag emoji options
+const flagOptions = [
+  '🇺🇸', '🇬🇧', '🇫🇷', '🇮🇹', '🇪🇸', '🇩🇪', '🇯🇵', '🇨🇳', '🇮🇳', '🇰🇷',
+  '🇹🇭', '🇻🇳', '🇲🇽', '🇧🇷', '🇦🇷', '🇵🇪', '🇨🇦', '🇦🇺', '🇷🇺', '🇺🇦',
+  '🇵🇱', '🇨🇿', '🇭🇺', '🇷🇴', '🇬🇷', '🇹🇷', '🇪🇬', '🇲🇦', '🇿🇦', '🇳🇬',
+  '🇮🇱', '🇱🇧', '🇸🇦', '🇦🇪', '🇮🇷', '🇵🇰', '🇧🇩', '🇱🇰', '🇳🇵', '🇲🇾',
+  '🇸🇬', '🇮🇩', '🇵🇭', '🇰🇭', '🇱🇦', '🇲🇲', '🇪🇹', '🇰🇪', '🇬🇭', '🇨🇮'
+]
+
+function handleSuccess(item: OutCuisine) {
+  emit('created', item)
+}
+</script>
+
+<template>
+  <master-data-modal
+    v-model="modelValue"
+    table="cuisine"
+    name="Cuisine"
+    icon="material-symbols:public"
+    :initial-data="{ name: searchTerm || '' }"
+    @success="handleSuccess"
+  >
+    <template #form="{ data }">
+      <neb-input v-model="data.name" label="Name" required />
+      
+      <neb-input v-model="data.color" label="Color" type="color" required />
+      
+      <neb-select 
+        v-model="data.flag" 
+        label="Flag" 
+        no-search 
+        :options="flagOptions" 
+        placeholder="Select a flag" 
+        allow-empty 
+      />
+    </template>
+  </master-data-modal>
+</template>

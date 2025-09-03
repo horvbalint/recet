@@ -1,55 +1,21 @@
 <script setup lang="ts">
-import type { InUnit, OutUnit } from '~/db'
+import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
+import type { OutUnit } from '~/db'
 
-const { data, status, refresh } = await useAsyncData('units', async () => {
-  const [result] = await db.query<[OutUnit[]]>(surql`SELECT * FROM unit ORDER BY name ASC`)
-  return result || []
-})
+const getQuery = surql`SELECT * FROM unit ORDER BY name ASC`
 
-const columns = {
+const columns: Columns<OutUnit> = {
   name: { text: 'Name' }
-}
-
-async function handleCreate(formData: InUnit) {
-  try {
-    await db.query(surql`CREATE unit CONTENT ${formData}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to create unit:', error)
-  }
-}
-
-async function handleEdit(formData: InUnit) {
-  try {
-    await db.query(surql`UPDATE ${formData.id} MERGE ${formData}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to edit unit:', error)
-  }
-}
-
-async function handleDelete(formData: InUnit) {
-  try {
-    await db.query(surql`DELETE ${formData.id}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to delete unit:', error)
-  }
 }
 </script>
 
 <template>
   <master-data-layout
-    :data="data"
-    :status="status"
-    :refresh="refresh"
+    table="unit"
+    name="unit"
+    icon="material-symbols:straighten-outline"
+    :get-query
     :columns="columns"
-    create-button-text="Add Unit"
-    create-modal-title="Create New Unit"
-    create-modal-icon="material-symbols:straighten-outline"
-    :handle-create
-    :handle-edit
-    :handle-delete
   >
     <template #modal-form="{ data }">
       <neb-input v-model="data.name" label="Name" required />

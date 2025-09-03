@@ -1,12 +1,9 @@
 <script setup lang="ts">
+import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
 import type { OutRecipeTag } from '~/db'
 
-const { data, status, refresh } = await useAsyncData('tags', async () => {
-  const [result] = await db.query<[OutRecipeTag[]]>(surql`SELECT * FROM recipe_tag ORDER BY name ASC`)
-  return result || []
-})
-
-const columns = {
+const getQuery = surql`SELECT * FROM recipe_tag ORDER BY name ASC`
+const columns: Columns<OutRecipeTag> = {
   name: { text: 'Name' },
   icon: { text: 'Icon' },
   color: { text: 'Color' }
@@ -21,47 +18,15 @@ const iconOptions = [
   '⏰', '🔥', '❄️', '⭐', '💚', '❤️', '🧡', '💛', '💜', '🤍',
   '👨‍🍳', '👩‍🍳', '🌿', '🌱', '♻️', '🌟', '✨', '💎', '🏆', '🎯'
 ]
-
-async function handleCreate(formData: Record<string, any>) {
-  try {
-    await db.query(surql`CREATE recipe_tag CONTENT ${formData}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to create tag:', error)
-  }
-}
-
-async function handleEdit(formData: Record<string, any>) {
-  try {
-    await db.query(surql`UPDATE ${formData.id} MERGE ${formData}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to edit tag:', error)
-  }
-}
-
-async function handleDelete(formData: Record<string, any>) {
-  try {
-    await db.query(surql`DELETE ${formData.id}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to delete tag:', error)
-  }
-}
 </script>
 
 <template>
   <master-data-layout
-    :data="data"
-    :status="status"
-    :refresh="refresh"
+    table="tag"
+    name="tag"
+    icon="material-symbols:tag-rounded"
+    :get-query
     :columns="columns"
-    create-button-text="Add Tag"
-    create-modal-title="Create New Tag"
-    create-modal-icon="material-symbols:tag-rounded"
-    :handle-create
-    :handle-edit
-    :handle-delete
   >
     <template #td-icon="{ original }">
       <span v-if="original" class="tag-icon">{{ original }}</span>

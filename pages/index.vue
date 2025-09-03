@@ -64,7 +64,7 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
             <icon name="material-symbols:settings" />
             Master Data
           </neb-button>
-          <neb-button type="primary">
+          <neb-button type="primary" @click="$router.push('/recipe/create')">
             <icon name="material-symbols:add-rounded" />
             Add Recipe
           </neb-button>
@@ -79,7 +79,7 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
           title="No recipes yet"
           description="Start building your recipe collection by adding your first recipe"
         >
-          <neb-button type="primary">
+          <neb-button type="primary" @click="$router.push('/recipe/create')">
             <icon name="material-symbols:add-rounded" />
             Add Your First Recipe
           </neb-button>

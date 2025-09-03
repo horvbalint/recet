@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import type { OutCuisine } from '~/db'
+import type { Columns } from '@nebula/components/table/neb-table-frame.vue';
+import type { OutCuisine } from '~/db';
 
-const { data, status, refresh } = await useAsyncData('cuisines', async () => {
-  const [result] = await db.query<[OutCuisine[]]>(surql`SELECT * FROM cuisine ORDER BY name ASC`)
-  return result || []
-})
+const getQuery = surql`SELECT * FROM cuisine ORDER BY name ASC`
 
-const columns = {
+const columns: Columns<OutCuisine> = {
   name: { text: 'Name' },
   flag: { text: 'Flag' },
   color: { text: 'Color' }
@@ -20,47 +18,15 @@ const flagOptions = [
   '🇮🇱', '🇱🇧', '🇸🇦', '🇦🇪', '🇮🇷', '🇵🇰', '🇧🇩', '🇱🇰', '🇳🇵', '🇲🇾',
   '🇸🇬', '🇮🇩', '🇵🇭', '🇰🇭', '🇱🇦', '🇲🇲', '🇪🇹', '🇰🇪', '🇬🇭', '🇨🇮'
 ]
-
-async function handleCreate(formData: Record<string, any>) {
-  try {
-    await db.query(surql`CREATE cuisine CONTENT ${formData}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to create cuisine:', error)
-  }
-}
-
-async function handleEdit(formData: Record<string, any>) {
-  try {
-    await db.query(surql`UPDATE ${formData.id} MERGE ${formData}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to edit cuisine:', error)
-  }
-}
-
-async function handleDelete(formData: Record<string, any>) {
-  try {
-    await db.query(surql`DELETE ${formData.id}`)
-    await refresh()
-  } catch (error) {
-    console.error('Failed to delete cuisine:', error)
-  }
-}
 </script>
 
 <template>
   <master-data-layout
-    :data="data"
-    :status="status"
-    :refresh="refresh"
+    table="cuisine"
+    name="cuisine"
+    icon="material-symbols:public"
+    :get-query
     :columns="columns"
-    create-button-text="Add Cuisine"
-    create-modal-title="Create New Cuisine"
-    create-modal-icon="material-symbols:public"
-    :handle-create
-    :handle-edit
-    :handle-delete
   >
     <template #td-flag="{ original }">
       <span v-if="original" class="flag-emoji">{{ original }}</span>

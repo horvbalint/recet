@@ -2,73 +2,29 @@
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue';
 import type { PreparedQuery } from 'surrealdb';
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   table: string,
   columns: Columns<T>
   getQuery: PreparedQuery,
   name: string
   icon: string
-  transformBeforeCreate?: (data: T) => any
-  transformBeforeEdit?: (data: T) => any
-}>(), {
-  transformBeforeCreate: (data: T) => data, 
-  transformBeforeEdit: (data: T) => data, 
-})
+}>()
 
-const showCreateModal = ref(false)
-const showEditModal = ref(false)
-const formData = ref<Partial<T>>({})
-const isFormValid = ref(false)
+const showModal = ref(false)
 
-const { data, status, refresh } = await useAsyncData('ingredient-categories', async () => {
+const { data, status, refresh } = await useAsyncData(`${props.table}-master-data-layout`, async () => {
   const [result] = await db.query<[T[]]>(props.getQuery)
   return result || []
 })
 
-async function handleCreateSubmit() {
-  try {
-    await db.query(`INSERT INTO ${props.table} $data`, {data: props.transformBeforeCreate(formData.value)})
-    await refresh()
-
-    useNebToast({type: 'success', title: 'Item created!', description: 'The item was saved into the database.'})
-    
-    showCreateModal.value = false
-    formData.value = {}
-  } catch (error) {
-    console.error(error)
-    useNebToast({type: 'error', title: 'Creation failed!', description: 'We could not save the item into the database.'})
-  }
+function handleCreateClick() {
+  showModal.value = true
 }
 
-function handleCreateCancel() {
-  showCreateModal.value = false
-  formData.value = {}
-}
-
+const docToEdit = ref<T | null>(null)
 function handleEditClick(item: T) {
-  formData.value = { ...item }
-  showEditModal.value = true
-}
-
-async function handleEditSubmit() {
-
-  try {
-    await db.query(surql`UPDATE ${formData.value.id} MERGE ${props.transformBeforeEdit(formData.value)}`)
-    await refresh()
-
-    useNebToast({type: 'success', title: 'Modification saved!', description: 'The modifications were saved into the database.'})
-
-    showEditModal.value = false
-    formData.value = {}
-  } catch (error) {
-    console.error(error)
-    useNebToast({type: 'error', title: 'Edit failed!', description: 'We could not save the item into the database.'})
-  }
-}
-
-function handleEditCancel() {
-  showEditModal.value = false
-  formData.value = {}
+  docToEdit.value = item
+  showModal.value = true
 }
 
 async function handleDeleteClick(item: T) {
@@ -76,7 +32,7 @@ async function handleDeleteClick(item: T) {
     if (!await useNebConfirm({title: 'Are you sure you want to delete this item?', description: 'This action cannot be undone.'}))
       return
 
-    await db.query(surql`DELETE ${formData.value.id}`)
+    await db.query(surql`DELETE ${item.id}`)
     await refresh()
 
     useNebToast({type: 'success', title: 'Succesfully deleted!', description: 'The item got removed from the database.'})
@@ -96,7 +52,7 @@ async function handleDeleteClick(item: T) {
       :refresh="refresh"
     >
       <template #actions>
-        <neb-button @click="showCreateModal = true" small>
+        <neb-button @click="handleCreateClick()" small>
           <icon name="material-symbols:add-rounded" />
           Add {{ props.name }}
         </neb-button>
@@ -120,57 +76,7 @@ async function handleDeleteClick(item: T) {
       </template>
     </neb-table>
 
-    <neb-modal 
-      v-model="showCreateModal"
-      :title="`Create new ${props.name}`"
-      :header-icon="icon"
-      max-width="500px"
-      :close-on-background-click="false"
-    >
-      <template #content>
-        <neb-validator v-model="isFormValid">
-          <div class="modal-form-content">
-            <slot name="modal-form" :data="formData" />
-          </div>
-        </neb-validator>
-      </template>
-      
-      <template #actions>
-        <neb-button type="tertiary-neutral" @click="handleCreateCancel">
-          Cancel
-        </neb-button>
-
-        <neb-button type="primary" @click="handleCreateSubmit" :disabled="!isFormValid">
-          Create
-        </neb-button>
-      </template>
-    </neb-modal>
-
-    <neb-modal 
-      v-model="showEditModal"
-      :title="`Edit ${props.name}`"
-      :header-icon="icon"
-      max-width="500px"
-      :close-on-background-click="false"
-    >
-      <template #content>
-        <neb-validator v-model="isFormValid">
-          <div class="modal-form-content">
-            <slot name="modal-form" :data="formData" />
-          </div>
-        </neb-validator>
-      </template>
-      
-      <template #actions>
-        <neb-button type="tertiary-neutral" @click="handleEditCancel">
-          Cancel
-        </neb-button>
-
-        <neb-button type="primary" @click="handleEditSubmit" :disabled="!isFormValid">
-          Save Changes
-        </neb-button>
-      </template>
-    </neb-modal>
+    <slot v-if="showModal" name="modal" :after-save="refresh" :close="() => showModal = false" :doc-to-edit />
   </div>
 </template>
 

@@ -1,11 +1,9 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 const props = withDefaults(defineProps<{
-  modelValue: boolean
   table: string
   name: string
   icon: string
-  mode?: 'create' | 'edit'
-  initialData?: Partial<T>
+  initialData?: Partial<T> | null
   transformBeforeCreate?: (data: T) => any
   transformBeforeEdit?: (data: T) => any
 }>(), {
@@ -14,86 +12,83 @@ const props = withDefaults(defineProps<{
   transformBeforeEdit: (data: T) => data,
 })
 
+const modelValue = defineModel<boolean>({required: true})
+
 const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-  'success': [item: any]
+  'saved': [item: any]
 }>()
 
 const formData = ref<any>({})
 const isFormValid = ref(false)
 
-const isVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-})
+const isEdit = computed(() => !!props.initialData?.id)
 
 const title = computed(() => {
-  return props.mode === 'create' ? `Create new ${props.name}` : `Edit ${props.name}`
+  return !isEdit.value ? `Create new ${props.name}` : `Edit ${props.name}`
 })
 
 const actionLabel = computed(() => {
-  return props.mode === 'create' ? 'Create' : 'Save Changes'
+  return !isEdit.value ? 'Create' : 'Save Changes'
 })
 
 watch(() => props.initialData, (newData) => {
-  if (newData) {
+  if (newData)
     formData.value = { ...newData }
-  } else {
+  else
     formData.value = {}
-  }
 }, { immediate: true })
 
-watch(() => props.modelValue, (isOpen) => {
-  if (!isOpen) {
+watch(modelValue, (isOpen) => {
+  if (!isOpen)
     formData.value = {}
-  }
 })
 
 async function handleSubmit() {
   try {
-    if (props.mode === 'create') {
-      const [result] = await db.query<[T]>(`INSERT INTO ${props.table} $data RETURN *`, {
+    if (!isEdit.value) {
+      const [result] = await db.query<[T]>(`CREATE ONLY ${props.table} CONTENT $data`, {
         data: props.transformBeforeCreate(formData.value)
       })
       
       useNebToast({
         type: 'success', 
         title: `${props.name} created!`, 
-        description: `The ${props.name.toLowerCase()} was saved successfully.`
+        description: `The ${props.name} was saved successfully.`
       })
       
-      emit('success', result)
-    } else {
-      const [result] = await db.query<[T]>(surql`UPDATE ${formData.value.id} MERGE ${props.transformBeforeEdit(formData.value)} RETURN *`)
+      emit('saved', result)
+    }
+    else {
+      const [result] = await db.query<[T]>(surql`UPDATE ONLY ${formData.value.id} MERGE ${props.transformBeforeEdit(formData.value)} RETURN AFTER`)
       
       useNebToast({
         type: 'success', 
         title: `${props.name} updated!`, 
-        description: `The ${props.name.toLowerCase()} was updated successfully.`
+        description: `The ${props.name} was updated successfully.`
       })
       
-      emit('success', result)
+      emit('saved', result)
     }
     
-    isVisible.value = false
+    modelValue.value = false
   } catch (error) {
     console.error(error)
     useNebToast({
       type: 'error', 
-      title: `${props.mode === 'create' ? 'Creation' : 'Update'} failed!`, 
-      description: `Could not ${props.mode === 'create' ? 'create' : 'update'} the ${props.name.toLowerCase()}. Please try again.`
+      title: `${!isEdit.value? 'Creation' : 'Update'} failed!`, 
+      description: `Could not ${!isEdit.value? 'create' : 'update'} the ${props.name}. Please try again.`
     })
   }
 }
 
 function handleCancel() {
-  isVisible.value = false
+  modelValue.value = false
 }
 </script>
 
 <template>
   <neb-modal 
-    v-model="isVisible"
+    v-model="modelValue"
     :title="title"
     :header-icon="icon"
     max-width="500px"

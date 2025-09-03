@@ -9,15 +9,6 @@ const columns: Columns<OutCuisine> = {
   flag: { text: 'Flag' },
   color: { text: 'Color' }
 }
-
-// Flag emoji options
-const flagOptions = [
-  '🇺🇸', '🇬🇧', '🇫🇷', '🇮🇹', '🇪🇸', '🇩🇪', '🇯🇵', '🇨🇳', '🇮🇳', '🇰🇷',
-  '🇹🇭', '🇻🇳', '🇲🇽', '🇧🇷', '🇦🇷', '🇵🇪', '🇨🇦', '🇦🇺', '🇷🇺', '🇺🇦',
-  '🇵🇱', '🇨🇿', '🇭🇺', '🇷🇴', '🇬🇷', '🇹🇷', '🇪🇬', '🇲🇦', '🇿🇦', '🇳🇬',
-  '🇮🇱', '🇱🇧', '🇸🇦', '🇦🇪', '🇮🇷', '🇵🇰', '🇧🇩', '🇱🇰', '🇳🇵', '🇲🇾',
-  '🇸🇬', '🇮🇩', '🇵🇭', '🇰🇭', '🇱🇦', '🇲🇲', '🇪🇹', '🇰🇪', '🇬🇭', '🇨🇮'
-]
 </script>
 
 <template>
@@ -40,12 +31,13 @@ const flagOptions = [
       </div>
     </template>
 
-    <template #modal-form="{ data }">
-      <neb-input v-model="data.name" label="Name" required />
-      
-      <neb-input v-model="data.color" label="Color" type="color" required />
-      
-      <neb-select v-model="data.flag" label="Flag" no-search :options="flagOptions" placeholder="Select a flag" allow-empty />
+    <template #modal="{ close, afterSave, docToEdit }">
+      <cuisine-master-data-modal
+        :model-value="true"
+        @update:model-value="close()"
+        :initial-data="docToEdit"
+        @saved="afterSave()"
+      />
     </template>
   </master-data-layout>
 </template>

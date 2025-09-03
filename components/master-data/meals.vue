@@ -25,10 +25,13 @@ const columns: Columns<OutMeal> = {
       </div>
     </template>
 
-    <template #modal-form="{ data }">
-      <neb-input v-model="data.name" label="Name" required />
-      
-      <neb-input v-model="data.color" label="Color" type="color" required />
+    <template #modal="{ close, afterSave, docToEdit }">
+      <meal-master-data-modal
+        :model-value="true"
+        @update:model-value="close()"
+        :initial-data="docToEdit"
+        @saved="afterSave()"
+      />
     </template>
   </master-data-layout>
 </template>

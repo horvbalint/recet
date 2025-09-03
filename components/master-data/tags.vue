@@ -8,21 +8,11 @@ const columns: Columns<OutRecipeTag> = {
   icon: { text: 'Icon' },
   color: { text: 'Color' }
 }
-
-// Recipe tag icon options (food and cooking related emojis)
-const iconOptions = [
-  '🍽️', '🍴', '🥄', '🔪', '🍳', '🥘', '🍲', '🥗', '🍝', '🍕',
-  '🍔', '🌮', '🌯', '🥙', '🥪', '🍖', '🍗', '🥓', '🍤', '🐟',
-  '🍎', '🍌', '🥕', '🥒', '🌶️', '🧄', '🧅', '🥑', '🍅', '🥔',
-  '🌾', '🥖', '🍞', '🥐', '🧀', '🥛', '🍯', '🧂', '🍋', '🥥',
-  '⏰', '🔥', '❄️', '⭐', '💚', '❤️', '🧡', '💛', '💜', '🤍',
-  '👨‍🍳', '👩‍🍳', '🌿', '🌱', '♻️', '🌟', '✨', '💎', '🏆', '🎯'
-]
 </script>
 
 <template>
-  <master-data-layout
-    table="tag"
+    <master-data-layout
+    table="recipe_tag"
     name="tag"
     icon="material-symbols:tag-rounded"
     :get-query
@@ -40,12 +30,13 @@ const iconOptions = [
       </div>
     </template>
 
-    <template #modal-form="{ data }">
-      <neb-input v-model="data.name" label="Name" required />
-      
-      <neb-select v-model="data.icon" label="Icon" :options="iconOptions" placeholder="Select an icon" required />
-      
-      <neb-input v-model="data.color" label="Color" type="color" required />
+    <template #modal="{ close, afterSave, docToEdit }">
+      <tag-master-data-modal
+        :model-value="true"
+        @update:model-value="close()"
+        :initial-data="docToEdit"
+        @saved="afterSave()"
+      />
     </template>
   </master-data-layout>
 </template>

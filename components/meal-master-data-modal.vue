@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import type { OutMeal } from '~/db'
+import type { InMeal, OutMeal } from '~/db'
 
-const props = defineProps<{
-  searchTerm?: string
+defineProps<{
+  initialData?: Partial<InMeal> | null
 }>()
 
 const modelValue = defineModel<boolean>({ required: true })
 
 const emit = defineEmits<{
-  'created': [item: OutMeal]
+  'saved': [item: OutMeal]
 }>()
 
-function handleSuccess(item: OutMeal) {
-  emit('created', item)
+function handleSave(item: OutMeal) {
+  emit('saved', item)
 }
 </script>
 
@@ -20,10 +20,10 @@ function handleSuccess(item: OutMeal) {
   <master-data-modal
     v-model="modelValue"
     table="meal"
-    name="Meal"
-    icon="material-symbols:restaurant"
-    :initial-data="{ name: searchTerm || '' }"
-    @success="handleSuccess"
+    name="meal type"
+    icon="material-symbols:restaurant-rounded"
+    :initial-data
+    @saved="handleSave"
   >
     <template #form="{ data }">
       <neb-input v-model="data.name" label="Name" required />

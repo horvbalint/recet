@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { OutCuisine } from '~/db'
+import type { InCuisine, OutCuisine } from '~/db'
 
-const props = defineProps<{
-  searchTerm?: string
+defineProps<{
+  initialData?: Partial<InCuisine> | null
 }>()
 
-const modelValue = defineModel<boolean>({ required: true })
+const modelValue = defineModel<boolean>({required: true})
 
 const emit = defineEmits<{
-  'created': [item: OutCuisine]
+  'saved': [item: OutCuisine]
 }>()
 
 // Flag emoji options
@@ -20,8 +20,8 @@ const flagOptions = [
   '🇸🇬', '🇮🇩', '🇵🇭', '🇰🇭', '🇱🇦', '🇲🇲', '🇪🇹', '🇰🇪', '🇬🇭', '🇨🇮'
 ]
 
-function handleSuccess(item: OutCuisine) {
-  emit('created', item)
+function handleSave(item: OutCuisine) {
+  emit('saved', item)
 }
 </script>
 
@@ -29,10 +29,10 @@ function handleSuccess(item: OutCuisine) {
   <master-data-modal
     v-model="modelValue"
     table="cuisine"
-    name="Cuisine"
+    name="cuisine"
     icon="material-symbols:public"
-    :initial-data="{ name: searchTerm || '' }"
-    @success="handleSuccess"
+    :initial-data
+    @saved="handleSave"
   >
     <template #form="{ data }">
       <neb-input v-model="data.name" label="Name" required />

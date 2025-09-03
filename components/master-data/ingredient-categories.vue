@@ -17,8 +17,13 @@ const columns: Columns<OutIngredientCategory> = {
     :get-query
     :columns="columns"
   >
-    <template #modal-form="{ data }">
-      <neb-input v-model="data.name" label="Name" required />
+    <template #modal="{ close, afterSave, docToEdit }">
+      <ingredient-category-master-data-modal
+        :model-value="true"
+        @update:model-value="close()"
+        :initial-data="docToEdit"
+        @saved="afterSave()"
+      />
     </template>
   </master-data-layout>
 </template>

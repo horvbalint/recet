@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { RecordId } from 'surrealdb'
 import type { InRecipe, OutIngredient, OutUnit, OutCuisine, OutMeal, OutRecipeTag } from '~/db'
-import CreateCuisineModal from '~/components/create-cuisine-modal.vue'
-import CreateMealModal from '~/components/create-meal-modal.vue'
-import CreateTagModal from '~/components/create-tag-modal.vue'
-import CreateIngredientModal from '~/components/create-ingredient-modal.vue'
-import CreateUnitModal from '~/components/create-unit-modal.vue'
 
 const router = useRouter()
 
@@ -21,20 +16,11 @@ const formData = ref<Partial<InRecipe>>({
 const isFormValid = ref(false)
 
 // Modal states
-const showCreateCuisine = ref(false)
-const showCreateMeal = ref(false)
-const showCreateTag = ref(false)
-const showCreateIngredient = ref(false)
-const showCreateUnit = ref(false)
+type Table = 'ingredient' | 'unit' | 'cuisine' | 'meal' | 'recipe_tag'
+const dynamicCreateTable = ref<Table | null>(null)
+const dynamicCreateSearchTerm = ref<string>('')
 
-// Search terms for pre-filling modal forms
-const cuisineSearchTerm = ref('')
-const mealSearchTerm = ref('')
-const tagSearchTerm = ref('')
-const ingredientSearchTerm = ref('')
-const unitSearchTerm = ref('')
-
-const { data, refresh } = await useAsyncData('master-data-options', async () => {
+const { data, refresh } = await useAsyncData(async () => {
   const [ingredients, units, cuisines, meals, recipeTags] = await db.query<[
     OutIngredient[],
     OutUnit[],
@@ -95,79 +81,65 @@ function handleCancel() {
   router.push('/')
 }
 
-// Modal open functions
-function openCreateCuisineModal() {
-  showCreateCuisine.value = true
-}
-
-function openCreateMealModal() {
-  showCreateMeal.value = true
-}
-
-function openCreateTagModal() {
-  showCreateTag.value = true
-}
-
-function openCreateIngredientModal() {
-  showCreateIngredient.value = true
-}
-
-function openCreateUnitModal() {
-  showCreateUnit.value = true
-}
-
 // Handlers for creating new master data
 function handleCreateCuisine(searchTerm: string) {
-  cuisineSearchTerm.value = searchTerm
-  showCreateCuisine.value = true
+  dynamicCreateSearchTerm.value = searchTerm
+  dynamicCreateTable.value = 'cuisine'
 }
 
 function handleCreateMeal(searchTerm: string) {
-  mealSearchTerm.value = searchTerm
-  showCreateMeal.value = true
+  dynamicCreateSearchTerm.value = searchTerm
+  dynamicCreateTable.value = 'meal'
 }
 
 function handleCreateTag(searchTerm: string) {
-  tagSearchTerm.value = searchTerm
-  showCreateTag.value = true
+  dynamicCreateSearchTerm.value = searchTerm
+  dynamicCreateTable.value = 'recipe_tag'
 }
 
-function handleCreateIngredient(searchTerm: string) {
-  ingredientSearchTerm.value = searchTerm
-  showCreateIngredient.value = true
+const ingridientIndex = ref<number | null>(null)
+function handleCreateIngredient(searchTerm: string, index: number) {
+  ingridientIndex.value = index
+  dynamicCreateSearchTerm.value = searchTerm
+  dynamicCreateTable.value = 'ingredient'
 }
 
-function handleCreateUnit(searchTerm: string) {
-  unitSearchTerm.value = searchTerm
-  showCreateUnit.value = true
+function handleCreateUnit(searchTerm: string, index: number) {
+  ingridientIndex.value = index
+  dynamicCreateSearchTerm.value = searchTerm
+  dynamicCreateTable.value = 'unit'
 }
 
 // Handlers for when new items are created
 function onCuisineCreated(cuisine: OutCuisine) {
-  refresh()
   formData.value.cuisine = cuisine
+  refresh()
 }
 
 function onMealCreated(meal: OutMeal) {
-  refresh()
-  if (!formData.value.meal) formData.value.meal = []
+  if (!formData.value.meal)
+    formData.value.meal = []
   formData.value.meal.push(meal)
+
+  refresh()
 }
 
 function onTagCreated(tag: OutRecipeTag) {
-  refresh()
-  if (!formData.value.tags) formData.value.tags = []
+  if (!formData.value.tags)
+    formData.value.tags = []
   formData.value.tags.push(tag)
+  
+  refresh()
 }
 
 function onIngredientCreated(ingredient: OutIngredient) {
+  formData.value.ingredients![ingridientIndex.value!]!.ingredient = ingredient
   refresh()
-  // Update the current ingredient being edited if applicable
 }
 
 function onUnitCreated(unit: OutUnit) {
+  formData.value.ingredients![ingridientIndex.value!]!.unit = unit
   refresh()
-  // Update the current ingredient unit if applicable
 }
 </script>
 
@@ -232,7 +204,7 @@ function onUnitCreated(unit: OutUnit) {
                     track-by-key="name"
                     label-key="name"
                     multiple
-                    @new="openCreateMealModal"
+                    @new="handleCreateMeal"
                   />
 
                   <neb-select
@@ -243,7 +215,7 @@ function onUnitCreated(unit: OutUnit) {
                     track-by-key="name"
                     label-key="name"
                     multiple
-                    @new="openCreateTagModal"
+                    @new="handleCreateTag"
                   />
                 </div>
               </div>
@@ -255,7 +227,7 @@ function onUnitCreated(unit: OutUnit) {
               class="form-section"
               with-initial-item
             >
-              <template #default="{ item: ingredient }">
+              <template #default="{ item: ingredient, index }">
                 <div class="ingredient-fields">
                   <neb-select
                     v-model="ingredient.ingredient"
@@ -265,7 +237,7 @@ function onUnitCreated(unit: OutUnit) {
                     track-by-key="name"
                     placeholder="Select ingredient"
                     required
-                    @new="openCreateIngredientModal"
+                    @new="handleCreateIngredient($event, index)"
                   />
                   
                   <neb-input 
@@ -283,7 +255,7 @@ function onUnitCreated(unit: OutUnit) {
                     track-by-key="name"
                     placeholder="Select unit"
                     allow-empty
-                    @new="openCreateUnitModal"
+                    @new="handleCreateUnit($event, index)"
                   />
                   
                   <neb-input 
@@ -318,39 +290,44 @@ function onUnitCreated(unit: OutUnit) {
   </div>
 
   <!-- Create modals -->
-  <create-cuisine-modal 
-    v-if="showCreateCuisine"
-    v-model="showCreateCuisine"
-    :search-term="cuisineSearchTerm"
-    @created="onCuisineCreated"
+  <cuisine-master-data-modal 
+    v-if="dynamicCreateTable === 'cuisine'"
+    :model-value="true"
+    @update:model-value="dynamicCreateTable = null"
+    :initial-data="{ name: dynamicCreateSearchTerm }"
+    @saved="onCuisineCreated"
   />
   
-  <create-meal-modal
-    v-if="showCreateMeal"
-    v-model="showCreateMeal"
-    :search-term="mealSearchTerm"
-    @created="onMealCreated"
+  <meal-master-data-modal
+    v-if="dynamicCreateTable === 'meal'"
+    :model-value="true"
+    @update:model-value="dynamicCreateTable = null"
+    :initial-data="{ name: dynamicCreateSearchTerm }"
+    @saved="onMealCreated"
   />
   
-  <create-tag-modal
-    v-if="showCreateTag"
-    v-model="showCreateTag"
-    :search-term="tagSearchTerm"
-    @created="onTagCreated"
+  <tag-master-data-modal
+    v-if="dynamicCreateTable === 'recipe_tag'"
+    :model-value="true"
+    @update:model-value="dynamicCreateTable = null"
+    :initial-data="{ name: dynamicCreateSearchTerm }"
+    @saved="onTagCreated"
   />
   
-  <create-ingredient-modal 
-    v-if="showCreateIngredient"
-    v-model="showCreateIngredient"
-    :search-term="ingredientSearchTerm"
-    @created="onIngredientCreated"
+  <ingredient-master-data-modal 
+    v-if="dynamicCreateTable === 'ingredient'"
+    :model-value="true"
+    @update:model-value="dynamicCreateTable = null"
+    :initial-data="{ name: dynamicCreateSearchTerm }"
+    @saved="onIngredientCreated"
   />
   
-  <create-unit-modal 
-    v-if="showCreateUnit"
-    v-model="showCreateUnit"
-    :search-term="unitSearchTerm"
-    @created="onUnitCreated"
+  <unit-master-data-modal 
+    v-if="dynamicCreateTable === 'unit'"
+    :model-value="true"
+    @update:model-value="dynamicCreateTable = null"
+    :initial-data="{ name: dynamicCreateSearchTerm }"
+    @saved="onUnitCreated"
   />
 </template>
 

@@ -120,11 +120,11 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
   .recipe-index {
     padding: var(--space-4);
   }
-  
+
   .main-content {
     padding-top: var(--space-4);
   }
-  
+
   .recipe-grid {
     grid-template-columns: 1fr;
     gap: var(--space-4);
@@ -135,11 +135,11 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
   .recipe-index {
     padding: var(--space-3) !important;
   }
-  
+
   .main-content {
     padding-top: var(--space-3) !important;
   }
-  
+
   .recipe-grid {
     gap: var(--space-3) !important;
   }

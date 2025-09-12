@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   extends: ['nebula'],
 
   nebula: {
-    primaryColor: '#BE2577'
+    primaryColor: '#BE2577',
   },
 
   i18n: {
@@ -15,5 +15,5 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true },
-  modules: ['@nuxtjs/color-mode']
+  modules: ['@nuxtjs/color-mode'],
 })

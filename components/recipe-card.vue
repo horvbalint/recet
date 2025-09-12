@@ -213,7 +213,7 @@ function handleCardClick() {
   .recipe-card {
     border-radius: var(--radius-default);
   }
-  
+
   .recipe-image {
     height: 160px;
   }
@@ -223,11 +223,11 @@ function handleCardClick() {
   .recipe-content {
     padding: var(--space-4);
   }
-  
+
   .recipe-meta {
     gap: var(--space-3);
   }
-  
+
   .meta-item {
     font-size: var(--text-xs);
   }
@@ -238,23 +238,23 @@ function handleCardClick() {
     background: var(--neutral-color-900);
     border-color: var(--neutral-color-800);
   }
-  
+
   .recipe-card:hover {
     border-color: var(--neutral-color-700);
   }
-  
+
   .recipe-title {
     color: var(--neutral-color-100);
   }
-  
+
   .meta-item {
     color: var(--neutral-color-400);
   }
-  
+
   .meta-item .icon {
     color: var(--neutral-color-500);
   }
-  
+
   .image-placeholder {
     background: linear-gradient(135deg, var(--neutral-color-800), var(--neutral-color-900));
   }

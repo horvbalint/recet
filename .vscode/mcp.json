@@ -7,8 +7,10 @@
         "run",
         "--rm",
         "-i",
-        "--network", "host",
-        "--pull", "always",
+        "--network",
+        "host",
+        "--pull",
+        "always",
         "surrealdb/surrealmcp:latest",
         "start"
       ]

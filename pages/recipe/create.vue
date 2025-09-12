@@ -389,24 +389,24 @@ function onUnitCreated(unit: OutUnit) {
   .recipe-create {
     padding: var(--space-4);
   }
-  
+
   .main-content {
     padding-top: var(--space-4);
   }
-  
+
   .form-section {
     padding: var(--space-4);
   }
-  
+
   .basic-info-fields {
     gap: var(--space-3);
   }
-  
+
   .selects-row {
     grid-template-columns: 1fr;
     gap: var(--space-3);
   }
-  
+
   .ingredient-fields {
     grid-template-columns: 1fr;
     gap: var(--space-3);
@@ -417,11 +417,11 @@ function onUnitCreated(unit: OutUnit) {
   .recipe-create {
     padding: var(--space-3) !important;
   }
-  
+
   .main-content {
     padding-top: var(--space-3) !important;
   }
-  
+
   .form-section {
     padding: var(--space-3) !important;
   }
@@ -431,12 +431,12 @@ function onUnitCreated(unit: OutUnit) {
   .recipe-create {
     background: var(--neutral-color-950);
   }
-  
+
   .form-container {
     background: var(--neutral-color-900);
     border-color: var(--neutral-color-800);
   }
-  
+
   .form-section {
     border-color: var(--neutral-color-800);
   }

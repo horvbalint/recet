@@ -1,18 +1,30 @@
 BEGIN TRANSACTION;
 
 // TABLE: user
-DEFINE TABLE OVERWRITE user SCHEMAFULL;
-DEFINE FIELD OVERWRITE email ON user TYPE string; // ASSERT string::is::email($value);
+DEFINE TABLE OVERWRITE user SCHEMAFULL PERMISSIONS
+	FOR select WHERE deleted = false
+	FOR update WHERE id = $auth.id
+	FOR create, delete NONE;
+
+DEFINE FIELD OVERWRITE email ON user TYPE string ASSERT string::is::email($value) PERMISSIONS FOR select WHERE id = $auth.id;
 DEFINE FIELD OVERWRITE username ON user TYPE string;
-DEFINE FIELD OVERWRITE password ON user TYPE string VALUE crypto::bcrypt::generate($value);
-DEFINE FIELD OVERWRITE deleted ON user TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE password ON user TYPE string PERMISSIONS NONE;
+DEFINE FIELD OVERWRITE deleted ON user TYPE bool DEFAULT false PERMISSIONS NONE;
 DEFINE FIELD OVERWRITE created_at ON user TYPE datetime DEFAULT time::now();
-DEFINE FIELD OVERWRITE updated_at ON user TYPE datetime VALUE time::now();
+DEFINE FIELD OVERWRITE updated_at ON user TYPE datetime VALUE time::now() PERMISSIONS NONE;
 
 DEFINE INDEX OVERWRITE email_unique ON user FIELDS email UNIQUE;
+DEFINE INDEX OVERWRITE username_unique ON user FIELDS username UNIQUE;
+
+// Define user authentication
+DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
+	SIGNUP ( CREATE user SET email = $email, username = $username, password = crypto::argon2::generate($password) )
+	SIGNIN ( SELECT * FROM ONLY user WHERE email = $email && crypto::argon2::compare(password, $password) && deleted = false )
+	DURATION FOR TOKEN 15m, FOR SESSION 12h
+;
 
 // TABLE: recipe
-DEFINE TABLE OVERWRITE recipe SCHEMAFULL;
+DEFINE TABLE OVERWRITE recipe SCHEMAFULL PERMISSIONS FULL;
 DEFINE FIELD OVERWRITE name ON recipe TYPE string;
 DEFINE FIELD OVERWRITE ingredients ON recipe TYPE array<object> DEFAULT [];
 DEFINE FIELD OVERWRITE ingredients.*.ingredient ON recipe TYPE record<ingredient>;
@@ -28,45 +40,47 @@ DEFINE FIELD OVERWRITE created_at ON recipe TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON recipe TYPE datetime VALUE time::now();
 
 // TABLE: meal
-DEFINE TABLE OVERWRITE meal SCHEMAFULL;
+DEFINE TABLE OVERWRITE meal SCHEMAFULL PERMISSIONS FULL;
 DEFINE FIELD OVERWRITE name ON meal TYPE string;
 DEFINE FIELD OVERWRITE color ON meal TYPE string;
 
 // TABLE: cuisine
-DEFINE TABLE OVERWRITE cuisine SCHEMAFULL;
+DEFINE TABLE OVERWRITE cuisine SCHEMAFULL PERMISSIONS FULL;
 DEFINE FIELD OVERWRITE name ON cuisine TYPE string;
 DEFINE FIELD OVERWRITE color ON cuisine TYPE string;
 DEFINE FIELD OVERWRITE flag ON cuisine TYPE option<string>;
 
 // TABLE: recipe_tag
-DEFINE TABLE OVERWRITE recipe_tag SCHEMAFULL;
+DEFINE TABLE OVERWRITE recipe_tag SCHEMAFULL PERMISSIONS FULL;
 DEFINE FIELD OVERWRITE name ON recipe_tag TYPE string;  
 DEFINE FIELD OVERWRITE color ON recipe_tag TYPE string;
 DEFINE FIELD OVERWRITE icon ON recipe_tag TYPE string;
 
 // TABLE: ingredient
-DEFINE TABLE OVERWRITE ingredient SCHEMAFULL;
+DEFINE TABLE OVERWRITE ingredient SCHEMAFULL PERMISSIONS FULL;
 DEFINE FIELD OVERWRITE name ON ingredient TYPE string;
 DEFINE FIELD OVERWRITE category ON ingredient TYPE option<record<ingredient_category>>;
 DEFINE FIELD OVERWRITE skip_from_shopping_list ON ingredient TYPE bool DEFAULT false;
 
 // TABLE: category
-DEFINE TABLE OVERWRITE ingredient_category SCHEMAFULL;
+DEFINE TABLE OVERWRITE ingredient_category SCHEMAFULL PERMISSIONS FULL;
 DEFINE FIELD OVERWRITE name ON ingredient_category TYPE string;
 
 // TABLE: unit
-DEFINE TABLE OVERWRITE unit SCHEMAFULL;
+DEFINE TABLE OVERWRITE unit SCHEMAFULL PERMISSIONS FULL;
 DEFINE FIELD OVERWRITE name ON unit TYPE string;
 
 // TABLE: household
-DEFINE TABLE OVERWRITE household SCHEMAFULL;
+DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
+	FOR select WHERE $auth.id IN users;
+
 DEFINE FIELD OVERWRITE name ON household TYPE string;
 DEFINE FIELD OVERWRITE users ON household TYPE array<record<user>>;
 DEFINE FIELD OVERWRITE created_at ON household TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON household TYPE datetime VALUE time::now();
 
 // TABLE: shopping_list
-DEFINE TABLE OVERWRITE shopping_list SCHEMAFULL;
+DEFINE TABLE OVERWRITE shopping_list SCHEMAFULL PERMISSIONS FULL;
 DEFINE FIELD OVERWRITE household ON shopping_list TYPE record<household>;
 DEFINE FIELD OVERWRITE name ON shopping_list TYPE string;
 DEFINE FIELD OVERWRITE items ON shopping_list TYPE array<object> DEFAULT [];
@@ -78,7 +92,7 @@ DEFINE FIELD OVERWRITE items.*.flagged ON shopping_list TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE updated_at ON shopping_list TYPE datetime VALUE time::now();
 
 // TABLE: weekly_plan
-DEFINE TABLE OVERWRITE weekly_plan SCHEMAFULL;
+DEFINE TABLE OVERWRITE weekly_plan SCHEMAFULL PERMISSIONS FULL;
 DEFINE FIELD OVERWRITE name ON weekly_plan TYPE string;
 
 DEFINE FIELD OVERWRITE monday ON weekly_plan TYPE object;

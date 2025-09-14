@@ -7,12 +7,8 @@ export default defineNuxtRouteMiddleware(async () => {
 
   await db.ready
 
-  await db.signin({
-      username: "root",
-      password: "root",
-  });
   await db.use({
-      namespace: "recet",
-      database: "recet"
+    namespace: "recet",
+    database: "recet"
   });
 })

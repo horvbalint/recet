@@ -46,11 +46,9 @@ const { data, refresh } = await useAsyncData(async () => {
 
 async function handleSubmit() {
   try {
-    const author = new RecordId('user', '1o4s0mdx4t5t8bbt3qk2')
-    
     const [result] = await db.query<[OutIngredient[]]>('INSERT INTO recipe $data RETURN id', { data: {
       ...formData.value,
-      author,
+      author: authUser.value!.id,
       ingredients: formData.value.ingredients?.map(ing => ({...ing, unit: ing.unit?.id, ingredient: ing.ingredient.id})),
       steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
       tags: formData.value.tags?.map(tag => tag.id),

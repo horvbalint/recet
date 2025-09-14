@@ -5,6 +5,17 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   extends: ['nebula'],
 
+  routeRules: {
+    '**': {
+      appMiddleware: ['auth'],
+    },
+    '/auth/**': {
+      appMiddleware: {
+        auth: false,
+      },
+    },
+  },
+
   nebula: {
     primaryColor: '#BE2577',
   },

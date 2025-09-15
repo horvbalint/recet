@@ -54,65 +54,48 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
 </script>
 
 <template>
-  <div class="recipe-index">
-    <neb-content-header
-      title="Recipes"
-      description="Discover and explore delicious recipes from our collection"
-      type="page"
-      has-separator
-    >
-      <template #actions>
-        <household-selector />
-        <neb-button type="secondary" @click="$router.push('/masterData')">
-          <icon name="material-symbols:settings" />
-          Master Data
-        </neb-button>
-        <neb-button type="primary" @click="$router.push('/recipe/create')">
-          <icon name="material-symbols:add-rounded" />
-          Add Recipe
-        </neb-button>
-      </template>
-    </neb-content-header>
-
-    <main class="main-content">
-      <neb-state-content :status :refresh error-title="Failed to load recipes" :error-description="error?.message">
-        <neb-empty-state
-          v-if="!recipes?.length"
-          icon="material-symbols:menu-book-2-outline-rounded"
-          title="No recipes yet"
-          description="Start building your recipe collection by adding your first recipe"
-        >
+  <nuxt-layout name="app">
+    <template #content-header>
+      <neb-content-header
+        title="Recipes"
+        description="Discover and explore delicious recipes from our collection"
+        type="page"
+        has-separator
+      >
+        <template #actions>
           <neb-button type="primary" @click="$router.push('/recipe/create')">
             <icon name="material-symbols:add-rounded" />
-            Add Your First Recipe
+            Add Recipe
           </neb-button>
-        </neb-empty-state>
+        </template>
+      </neb-content-header>
+    </template>
 
-        <div v-else class="recipe-grid">
-          <recipe-card
-            v-for="recipe in recipes"
-            :key="recipe.id.id.toString()"
-            :recipe="recipe"
-          />
-        </div>
-      </neb-state-content>
-    </main>
-  </div>
+    <neb-state-content :status :refresh error-title="Failed to load recipes" :error-description="error?.message">
+      <neb-empty-state
+        v-if="!recipes?.length"
+        icon="material-symbols:menu-book-2-outline-rounded"
+        title="No recipes yet"
+        description="Start building your recipe collection by adding your first recipe"
+      >
+        <neb-button type="primary" @click="$router.push('/recipe/create')">
+          <icon name="material-symbols:add-rounded" />
+          Add Your First Recipe
+        </neb-button>
+      </neb-empty-state>
+
+      <div v-else class="recipe-grid">
+        <recipe-card
+          v-for="recipe in recipes"
+          :key="recipe.id.id.toString()"
+          :recipe="recipe"
+        />
+      </div>
+    </neb-state-content>
+  </nuxt-layout>
 </template>
 
 <style scoped>
-.recipe-index {
-  min-height: 100vh;
-  background: var(--neutral-color-25);
-  padding: var(--space-6);
-}
-
-.main-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-top: var(--space-6);
-}
-
 .recipe-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -120,14 +103,6 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
 }
 
 @media (--tablet-viewport) {
-  .recipe-index {
-    padding: var(--space-4);
-  }
-
-  .main-content {
-    padding-top: var(--space-4);
-  }
-
   .recipe-grid {
     grid-template-columns: 1fr;
     gap: var(--space-4);
@@ -135,22 +110,8 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
 }
 
 @media (--mobile-lg-viewport) {
-  .recipe-index {
-    padding: var(--space-3) !important;
-  }
-
-  .main-content {
-    padding-top: var(--space-3) !important;
-  }
-
   .recipe-grid {
     gap: var(--space-3) !important;
-  }
-}
-
-.dark-mode {
-  .recipe-index {
-    background: var(--neutral-color-950);
   }
 }
 </style>

@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: 'app',
+})
+
 interface Recipe {
   id: string
   name: string
@@ -70,15 +74,7 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
       </neb-empty-state>
 
       <div v-else class="recipe-container">
-        <!-- Header -->
         <header class="recipe-header">
-          <div class="header-navigation">
-            <neb-button type="tertiary-neutral" @click="$router.back()">
-              <icon name="material-symbols:arrow-back-rounded" />
-              Back
-            </neb-button>
-          </div>
-
           <div class="recipe-hero">
             <div class="recipe-image">
               <div class="image-placeholder">
@@ -146,9 +142,7 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
           </div>
         </header>
 
-        <!-- Content -->
         <main class="recipe-content">
-          <!-- Ingredients -->
           <section class="ingredients-section">
             <h2>Ingredients</h2>
             <div v-if="recipe.ingredients?.length" class="ingredients-list">
@@ -172,7 +166,6 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
             </p>
           </section>
 
-          <!-- Instructions -->
           <section class="instructions-section">
             <h2>Instructions</h2>
             <div v-if="recipe.steps?.length" class="steps-list">

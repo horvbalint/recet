@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { InRecipe, OutCuisine, OutIngredient, OutMeal, OutRecipeTag, OutUnit } from '~/db'
 
-const router = useRouter()
-
 const formData = ref<Partial<InRecipe>>({
   name: '',
   ingredients: [],
@@ -19,7 +17,7 @@ type Table = 'ingredient' | 'unit' | 'cuisine' | 'meal' | 'recipe_tag'
 const dynamicCreateTable = ref<Table | null>(null)
 const dynamicCreateSearchTerm = ref<string>('')
 
-const { data, status, refresh } = await useAsyncData(async () => {
+const { data, status, refresh, error } = await useAsyncData(async () => {
   const [ingredients, units, cuisines, meals, recipeTags] = await db.query<[
     OutIngredient[],
     OutUnit[],
@@ -65,7 +63,7 @@ async function handleSubmit() {
         description: 'Your recipe has been saved successfully.',
       })
 
-      router.push(`/recipe/${result[0].id.id}`)
+      await navigateTo(`/recipe/${result[0].id.id}`)
     }
   }
   catch (error) {
@@ -78,8 +76,8 @@ async function handleSubmit() {
   }
 }
 
-function handleCancel() {
-  router.push('/')
+async function handleCancel() {
+  await navigateTo('/')
 }
 
 // Handlers for creating new master data
@@ -145,217 +143,197 @@ function onUnitCreated(unit: OutUnit) {
 </script>
 
 <template>
-  <div class="recipe-create">
-    <neb-content-header
-      title="Create Recipe"
-      description="Add a new recipe to your collection"
-      type="page"
-      has-separator
-    >
-      <template #actions>
-        <household-selector />
-        <neb-button type="secondary" @click="handleCancel">
-          Cancel
-        </neb-button>
+  <nuxt-layout name="app">
+    <template #content-header>
+      <neb-content-header
+        title="Create Recipe"
+        description="Add a new recipe to your collection"
+        type="page"
+        has-separator
+      >
+        <template #actions>
+          <neb-button type="secondary" @click="handleCancel">
+            Cancel
+          </neb-button>
 
-        <neb-button
-          type="primary"
-          :disabled="!isFormValid"
-          @click="handleSubmit"
-        >
-          <icon name="material-symbols:save-rounded" />
-          Save Recipe
-        </neb-button>
-      </template>
-    </neb-content-header>
+          <neb-button
+            type="primary"
+            :disabled="!isFormValid"
+            @click="handleSubmit"
+          >
+            <icon name="material-symbols:save-rounded" />
+            Save Recipe
+          </neb-button>
+        </template>
+      </neb-content-header>
+    </template>
 
-    <main class="main-content">
-      <neb-state-content :status :refresh>
-        <div class="form-container">
-          <neb-validator v-model="isFormValid">
-            <div class="form-sections">
-              <div class="form-section">
-                <neb-content-header
-                  title="Basic Information"
-                  type="section"
-                />
+    <neb-state-content :status :refresh :error-description="error">
+      <neb-validator v-model="isFormValid" class="form-container">
+        <div class="form-section">
+          <neb-content-header
+            title="Basic Information"
+            type="section"
+          />
 
-                <div class="basic-info-fields">
-                  <neb-input
-                    v-model="formData.name"
-                    label="Recipe Name"
-                    placeholder="Enter recipe name"
-                    required
-                  />
+          <div class="basic-info-fields">
+            <neb-input
+              v-model="formData.name"
+              label="Recipe Name"
+              placeholder="Enter recipe name"
+              required
+            />
 
-                  <div class="selects-row">
-                    <neb-select
-                      v-model="formData.cuisine"
-                      :options="data!.cuisines"
-                      label="Cuisine"
-                      placeholder="Select cuisine"
-                      track-by-key="name"
-                      label-key="name"
-                      @new="handleCreateCuisine"
-                    />
+            <div class="selects-row">
+              <neb-select
+                v-model="formData.cuisine"
+                :options="data!.cuisines"
+                label="Cuisine"
+                placeholder="Select cuisine"
+                track-by-key="name"
+                label-key="name"
+                @new="handleCreateCuisine"
+              />
 
-                    <neb-select
-                      v-model="formData.meal"
-                      :options="data!.meals"
-                      label="Meals"
-                      placeholder="Select meals"
-                      track-by-key="name"
-                      label-key="name"
-                      multiple
-                      @new="handleCreateMeal"
-                    />
+              <neb-select
+                v-model="formData.meal"
+                :options="data!.meals"
+                label="Meals"
+                placeholder="Select meals"
+                track-by-key="name"
+                label-key="name"
+                multiple
+                @new="handleCreateMeal"
+              />
 
-                    <neb-select
-                      v-model="formData.tags"
-                      :options="data!.recipeTags"
-                      label="Tags"
-                      placeholder="Select tags"
-                      track-by-key="name"
-                      label-key="name"
-                      multiple
-                      @new="handleCreateTag"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <neb-form-list
-                v-model="formData.ingredients"
-                label="Ingredients"
-                class="form-section"
-                with-initial-item
-              >
-                <template #default="{ item: ingredient, index }">
-                  <div class="ingredient-fields">
-                    <neb-select
-                      v-model="ingredient.ingredient"
-                      label="Ingredient"
-                      :options="data!.ingredients!"
-                      label-key="name"
-                      track-by-key="name"
-                      placeholder="Select ingredient"
-                      required
-                      @new="handleCreateIngredient($event, index)"
-                    />
-
-                    <neb-input
-                      v-model="ingredient.amount"
-                      label="Amount"
-                      type="number"
-                      placeholder="0"
-                    />
-
-                    <neb-select
-                      v-model="ingredient.unit"
-                      label="Unit"
-                      :options="data!.units!"
-                      label-key="name"
-                      track-by-key="name"
-                      placeholder="Select unit"
-                      allow-empty
-                      @new="handleCreateUnit($event, index)"
-                    />
-
-                    <neb-input
-                      v-model="ingredient.description"
-                      label="Description"
-                      placeholder="e.g., diced, chopped"
-                    />
-                  </div>
-                </template>
-              </neb-form-list>
-
-              <neb-form-list
-                v-model="formData.steps"
-                label="Instructions"
-                class="form-section"
-                :factory="() => ''"
-                with-initial-item
-              >
-                <template #default="{ index }">
-                  <neb-textarea
-                    v-model="formData.steps![index]"
-                    :required="true"
-                    :label="`Step ${index + 1}`"
-                    placeholder="Describe this step..."
-                  />
-                </template>
-              </neb-form-list>
+              <neb-select
+                v-model="formData.tags"
+                :options="data!.recipeTags"
+                label="Tags"
+                placeholder="Select tags"
+                track-by-key="name"
+                label-key="name"
+                multiple
+                @new="handleCreateTag"
+              />
             </div>
-          </neb-validator>
+          </div>
         </div>
-      </neb-state-content>
-    </main>
-  </div>
 
-  <!-- Create modals -->
-  <cuisine-master-data-modal
-    v-if="dynamicCreateTable === 'cuisine'"
-    :model-value="true"
-    :initial-data="{ name: dynamicCreateSearchTerm }"
-    @update:model-value="dynamicCreateTable = null"
-    @saved="onCuisineCreated"
-  />
+        <neb-form-list
+          v-model="formData.ingredients"
+          label="Ingredients"
+          class="form-section"
+          with-initial-item
+        >
+          <template #default="{ item: ingredient, index }">
+            <div class="ingredient-fields">
+              <neb-select
+                v-model="ingredient.ingredient"
+                label="Ingredient"
+                :options="data!.ingredients!"
+                label-key="name"
+                track-by-key="name"
+                placeholder="Select ingredient"
+                required
+                @new="handleCreateIngredient($event, index)"
+              />
 
-  <meal-master-data-modal
-    v-if="dynamicCreateTable === 'meal'"
-    :model-value="true"
-    :initial-data="{ name: dynamicCreateSearchTerm }"
-    @update:model-value="dynamicCreateTable = null"
-    @saved="onMealCreated"
-  />
+              <neb-input
+                v-model="ingredient.amount"
+                label="Amount"
+                type="number"
+                placeholder="0"
+              />
 
-  <tag-master-data-modal
-    v-if="dynamicCreateTable === 'recipe_tag'"
-    :model-value="true"
-    :initial-data="{ name: dynamicCreateSearchTerm }"
-    @update:model-value="dynamicCreateTable = null"
-    @saved="onTagCreated"
-  />
+              <neb-select
+                v-model="ingredient.unit"
+                label="Unit"
+                :options="data!.units!"
+                label-key="name"
+                track-by-key="name"
+                placeholder="Select unit"
+                allow-empty
+                @new="handleCreateUnit($event, index)"
+              />
 
-  <ingredient-master-data-modal
-    v-if="dynamicCreateTable === 'ingredient'"
-    :model-value="true"
-    :initial-data="{ name: dynamicCreateSearchTerm }"
-    @update:model-value="dynamicCreateTable = null"
-    @saved="onIngredientCreated"
-  />
+              <neb-input
+                v-model="ingredient.description"
+                label="Description"
+                placeholder="e.g., diced, chopped"
+              />
+            </div>
+          </template>
+        </neb-form-list>
 
-  <unit-master-data-modal
-    v-if="dynamicCreateTable === 'unit'"
-    :model-value="true"
-    :initial-data="{ name: dynamicCreateSearchTerm }"
-    @update:model-value="dynamicCreateTable = null"
-    @saved="onUnitCreated"
-  />
+        <neb-form-list
+          v-model="formData.steps"
+          label="Instructions"
+          class="form-section"
+          :factory="() => ''"
+          with-initial-item
+        >
+          <template #default="{ index }">
+            <neb-textarea
+              v-model="formData.steps![index]"
+              :required="true"
+              :label="`Step ${index + 1}`"
+              placeholder="Describe this step..."
+            />
+          </template>
+        </neb-form-list>
+      </neb-validator>
+    </neb-state-content>
+
+    <!-- Create modals -->
+    <cuisine-master-data-modal
+      v-if="dynamicCreateTable === 'cuisine'"
+      :model-value="true"
+      :initial-data="{ name: dynamicCreateSearchTerm }"
+      @update:model-value="dynamicCreateTable = null"
+      @saved="onCuisineCreated"
+    />
+
+    <meal-master-data-modal
+      v-if="dynamicCreateTable === 'meal'"
+      :model-value="true"
+      :initial-data="{ name: dynamicCreateSearchTerm }"
+      @update:model-value="dynamicCreateTable = null"
+      @saved="onMealCreated"
+    />
+
+    <tag-master-data-modal
+      v-if="dynamicCreateTable === 'recipe_tag'"
+      :model-value="true"
+      :initial-data="{ name: dynamicCreateSearchTerm }"
+      @update:model-value="dynamicCreateTable = null"
+      @saved="onTagCreated"
+    />
+
+    <ingredient-master-data-modal
+      v-if="dynamicCreateTable === 'ingredient'"
+      :model-value="true"
+      :initial-data="{ name: dynamicCreateSearchTerm }"
+      @update:model-value="dynamicCreateTable = null"
+      @saved="onIngredientCreated"
+    />
+
+    <unit-master-data-modal
+      v-if="dynamicCreateTable === 'unit'"
+      :model-value="true"
+      :initial-data="{ name: dynamicCreateSearchTerm }"
+      @update:model-value="dynamicCreateTable = null"
+      @saved="onUnitCreated"
+    />
+  </nuxt-layout>
 </template>
 
 <style scoped>
-.recipe-create {
-  min-height: 100vh;
-  background: var(--neutral-color-25);
-  padding: var(--space-6);
-}
-
-.main-content {
-  max-width: 800px;
-  margin: 0 auto;
-  padding-top: var(--space-6);
-}
-
 .form-container {
   border-radius: var(--radius-large);
   border: 1px solid var(--neutral-color-100);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-}
-
-.form-sections {
   display: flex;
   flex-direction: column;
 }
@@ -418,24 +396,12 @@ function onUnitCreated(unit: OutUnit) {
 }
 
 @media (--mobile-lg-viewport) {
-  .recipe-create {
-    padding: var(--space-3) !important;
-  }
-
-  .main-content {
-    padding-top: var(--space-3) !important;
-  }
-
   .form-section {
     padding: var(--space-3) !important;
   }
 }
 
 .dark-mode {
-  .recipe-create {
-    background: var(--neutral-color-950);
-  }
-
   .form-container {
     background: var(--neutral-color-900);
     border-color: var(--neutral-color-800);

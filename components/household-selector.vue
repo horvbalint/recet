@@ -24,15 +24,18 @@ async function handleHouseholdCreated(household: OutHousehold) {
 </script>
 
 <template>
-  {{ error }}
-  <neb-dropdown>
+  <neb-dropdown full-width>
     <template #trigger="{ toggle }">
       <neb-button
         type="secondary"
+        full-width
+        class="household-button"
         @click="toggle()"
       >
-        <icon name="material-symbols:home-rounded" />
-        {{ currentHousehold?.name || 'Select Household' }}
+        <div class="label">
+          <icon name="material-symbols:home-rounded" />
+          {{ currentHousehold?.name || 'Select Household' }}
+        </div>
         <icon name="material-symbols:keyboard-arrow-down-rounded" />
       </neb-button>
     </template>
@@ -46,11 +49,14 @@ async function handleHouseholdCreated(household: OutHousehold) {
             type="tertiary"
             small
             full-width
+            class="household-button"
             :class="{ active: currentHousehold?.id?.toString() === household.id.toString() }"
             @click="() => { switchHousehold(household); close(); }"
           >
-            <icon name="material-symbols:home-rounded" />
-            <span>{{ household.name }}</span>
+            <div class="label">
+              <icon name="material-symbols:home-rounded" />
+              <span>{{ household.name }}</span>
+            </div>
             <icon
               v-if="currentHousehold?.id?.toString() === household.id.toString()"
               name="material-symbols:check-rounded"
@@ -81,18 +87,29 @@ async function handleHouseholdCreated(household: OutHousehold) {
 
 <style scoped>
 .household-dropdown {
-  min-width: 220px;
   max-height: 300px;
   overflow-y: auto;
   background: #fff;
   border: 1px solid var(--neutral-color-200);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-default);
   box-shadow: var(--shadow-lg);
   padding: var(--space-1);
 }
 
+.household-button {
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+
+  .label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+}
+
 .household-footer {
-  padding: var(--space-1);
+  padding-top: var(--space-1);
   border-top: 1px solid var(--neutral-color-100);
   margin-top: var(--space-1);
 }

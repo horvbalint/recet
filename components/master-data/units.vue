@@ -5,7 +5,7 @@ import type { OutUnit } from '~/db'
 const getQuery = surql`SELECT * FROM unit ORDER BY name ASC`
 
 const columns: Columns<OutUnit> = {
-  name: { text: 'Name' }
+  name: { text: 'Name' },
 }
 </script>
 
@@ -20,8 +20,8 @@ const columns: Columns<OutUnit> = {
     <template #modal="{ close, afterSave, docToEdit }">
       <unit-master-data-modal
         :model-value="true"
-        @update:model-value="close()"
         :initial-data="docToEdit"
+        @update:model-value="close()"
         @saved="afterSave()"
       />
     </template>

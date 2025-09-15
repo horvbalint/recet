@@ -6,12 +6,12 @@ const getQuery = surql`SELECT * FROM recipe_tag ORDER BY name ASC`
 const columns: Columns<OutRecipeTag> = {
   name: { text: 'Name' },
   icon: { text: 'Icon' },
-  color: { text: 'Color' }
+  color: { text: 'Color' },
 }
 </script>
 
 <template>
-    <master-data-layout
+  <master-data-layout
     table="recipe_tag"
     name="tag"
     icon="material-symbols:tag-rounded"
@@ -25,7 +25,7 @@ const columns: Columns<OutRecipeTag> = {
 
     <template #td-color="{ original }">
       <div class="color-display">
-        <div class="color-indicator" :style="{ background: original }"></div>
+        <div class="color-indicator" :style="{ background: original }" />
         <span class="color-value">{{ original }}</span>
       </div>
     </template>
@@ -33,8 +33,8 @@ const columns: Columns<OutRecipeTag> = {
     <template #modal="{ close, afterSave, docToEdit }">
       <tag-master-data-modal
         :model-value="true"
-        @update:model-value="close()"
         :initial-data="docToEdit"
+        @update:model-value="close()"
         @saved="afterSave()"
       />
     </template>

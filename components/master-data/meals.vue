@@ -6,7 +6,7 @@ const getQuery = surql`SELECT * FROM meal ORDER BY name ASC`
 
 const columns: Columns<OutMeal> = {
   name: { text: 'Name' },
-  color: { text: 'Color' }
+  color: { text: 'Color' },
 }
 </script>
 
@@ -20,7 +20,7 @@ const columns: Columns<OutMeal> = {
   >
     <template #td-color="{ original }">
       <div class="color-display">
-        <div class="color-indicator" :style="{ background: original }"></div>
+        <div class="color-indicator" :style="{ background: original }" />
         <span class="color-value">{{ original }}</span>
       </div>
     </template>
@@ -28,8 +28,8 @@ const columns: Columns<OutMeal> = {
     <template #modal="{ close, afterSave, docToEdit }">
       <meal-master-data-modal
         :model-value="true"
-        @update:model-value="close()"
         :initial-data="docToEdit"
+        @update:model-value="close()"
         @saved="afterSave()"
       />
     </template>

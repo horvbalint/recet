@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { Columns } from '@nebula/components/table/neb-table-frame.vue';
-import type { OutCuisine } from '~/db';
+import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
+import type { OutCuisine } from '~/db'
 
 const getQuery = surql`SELECT * FROM cuisine ORDER BY name ASC`
 
 const columns: Columns<OutCuisine> = {
   name: { text: 'Name' },
   flag: { text: 'Flag' },
-  color: { text: 'Color' }
+  color: { text: 'Color' },
 }
 </script>
 
@@ -26,7 +26,7 @@ const columns: Columns<OutCuisine> = {
 
     <template #td-color="{ original }">
       <div class="color-display">
-        <div class="color-indicator" :style="{ background: original }"></div>
+        <div class="color-indicator" :style="{ background: original }" />
         <span class="color-value">{{ original }}</span>
       </div>
     </template>
@@ -34,8 +34,8 @@ const columns: Columns<OutCuisine> = {
     <template #modal="{ close, afterSave, docToEdit }">
       <cuisine-master-data-modal
         :model-value="true"
-        @update:model-value="close()"
         :initial-data="docToEdit"
+        @update:model-value="close()"
         @saved="afterSave()"
       />
     </template>

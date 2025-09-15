@@ -5,7 +5,7 @@ import type { OutIngredientCategory } from '~/db'
 const getQuery = surql`SELECT * FROM ingredient_category ORDER BY name ASC`
 
 const columns: Columns<OutIngredientCategory> = {
-  name: { text: 'Name' }
+  name: { text: 'Name' },
 }
 </script>
 
@@ -20,8 +20,8 @@ const columns: Columns<OutIngredientCategory> = {
     <template #modal="{ close, afterSave, docToEdit }">
       <ingredient-category-master-data-modal
         :model-value="true"
-        @update:model-value="close()"
         :initial-data="docToEdit"
+        @update:model-value="close()"
         @saved="afterSave()"
       />
     </template>

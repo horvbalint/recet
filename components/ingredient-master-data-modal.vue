@@ -5,11 +5,11 @@ defineProps<{
   initialData?: Partial<InIngredient> | null
 }>()
 
-const modelValue = defineModel<boolean>({ required: true })
-
 const emit = defineEmits<{
-  'saved': [item: OutIngredient]
+  saved: [item: OutIngredient]
 }>()
+
+const modelValue = defineModel<boolean>({ required: true })
 
 const { data: categories } = await useAsyncData(async () => {
   const [result] = await db.query<[OutIngredientCategory[]]>(surql`SELECT id, name FROM ingredient_category ORDER BY name ASC`)
@@ -19,14 +19,14 @@ const { data: categories } = await useAsyncData(async () => {
 function transformBeforeCreate(data: any) {
   return {
     ...data,
-    category: data.category?.id
+    category: data.category?.id,
   }
 }
 
 function transformBeforeEdit(data: any) {
   return {
     ...data,
-    category: data.category?.id
+    category: data.category?.id,
   }
 }
 
@@ -48,12 +48,12 @@ function handleSave(item: OutIngredient) {
   >
     <template #form="{ data }">
       <neb-input v-model="data.name" label="Name" required />
-      
-      <neb-select 
+
+      <neb-select
         v-model="data.category"
-        label="Category" 
-                :options="categories || []"
-        label-key="name"        
+        label="Category"
+        :options="categories || []"
+        label-key="name"
         track-by-key="name"
         placeholder="Select a category"
         allow-empty

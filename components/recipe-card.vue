@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import dayjs from "dayjs";
-import type { RecordId } from "surrealdb";
+import type { RecordId } from 'surrealdb'
+import dayjs from 'dayjs'
 
 interface Recipe {
   id: RecordId
@@ -33,10 +33,13 @@ const props = defineProps<{
 }>()
 
 function getEstimatedTime(stepCount: number) {
-  if (stepCount <= 3) return "15-30 min"
-  if (stepCount <= 6) return "30-45 min"
-  if (stepCount <= 10) return "45-60 min"
-  return "60+ min"
+  if (stepCount <= 3)
+    return '15-30 min'
+  if (stepCount <= 6)
+    return '30-45 min'
+  if (stepCount <= 10)
+    return '45-60 min'
+  return '60+ min'
 }
 
 function handleCardClick() {
@@ -50,18 +53,20 @@ function handleCardClick() {
       <div class="image-placeholder">
         <icon name="material-symbols:restaurant-rounded" />
       </div>
-      
+
       <div v-if="recipe.cuisine" class="cuisine-badge">
-        <neb-badge :style="{ background: recipe.cuisine.color + '20', color: recipe.cuisine.color }">
+        <neb-badge :style="{ background: `${recipe.cuisine.color}20`, color: recipe.cuisine.color }">
           <span v-if="recipe.cuisine.flag">{{ recipe.cuisine.flag }}</span>
           {{ recipe.cuisine.name }}
         </neb-badge>
       </div>
     </div>
-    
+
     <div class="recipe-content">
       <div class="recipe-header">
-        <h3 class="recipe-title">{{ recipe.name }}</h3>
+        <h3 class="recipe-title">
+          {{ recipe.name }}
+        </h3>
         <neb-avatar-card
           v-if="recipe.author"
           :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '32px' }"
@@ -69,41 +74,41 @@ function handleCardClick() {
           :text="dayjs(recipe.created_at).format('YYYY-MM-DD')"
         />
       </div>
-      
+
       <div class="recipe-meta">
         <div class="meta-item">
           <icon name="material-symbols:inventory-2-outline-rounded" />
           <span>{{ recipe.ingredients }} ingredients</span>
         </div>
-        
+
         <div class="meta-item">
           <icon name="material-symbols:format-list-numbered-rounded" />
           <span>{{ recipe.steps }} steps</span>
         </div>
-        
+
         <div class="meta-item">
           <icon name="material-symbols:schedule-outline-rounded" />
           <span>{{ getEstimatedTime(recipe.steps) }}</span>
         </div>
       </div>
-      
+
       <div v-if="recipe.tags?.length" class="recipe-tags">
         <neb-tag
-          v-for="tag in recipe.tags" 
+          v-for="tag in recipe.tags"
           :key="tag.name"
-          :style="{ background: tag.color + '20', color: tag.color }"
+          :style="{ background: `${tag.color}20`, color: tag.color }"
         >
           {{ tag.icon }}
           {{ tag.name }}
         </neb-tag>
       </div>
-      
+
       <div v-if="recipe.meal" class="meal-types">
-        <neb-badge 
-          v-for="meal in recipe.meal" 
+        <neb-badge
+          v-for="meal in recipe.meal"
           :key="meal.name"
           small
-          :style="{ background: meal.color + '20', color: meal.color }"
+          :style="{ background: `${meal.color}20`, color: meal.color }"
         >
           {{ meal.name }}
         </neb-badge>

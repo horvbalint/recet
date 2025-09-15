@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
-import type { OutIngredient, OutIngredientCategory } from '~/db'
+import type { OutIngredient } from '~/db'
 
 const getQuery = surql`SELECT * FROM ingredient ORDER BY name ASC FETCH category`
 
 const columns: Columns<OutIngredient> = {
   name: { text: 'Name' },
-  category: { text: 'Category' }
+  category: { text: 'Category' },
 }
 </script>
 
@@ -19,15 +19,17 @@ const columns: Columns<OutIngredient> = {
     :columns="columns"
   >
     <template #td-category="{ original }">
-      <neb-tag v-if="original" small>{{ original.name }}</neb-tag>
+      <neb-tag v-if="original" small>
+        {{ original.name }}
+      </neb-tag>
       <span v-else class="no-category">—</span>
     </template>
 
     <template #modal="{ close, afterSave, docToEdit }">
       <ingredient-master-data-modal
         :model-value="true"
-        @update:model-value="close()"
         :initial-data="docToEdit"
+        @update:model-value="close()"
         @saved="afterSave()"
       />
     </template>

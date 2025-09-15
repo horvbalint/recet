@@ -830,8 +830,8 @@ packages:
   '@iconify-json/material-symbols@1.2.30':
     resolution: {integrity: sha512-3dA1jxkCd8LqEaAWjwQ5tob4pJNKE59Bz604AL1GP3Kyv//pR3un3cIyAUWOFQS1lz0vKKkn0BKOCmcUDi1G8A==}
 
-  '@iconify/collections@1.0.593':
-    resolution: {integrity: sha512-EbJRw0csHM0Vpsbk9HUVJGIeVP5JuUnZxI5bmWwoPHGPusA+m8wkKuXX79yVLSmL/8OWfL6ZKCB7fYS4x9PVQQ==}
+  '@iconify/collections@1.0.594':
+    resolution: {integrity: sha512-/hMILio9iIZQtsS/9lMPsnrzIToJvoitkROglHR9B4u4Tn5xXGdwQ+wh8/XlO251GN7e2D1dy+sL0cnq5XIiGQ==}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -2730,8 +2730,8 @@ packages:
     engines: {node: '>=0.10'}
     hasBin: true
 
-  detect-libc@2.0.4:
-    resolution: {integrity: sha512-3UDv+G9CsCKO1WKMGw9fwq/SWJYbI0c5Y7LU1AXYoDdbhE2AHQ6N6Nb34sG8Fj7T5APy8qXDCKuuIHd1BR0tVA==}
+  detect-libc@2.1.0:
+    resolution: {integrity: sha512-vEtk+OcP7VBRtQZ1EJ3bdgzSfBjgnEalLTp5zjJrS+2Z1w2KZly4SBdac/WDU3hhsNAZ9E8SC96ME4Ey8MZ7cg==}
     engines: {node: '>=8'}
 
   devalue@5.3.2:
@@ -6215,7 +6215,7 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
-  '@iconify/collections@1.0.593':
+  '@iconify/collections@1.0.594':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -6363,7 +6363,7 @@ snapshots:
   '@mapbox/node-pre-gyp@2.0.0':
     dependencies:
       consola: 3.4.2
-      detect-libc: 2.0.4
+      detect-libc: 2.1.0
       https-proxy-agent: 7.0.6
       node-fetch: 2.7.0
       nopt: 8.1.0
@@ -6546,7 +6546,7 @@ snapshots:
 
   '@nuxt/icon@1.15.0(magicast@0.3.5)(vite@7.1.5(jiti@2.5.1)(terser@5.44.0)(yaml@2.8.1))(vue@3.5.18(typescript@5.8.3))':
     dependencies:
-      '@iconify/collections': 1.0.593
+      '@iconify/collections': 1.0.594
       '@iconify/types': 2.0.0
       '@iconify/utils': 2.3.0
       '@iconify/vue': 5.0.0(vue@3.5.18(typescript@5.8.3))
@@ -8396,7 +8396,7 @@ snapshots:
 
   detect-libc@1.0.3: {}
 
-  detect-libc@2.0.4: {}
+  detect-libc@2.1.0: {}
 
   devalue@5.3.2: {}
 

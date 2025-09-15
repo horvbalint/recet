@@ -1,4 +1,5 @@
-import Surreal from "surrealdb";
-export { surql } from "surrealdb";
+import Surreal from 'surrealdb'
 
-export const db = new Surreal();
+export { surql } from 'surrealdb'
+
+export const db = new Surreal()

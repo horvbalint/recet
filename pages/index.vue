@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RecordId } from "surrealdb";
+import type { RecordId } from 'surrealdb'
 
 interface Recipe {
   id: RecordId
@@ -60,20 +60,21 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
       has-separator
     >
       <template #actions>
-          <neb-button type="secondary" @click="$router.push('/masterData')">
-            <icon name="material-symbols:settings" />
-            Master Data
-          </neb-button>
-          <neb-button type="primary" @click="$router.push('/recipe/create')">
-            <icon name="material-symbols:add-rounded" />
-            Add Recipe
-          </neb-button>
+        <household-selector />
+        <neb-button type="secondary" @click="$router.push('/masterData')">
+          <icon name="material-symbols:settings" />
+          Master Data
+        </neb-button>
+        <neb-button type="primary" @click="$router.push('/recipe/create')">
+          <icon name="material-symbols:add-rounded" />
+          Add Recipe
+        </neb-button>
       </template>
     </neb-content-header>
 
     <main class="main-content">
       <neb-state-content :status :refresh error-title="Failed to load recipes" :error-description="error?.message">
-        <neb-empty-state 
+        <neb-empty-state
           v-if="!recipes?.length"
           icon="material-symbols:restaurant-menu-rounded"
           title="No recipes yet"
@@ -84,11 +85,11 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
             Add Your First Recipe
           </neb-button>
         </neb-empty-state>
-        
+
         <div v-else class="recipe-grid">
-          <recipe-card 
-            v-for="recipe in recipes" 
-            :key="recipe.id.id.toString()" 
+          <recipe-card
+            v-for="recipe in recipes"
+            :key="recipe.id.id.toString()"
             :recipe="recipe"
           />
         </div>

@@ -5,19 +5,64 @@ defineProps<{
   initialData?: Partial<InCuisine> | null
 }>()
 
-const modelValue = defineModel<boolean>({required: true})
-
 const emit = defineEmits<{
-  'saved': [item: OutCuisine]
+  saved: [item: OutCuisine]
 }>()
+
+const modelValue = defineModel<boolean>({ required: true })
 
 // Flag emoji options
 const flagOptions = [
-  '🇺🇸', '🇬🇧', '🇫🇷', '🇮🇹', '🇪🇸', '🇩🇪', '🇯🇵', '🇨🇳', '🇮🇳', '🇰🇷',
-  '🇹🇭', '🇻🇳', '🇲🇽', '🇧🇷', '🇦🇷', '🇵🇪', '🇨🇦', '🇦🇺', '🇷🇺', '🇺🇦',
-  '🇵🇱', '🇨🇿', '🇭🇺', '🇷🇴', '🇬🇷', '🇹🇷', '🇪🇬', '🇲🇦', '🇿🇦', '🇳🇬',
-  '🇮🇱', '🇱🇧', '🇸🇦', '🇦🇪', '🇮🇷', '🇵🇰', '🇧🇩', '🇱🇰', '🇳🇵', '🇲🇾',
-  '🇸🇬', '🇮🇩', '🇵🇭', '🇰🇭', '🇱🇦', '🇲🇲', '🇪🇹', '🇰🇪', '🇬🇭', '🇨🇮'
+  '🇺🇸',
+  '🇬🇧',
+  '🇫🇷',
+  '🇮🇹',
+  '🇪🇸',
+  '🇩🇪',
+  '🇯🇵',
+  '🇨🇳',
+  '🇮🇳',
+  '🇰🇷',
+  '🇹🇭',
+  '🇻🇳',
+  '🇲🇽',
+  '🇧🇷',
+  '🇦🇷',
+  '🇵🇪',
+  '🇨🇦',
+  '🇦🇺',
+  '🇷🇺',
+  '🇺🇦',
+  '🇵🇱',
+  '🇨🇿',
+  '🇭🇺',
+  '🇷🇴',
+  '🇬🇷',
+  '🇹🇷',
+  '🇪🇬',
+  '🇲🇦',
+  '🇿🇦',
+  '🇳🇬',
+  '🇮🇱',
+  '🇱🇧',
+  '🇸🇦',
+  '🇦🇪',
+  '🇮🇷',
+  '🇵🇰',
+  '🇧🇩',
+  '🇱🇰',
+  '🇳🇵',
+  '🇲🇾',
+  '🇸🇬',
+  '🇮🇩',
+  '🇵🇭',
+  '🇰🇭',
+  '🇱🇦',
+  '🇲🇲',
+  '🇪🇹',
+  '🇰🇪',
+  '🇬🇭',
+  '🇨🇮',
 ]
 
 function handleSave(item: OutCuisine) {
@@ -36,16 +81,16 @@ function handleSave(item: OutCuisine) {
   >
     <template #form="{ data }">
       <neb-input v-model="data.name" label="Name" required />
-      
+
       <neb-input v-model="data.color" label="Color" type="color" required />
-      
-      <neb-select 
-        v-model="data.flag" 
-        label="Flag" 
-        no-search 
-        :options="flagOptions" 
-        placeholder="Select a flag" 
-        allow-empty 
+
+      <neb-select
+        v-model="data.flag"
+        label="Flag"
+        no-search
+        :options="flagOptions"
+        placeholder="Select a flag"
+        allow-empty
       />
     </template>
   </master-data-modal>

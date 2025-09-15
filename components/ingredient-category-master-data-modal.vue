@@ -5,11 +5,11 @@ defineProps<{
   initialData?: Partial<InIngredientCategory> | null
 }>()
 
-const modelValue = defineModel<boolean>({required: true})
-
 const emit = defineEmits<{
-  'saved': [item: OutIngredientCategory]
+  saved: [item: OutIngredientCategory]
 }>()
+
+const modelValue = defineModel<boolean>({ required: true })
 
 function handleSave(item: OutIngredientCategory) {
   emit('saved', item)

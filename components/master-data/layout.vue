@@ -1,11 +1,11 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
-import type { Columns } from '@nebula/components/table/neb-table-frame.vue';
-import type { PreparedQuery } from 'surrealdb';
+import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
+import type { PreparedQuery } from 'surrealdb'
 
 const props = defineProps<{
-  table: string,
+  table: string
   columns: Columns<T>
-  getQuery: PreparedQuery,
+  getQuery: PreparedQuery
   name: string
   icon: string
 }>()
@@ -29,45 +29,46 @@ function handleEditClick(item: T) {
 
 async function handleDeleteClick(item: T) {
   try {
-    if (!await useNebConfirm({title: 'Are you sure you want to delete this item?', description: 'This action cannot be undone.'}))
+    if (!await useNebConfirm({ title: 'Are you sure you want to delete this item?', description: 'This action cannot be undone.' }))
       return
 
     await db.query(surql`DELETE ${item.id}`)
     await refresh()
 
-    useNebToast({type: 'success', title: 'Succesfully deleted!', description: 'The item got removed from the database.'})
-  } catch (error) {
+    useNebToast({ type: 'success', title: 'Succesfully deleted!', description: 'The item got removed from the database.' })
+  }
+  catch (error) {
     console.error(error)
-    useNebToast({type: 'error', title: 'Deletion failed!', description: 'We could not remove the item from the database.'})
+    useNebToast({ type: 'error', title: 'Deletion failed!', description: 'We could not remove the item from the database.' })
   }
 }
 </script>
 
 <template>
   <div class="master-data-layout">
-    <neb-table 
-      :columns="columns" 
-      :rows="data || []" 
-      :status="status" 
+    <neb-table
+      :columns="columns"
+      :rows="data || []"
+      :status="status"
       :refresh="refresh"
     >
       <template #actions>
-        <neb-button @click="handleCreateClick()" small>
+        <neb-button small @click="handleCreateClick()">
           <icon name="material-symbols:add-rounded" />
           Add {{ props.name }}
         </neb-button>
       </template>
 
-      <template #row-actions="{ data }">
-        <icon 
-          name="material-symbols:edit-outline-rounded" 
-          class="action-icon" 
-          @click="handleEditClick(data.original)"
+      <template #row-actions="{ data: { original } }">
+        <icon
+          name="material-symbols:edit-outline-rounded"
+          class="action-icon"
+          @click="handleEditClick(original)"
         />
-        <icon 
-          name="material-symbols:delete-outline-rounded" 
-          class="action-icon delete-icon" 
-          @click="handleDeleteClick(data.original)"
+        <icon
+          name="material-symbols:delete-outline-rounded"
+          class="action-icon delete-icon"
+          @click="handleDeleteClick(original)"
         />
       </template>
 

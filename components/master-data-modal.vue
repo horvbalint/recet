@@ -8,15 +8,15 @@ const props = withDefaults(defineProps<{
   transformBeforeEdit?: (data: T) => any
 }>(), {
   mode: 'create',
-  transformBeforeCreate: (data: T) => data, 
+  transformBeforeCreate: (data: T) => data,
   transformBeforeEdit: (data: T) => data,
 })
 
-const modelValue = defineModel<boolean>({required: true})
-
 const emit = defineEmits<{
-  'saved': [item: any]
+  saved: [item: any]
 }>()
+
+const modelValue = defineModel<boolean>({ required: true })
 
 const formData = ref<any>({})
 const isFormValid = ref(false)
@@ -47,36 +47,37 @@ async function handleSubmit() {
   try {
     if (!isEdit.value) {
       const [result] = await db.query<[T]>(`CREATE ONLY ${props.table} CONTENT $data`, {
-        data: props.transformBeforeCreate(formData.value)
+        data: props.transformBeforeCreate(formData.value),
       })
-      
+
       useNebToast({
-        type: 'success', 
-        title: `${props.name} created!`, 
-        description: `The ${props.name} was saved successfully.`
+        type: 'success',
+        title: `${props.name} created!`,
+        description: `The ${props.name} was saved successfully.`,
       })
-      
+
       emit('saved', result)
     }
     else {
       const [result] = await db.query<[T]>(surql`UPDATE ONLY ${formData.value.id} MERGE ${props.transformBeforeEdit(formData.value)} RETURN AFTER`)
-      
+
       useNebToast({
-        type: 'success', 
-        title: `${props.name} updated!`, 
-        description: `The ${props.name} was updated successfully.`
+        type: 'success',
+        title: `${props.name} updated!`,
+        description: `The ${props.name} was updated successfully.`,
       })
-      
+
       emit('saved', result)
     }
-    
+
     modelValue.value = false
-  } catch (error) {
+  }
+  catch (error) {
     console.error(error)
     useNebToast({
-      type: 'error', 
-      title: `${!isEdit.value? 'Creation' : 'Update'} failed!`, 
-      description: `Could not ${!isEdit.value? 'create' : 'update'} the ${props.name}. Please try again.`
+      type: 'error',
+      title: `${!isEdit.value ? 'Creation' : 'Update'} failed!`,
+      description: `Could not ${!isEdit.value ? 'create' : 'update'} the ${props.name}. Please try again.`,
     })
   }
 }
@@ -87,7 +88,7 @@ function handleCancel() {
 </script>
 
 <template>
-  <neb-modal 
+  <neb-modal
     v-model="modelValue"
     :title="title"
     :header-icon="icon"
@@ -101,13 +102,13 @@ function handleCancel() {
         </div>
       </neb-validator>
     </template>
-    
+
     <template #actions>
       <neb-button type="tertiary-neutral" @click="handleCancel">
         Cancel
       </neb-button>
 
-      <neb-button type="primary" @click="handleSubmit" :disabled="!isFormValid">
+      <neb-button type="primary" :disabled="!isFormValid" @click="handleSubmit">
         {{ actionLabel }}
       </neb-button>
     </template>

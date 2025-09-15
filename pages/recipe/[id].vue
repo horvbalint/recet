@@ -49,7 +49,7 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
     FROM
       type::thing('recipe', ${recipeId})
   `)
-  
+
   return result?.[0] || null
 })
 </script>
@@ -57,7 +57,7 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
 <template>
   <div class="recipe-detail">
     <neb-state-content :status :refresh error-title="Failed to load recipe" :error-description="error?.message">
-      <neb-empty-state 
+      <neb-empty-state
         v-if="!recipe"
         icon="material-symbols:restaurant-menu-rounded"
         title="Recipe not found"
@@ -84,9 +84,9 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
               <div class="image-placeholder">
                 <icon name="material-symbols:restaurant-rounded" />
               </div>
-              
+
               <div v-if="recipe.cuisine" class="cuisine-badge">
-                <neb-badge :style="{ background: recipe.cuisine.color + '20', color: recipe.cuisine.color }">
+                <neb-badge :style="{ background: `${recipe.cuisine.color}20`, color: recipe.cuisine.color }">
                   <span v-if="recipe.cuisine.flag">{{ recipe.cuisine.flag }}</span>
                   {{ recipe.cuisine.name }}
                 </neb-badge>
@@ -94,8 +94,10 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
             </div>
 
             <div class="recipe-info">
-              <h1 class="recipe-title">{{ recipe.name }}</h1>
-              
+              <h1 class="recipe-title">
+                {{ recipe.name }}
+              </h1>
+
               <p v-if="recipe.description" class="recipe-description">
                 {{ recipe.description }}
               </p>
@@ -105,7 +107,7 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
                   <icon name="material-symbols:inventory-2-outline-rounded" />
                   <span>{{ recipe.ingredients?.length || 0 }} ingredients</span>
                 </div>
-                
+
                 <div class="meta-item">
                   <icon name="material-symbols:format-list-numbered-rounded" />
                   <span>{{ recipe.steps?.length || 0 }} steps</span>
@@ -115,16 +117,16 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
               <div class="recipe-author">
                 <neb-avatar-card
                   :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '40px' }"
-                  :title="'By ' + (recipe.author?.username || 'Unknown')"
-                  :text="'Created on ' + new Date(recipe.created_at).toLocaleDateString()"
+                  :title="`By ${recipe.author?.username || 'Unknown'}`"
+                  :text="`Created on ${new Date(recipe.created_at).toLocaleDateString()}`"
                 />
               </div>
 
               <div v-if="recipe.tags?.length" class="recipe-tags">
                 <neb-tag
-                  v-for="tag in recipe.tags" 
+                  v-for="tag in recipe.tags"
                   :key="tag.name"
-                  :style="{ background: tag.color + '20', color: tag.color }"
+                  :style="{ background: `${tag.color}20`, color: tag.color }"
                 >
                   {{ tag.icon }}
                   {{ tag.name }}
@@ -132,10 +134,10 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
               </div>
 
               <div v-if="recipe.meal?.length" class="meal-types">
-                <neb-badge 
-                  v-for="meal in recipe.meal" 
+                <neb-badge
+                  v-for="meal in recipe.meal"
                   :key="meal.name"
-                  :style="{ background: meal.color + '20', color: meal.color }"
+                  :style="{ background: `${meal.color}20`, color: meal.color }"
                 >
                   {{ meal.name }}
                 </neb-badge>
@@ -150,8 +152,8 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
           <section class="ingredients-section">
             <h2>Ingredients</h2>
             <div v-if="recipe.ingredients?.length" class="ingredients-list">
-              <div 
-                v-for="(ingredient, index) in recipe.ingredients" 
+              <div
+                v-for="(ingredient, index) in recipe.ingredients"
                 :key="index"
                 class="ingredient-item"
               >
@@ -165,25 +167,33 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
                 </div>
               </div>
             </div>
-            <p v-else class="empty-message">No ingredients listed for this recipe.</p>
+            <p v-else class="empty-message">
+              No ingredients listed for this recipe.
+            </p>
           </section>
 
           <!-- Instructions -->
           <section class="instructions-section">
             <h2>Instructions</h2>
             <div v-if="recipe.steps?.length" class="steps-list">
-              <div 
-                v-for="(step, index) in recipe.steps" 
+              <div
+                v-for="(step, index) in recipe.steps"
                 :key="index"
                 class="step-item"
               >
-                <div class="step-number">{{ index + 1 }}</div>
+                <div class="step-number">
+                  {{ index + 1 }}
+                </div>
                 <div class="step-content">
-                  <p class="step-description">{{ step }}</p>
+                  <p class="step-description">
+                    {{ step }}
+                  </p>
                 </div>
               </div>
             </div>
-            <p v-else class="empty-message">No instructions provided for this recipe.</p>
+            <p v-else class="empty-message">
+              No instructions provided for this recipe.
+            </p>
           </section>
         </main>
       </div>

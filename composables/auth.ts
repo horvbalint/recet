@@ -23,7 +23,7 @@ export async function signIn(email: string, password: string) {
       password,
     },
   })
-  
+
   localStorage.setItem('recet_token', token)
 }
 

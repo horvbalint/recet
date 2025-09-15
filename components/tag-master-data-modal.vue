@@ -5,20 +5,74 @@ defineProps<{
   initialData?: Partial<InRecipeTag> | null
 }>()
 
-const modelValue = defineModel<boolean>({ required: true })
-
 const emit = defineEmits<{
-  'saved': [item: OutRecipeTag]
+  saved: [item: OutRecipeTag]
 }>()
+
+const modelValue = defineModel<boolean>({ required: true })
 
 // Recipe tag icon options (food and cooking related emojis)
 const iconOptions = [
-  '🍽️', '🍴', '🥄', '🔪', '🍳', '🥘', '🍲', '🥗', '🍝', '🍕',
-  '🍔', '🌮', '🌯', '🥙', '🥪', '🍖', '🍗', '🥓', '🍤', '🐟',
-  '🍎', '🍌', '🥕', '🥒', '🌶️', '🧄', '🧅', '🥑', '🍅', '🥔',
-  '🌾', '🥖', '🍞', '🥐', '🧀', '🥛', '🍯', '🧂', '🍋', '🥥',
-  '⏰', '🔥', '❄️', '⭐', '💚', '❤️', '🧡', '💛', '💜', '🤍',
-  '👨‍🍳', '👩‍🍳', '🌿', '🌱', '♻️', '🌟', '✨', '💎', '🏆', '🎯'
+  '🍽️',
+  '🍴',
+  '🥄',
+  '🔪',
+  '🍳',
+  '🥘',
+  '🍲',
+  '🥗',
+  '🍝',
+  '🍕',
+  '🍔',
+  '🌮',
+  '🌯',
+  '🥙',
+  '🥪',
+  '🍖',
+  '🍗',
+  '🥓',
+  '🍤',
+  '🐟',
+  '🍎',
+  '🍌',
+  '🥕',
+  '🥒',
+  '🌶️',
+  '🧄',
+  '🧅',
+  '🥑',
+  '🍅',
+  '🥔',
+  '🌾',
+  '🥖',
+  '🍞',
+  '🥐',
+  '🧀',
+  '🥛',
+  '🍯',
+  '🧂',
+  '🍋',
+  '🥥',
+  '⏰',
+  '🔥',
+  '❄️',
+  '⭐',
+  '💚',
+  '❤️',
+  '🧡',
+  '💛',
+  '💜',
+  '🤍',
+  '👨‍🍳',
+  '👩‍🍳',
+  '🌿',
+  '🌱',
+  '♻️',
+  '🌟',
+  '✨',
+  '💎',
+  '🏆',
+  '🎯',
 ]
 
 function handleSave(item: OutRecipeTag) {
@@ -37,9 +91,9 @@ function handleSave(item: OutRecipeTag) {
   >
     <template #form="{ data }">
       <neb-input v-model="data.name" label="Name" required />
-      
+
       <neb-select v-model="data.icon" label="Icon" :options="iconOptions" placeholder="Select an icon" required />
-      
+
       <neb-input v-model="data.color" label="Color" type="color" required />
     </template>
   </master-data-modal>

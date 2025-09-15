@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { RecordId } from 'surrealdb'
-import type { InRecipe, OutIngredient, OutUnit, OutCuisine, OutMeal, OutRecipeTag } from '~/db'
+import type { InRecipe, OutCuisine, OutIngredient, OutMeal, OutRecipeTag, OutUnit } from '~/db'
 
 const router = useRouter()
 
@@ -10,7 +9,7 @@ const formData = ref<Partial<InRecipe>>({
   steps: [],
   tags: [],
   meal: [],
-  cuisine: undefined
+  cuisine: undefined,
 })
 
 const isFormValid = ref(false)
@@ -26,7 +25,7 @@ const { data, refresh } = await useAsyncData(async () => {
     OutUnit[],
     OutCuisine[],
     OutMeal[],
-    OutRecipeTag[]
+    OutRecipeTag[],
   ]>(surql`
     SELECT id, name FROM ingredient ORDER BY name ASC;
     SELECT id, name FROM unit ORDER BY name ASC;
@@ -34,13 +33,13 @@ const { data, refresh } = await useAsyncData(async () => {
     SELECT id, name, color FROM meal ORDER BY name ASC;
     SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
   `)
-  
+
   return {
     ingredients,
     units,
     cuisines,
     meals,
-    recipeTags
+    recipeTags,
   }
 })
 
@@ -49,28 +48,29 @@ async function handleSubmit() {
     const [result] = await db.query<[OutIngredient[]]>('INSERT INTO recipe $data RETURN id', { data: {
       ...formData.value,
       author: authUser.value!.id,
-      ingredients: formData.value.ingredients?.map(ing => ({...ing, unit: ing.unit?.id, ingredient: ing.ingredient.id})),
+      ingredients: formData.value.ingredients?.map(ing => ({ ...ing, unit: ing.unit?.id, ingredient: ing.ingredient.id })),
       steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
       tags: formData.value.tags?.map(tag => tag.id),
       meal: formData.value.meal?.map(meal => meal.id),
-      cuisine: formData.value.cuisine?.id
+      cuisine: formData.value.cuisine?.id,
     } })
-    
+
     if (result?.[0]?.id) {
-      useNebToast({ 
-        type: 'success', 
-        title: 'Recipe created!', 
-        description: 'Your recipe has been saved successfully.' 
+      useNebToast({
+        type: 'success',
+        title: 'Recipe created!',
+        description: 'Your recipe has been saved successfully.',
       })
-      
+
       router.push(`/recipe/${result[0].id.id}`)
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error(error)
-    useNebToast({ 
-      type: 'error', 
-      title: 'Creation failed!', 
-      description: 'Could not save the recipe. Please try again.' 
+    useNebToast({
+      type: 'error',
+      title: 'Creation failed!',
+      description: 'Could not save the recipe. Please try again.',
     })
   }
 }
@@ -126,7 +126,7 @@ function onTagCreated(tag: OutRecipeTag) {
   if (!formData.value.tags)
     formData.value.tags = []
   formData.value.tags.push(tag)
-  
+
   refresh()
 }
 
@@ -150,12 +150,13 @@ function onUnitCreated(unit: OutUnit) {
       has-separator
     >
       <template #actions>
+        <household-selector />
         <neb-button type="secondary" @click="handleCancel">
           Cancel
         </neb-button>
 
-        <neb-button 
-          type="primary" 
+        <neb-button
+          type="primary"
           :disabled="!isFormValid"
           @click="handleSubmit"
         >
@@ -174,7 +175,7 @@ function onUnitCreated(unit: OutUnit) {
                 title="Basic Information"
                 type="section"
               />
-              
+
               <div class="basic-info-fields">
                 <neb-input
                   v-model="formData.name"
@@ -219,7 +220,7 @@ function onUnitCreated(unit: OutUnit) {
               </div>
             </div>
 
-            <neb-form-list 
+            <neb-form-list
               v-model="formData.ingredients"
               label="Ingredients"
               class="form-section"
@@ -237,14 +238,14 @@ function onUnitCreated(unit: OutUnit) {
                     required
                     @new="handleCreateIngredient($event, index)"
                   />
-                  
-                  <neb-input 
-                    v-model="ingredient.amount" 
-                    label="Amount" 
+
+                  <neb-input
+                    v-model="ingredient.amount"
+                    label="Amount"
                     type="number"
                     placeholder="0"
                   />
-                  
+
                   <neb-select
                     v-model="ingredient.unit"
                     label="Unit"
@@ -255,17 +256,17 @@ function onUnitCreated(unit: OutUnit) {
                     allow-empty
                     @new="handleCreateUnit($event, index)"
                   />
-                  
-                  <neb-input 
-                    v-model="ingredient.description" 
-                    label="Description" 
+
+                  <neb-input
+                    v-model="ingredient.description"
+                    label="Description"
                     placeholder="e.g., diced, chopped"
                   />
                 </div>
               </template>
             </neb-form-list>
 
-            <neb-form-list 
+            <neb-form-list
               v-model="formData.steps"
               label="Instructions"
               class="form-section"
@@ -273,9 +274,9 @@ function onUnitCreated(unit: OutUnit) {
               with-initial-item
             >
               <template #default="{ index }">
-                <neb-textarea 
-                  :required="true"
+                <neb-textarea
                   v-model="formData.steps![index]"
+                  :required="true"
                   :label="`Step ${index + 1}`"
                   placeholder="Describe this step..."
                 />
@@ -288,43 +289,43 @@ function onUnitCreated(unit: OutUnit) {
   </div>
 
   <!-- Create modals -->
-  <cuisine-master-data-modal 
+  <cuisine-master-data-modal
     v-if="dynamicCreateTable === 'cuisine'"
     :model-value="true"
-    @update:model-value="dynamicCreateTable = null"
     :initial-data="{ name: dynamicCreateSearchTerm }"
+    @update:model-value="dynamicCreateTable = null"
     @saved="onCuisineCreated"
   />
-  
+
   <meal-master-data-modal
     v-if="dynamicCreateTable === 'meal'"
     :model-value="true"
-    @update:model-value="dynamicCreateTable = null"
     :initial-data="{ name: dynamicCreateSearchTerm }"
+    @update:model-value="dynamicCreateTable = null"
     @saved="onMealCreated"
   />
-  
+
   <tag-master-data-modal
     v-if="dynamicCreateTable === 'recipe_tag'"
     :model-value="true"
-    @update:model-value="dynamicCreateTable = null"
     :initial-data="{ name: dynamicCreateSearchTerm }"
+    @update:model-value="dynamicCreateTable = null"
     @saved="onTagCreated"
   />
-  
-  <ingredient-master-data-modal 
+
+  <ingredient-master-data-modal
     v-if="dynamicCreateTable === 'ingredient'"
     :model-value="true"
-    @update:model-value="dynamicCreateTable = null"
     :initial-data="{ name: dynamicCreateSearchTerm }"
+    @update:model-value="dynamicCreateTable = null"
     @saved="onIngredientCreated"
   />
-  
-  <unit-master-data-modal 
+
+  <unit-master-data-modal
     v-if="dynamicCreateTable === 'unit'"
     :model-value="true"
-    @update:model-value="dynamicCreateTable = null"
     :initial-data="{ name: dynamicCreateSearchTerm }"
+    @update:model-value="dynamicCreateTable = null"
     @saved="onUnitCreated"
   />
 </template>

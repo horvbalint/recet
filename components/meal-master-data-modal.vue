@@ -5,11 +5,11 @@ defineProps<{
   initialData?: Partial<InMeal> | null
 }>()
 
-const modelValue = defineModel<boolean>({ required: true })
-
 const emit = defineEmits<{
-  'saved': [item: OutMeal]
+  saved: [item: OutMeal]
 }>()
+
+const modelValue = defineModel<boolean>({ required: true })
 
 function handleSave(item: OutMeal) {
   emit('saved', item)
@@ -27,7 +27,7 @@ function handleSave(item: OutMeal) {
   >
     <template #form="{ data }">
       <neb-input v-model="data.name" label="Name" required />
-      
+
       <neb-input v-model="data.color" label="Color" type="color" required />
     </template>
   </master-data-modal>

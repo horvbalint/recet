@@ -5,11 +5,11 @@ defineProps<{
   initialData?: Partial<InUnit> | null
 }>()
 
-const modelValue = defineModel<boolean>({ required: true })
-
 const emit = defineEmits<{
-  'saved': [item: OutUnit]
+  saved: [item: OutUnit]
 }>()
+
+const modelValue = defineModel<boolean>({ required: true })
 
 function handleSave(item: OutUnit) {
   emit('saved', item)

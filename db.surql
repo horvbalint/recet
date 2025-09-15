@@ -72,12 +72,20 @@ DEFINE FIELD OVERWRITE name ON unit TYPE string;
 
 // TABLE: household
 DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
-	FOR select WHERE $auth.id IN users;
-
+	for create FULL
+	for select WHERE (SELECT id FROM member WHERE in = $auth.id && out = id) != NONE
+	for delete, update WHERE (SELECT id FROM member WHERE in = $auth.id && out = id && role = "owner") != NONE;
 DEFINE FIELD OVERWRITE name ON household TYPE string;
-DEFINE FIELD OVERWRITE users ON household TYPE array<record<user>>;
 DEFINE FIELD OVERWRITE created_at ON household TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON household TYPE datetime VALUE time::now();
+
+DEFINE EVENT OVERWRITE relate_owner ON household WHEN $event = "CREATE" THEN (
+	RELATE ONLY $auth -> member -> $after SET role = "owner"
+);
+
+// TABLE: member
+DEFINE TABLE OVERWRITE member SCHEMAFULL TYPE RELATION FROM user TO household PERMISSIONS FOR select WHERE in = $auth.id;
+DEFINE FIELD OVERWRITE role ON member TYPE string ASSERT $value IN ["owner", "writer", "guest"];
 
 // TABLE: shopping_list
 DEFINE TABLE OVERWRITE shopping_list SCHEMAFULL PERMISSIONS FULL;

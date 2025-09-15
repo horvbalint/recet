@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const activeTable = ref < 'unit' | 'meal' | 'cuisine' | 'recipe_tag' | 'ingredient' > ('unit')
+const activeTable = ref <'unit' | 'meal' | 'cuisine' | 'recipe_tag' | 'ingredient'> ('unit')
 
 const tabs = {
   unit: { text: 'Units', icon: 'material-symbols:straighten-outline' },
@@ -19,6 +19,7 @@ const tabs = {
         type="page"
       >
         <template #actions>
+          <household-selector />
           <neb-button type="tertiary-neutral" @click="$router.push('/')">
             <icon name="material-symbols:arrow-back-rounded" />
             Back to Recipes

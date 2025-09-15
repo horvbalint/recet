@@ -1,0 +1,108 @@
+<script setup lang="ts">
+import type { OutHousehold } from '~/db'
+
+// State
+const showCreateModal = ref(false)
+const { data, refresh, error } = useAsyncData(async () => {
+  const households = await db.query<[OutHousehold[]]>(`
+    SELECT VALUE -> member -> household FROM ONLY ${authUser.value!.id}
+  `)
+  console.log('Fetched households:', households)
+  return households
+})
+
+async function handleHouseholdCreated(household: OutHousehold) {
+  // Reload households list
+  await refresh()
+
+  // Switch to the newly created household
+  switchHousehold(household)
+}
+</script>
+
+<template>
+  {{ error }}
+  <neb-dropdown>
+    <template #trigger="{ toggle }">
+      <neb-button
+        type="secondary"
+        small
+        @click="toggle()"
+      >
+        <icon name="material-symbols:home-rounded" />
+        {{ currentHousehold?.name || 'Select Household' }}
+        <icon name="material-symbols:keyboard-arrow-down-rounded" />
+      </neb-button>
+    </template>
+
+    <template #content="{ close }">
+      <div class="household-dropdown">
+        <div v-if="data!.length">
+          <neb-button
+            v-for="household in data"
+            :key="household.id.toString()"
+            type="tertiary"
+            small
+            full-width
+            :class="{ active: currentHousehold?.id?.toString() === household.id.toString() }"
+            @click="() => { switchHousehold(household); close(); }"
+          >
+            <icon name="material-symbols:home-rounded" />
+            <span>{{ household.name }}</span>
+            <icon
+              v-if="currentHousehold?.id?.toString() === household.id.toString()"
+              name="material-symbols:check-rounded"
+            />
+          </neb-button>
+        </div>
+
+        <div class="household-footer">
+          <neb-button
+            type="tertiary"
+            small
+            full-width
+            @click="() => { showCreateModal = true; close(); }"
+          >
+            <icon name="material-symbols:add-rounded" />
+            Create Household
+          </neb-button>
+        </div>
+      </div>
+    </template>
+  </neb-dropdown>
+
+  <household-modal
+    v-model="showCreateModal"
+    @created="handleHouseholdCreated"
+  />
+</template>
+
+<style scoped>
+.household-dropdown {
+  min-width: 220px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--neutral-color-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-1);
+}
+
+.household-footer {
+  padding: var(--space-1);
+  border-top: 1px solid var(--neutral-color-100);
+  margin-top: var(--space-1);
+}
+
+.dark-mode {
+  .household-dropdown {
+    background: var(--neutral-color-800);
+    border-color: var(--neutral-color-700);
+  }
+
+  .household-footer {
+    border-color: var(--neutral-color-700);
+  }
+}
+</style>

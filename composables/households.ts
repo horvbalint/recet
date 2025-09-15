@@ -1,28 +1,20 @@
 import type { OutHousehold } from '~/db'
+import { Gap } from 'surrealdb'
 
 export const currentHousehold = ref<OutHousehold | null>(null)
+export const householdGap = new Gap<OutHousehold['id']>()
 
 // Create a new household
 export async function createHousehold(name: string) {
-  if (!authUser.value) {
-    throw new Error('Must be logged in to create household')
-  }
-
   try {
     const [result] = await db.query<[OutHousehold]>(surql`
-      CREATE household SET name = ${name}
+      CREATE ONLY household SET name = ${name}
     `)
 
-    if (result) {
-      // Set as current household if user doesn't have one
-      if (!currentHousehold.value) {
-        currentHousehold.value = result
-      }
+    if (!currentHousehold.value)
+      currentHousehold.value = result
 
-      return result
-    }
-
-    throw new Error('Failed to create household')
+    return result
   }
   catch (error) {
     console.error('Error creating household:', error)

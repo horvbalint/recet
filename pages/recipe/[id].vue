@@ -59,7 +59,7 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
     <neb-state-content :status :refresh error-title="Failed to load recipe" :error-description="error?.message">
       <neb-empty-state
         v-if="!recipe"
-        icon="material-symbols:restaurant-menu-rounded"
+        icon="material-symbols:menu-book-2-outline-rounded"
         title="Recipe not found"
         description="The recipe you're looking for doesn't exist or has been removed"
       >

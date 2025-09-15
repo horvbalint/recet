@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { OutHousehold } from '~/db'
+
 const emit = defineEmits<{
-  (event: 'created', household: any): void
+  (event: 'created', household: OutHousehold): void
 }>()
 
 const modelValue = defineModel<boolean>()

@@ -41,6 +41,8 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
       created_at
     FROM
       recipe
+    WHERE
+      household = type::thing(${currentHousehold.value!.id})
     ORDER BY
       created_at DESC
     FETCH
@@ -48,7 +50,7 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
   `)
 
   return result
-})
+}, { watch: [currentHousehold] })
 </script>
 
 <template>
@@ -76,7 +78,7 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
       <neb-state-content :status :refresh error-title="Failed to load recipes" :error-description="error?.message">
         <neb-empty-state
           v-if="!recipes?.length"
-          icon="material-symbols:restaurant-menu-rounded"
+          icon="material-symbols:menu-book-2-outline-rounded"
           title="No recipes yet"
           description="Start building your recipe collection by adding your first recipe"
         >

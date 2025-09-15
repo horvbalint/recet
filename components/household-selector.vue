@@ -4,18 +4,15 @@ import type { OutHousehold } from '~/db'
 // State
 const showCreateModal = ref(false)
 const { data, refresh, error } = useAsyncData(async () => {
-  const households = await db.query<[OutHousehold[]]>(`
-    SELECT VALUE -> member -> household FROM ONLY ${authUser.value!.id}
+  const [households] = await db.query<[OutHousehold[]]>(surql`
+    ${authUser.value!.id} -> member -> household.{ id, name }
   `)
-  console.log('Fetched households:', households)
+
   return households
 })
 
 async function handleHouseholdCreated(household: OutHousehold) {
-  // Reload households list
   await refresh()
-
-  // Switch to the newly created household
   switchHousehold(household)
 }
 </script>
@@ -26,7 +23,6 @@ async function handleHouseholdCreated(household: OutHousehold) {
     <template #trigger="{ toggle }">
       <neb-button
         type="secondary"
-        small
         @click="toggle()"
       >
         <icon name="material-symbols:home-rounded" />
@@ -73,7 +69,7 @@ async function handleHouseholdCreated(household: OutHousehold) {
 
   <household-modal
     v-model="showCreateModal"
-    @created="handleHouseholdCreated"
+    @created="handleHouseholdCreated($event)"
   />
 </template>
 

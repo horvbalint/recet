@@ -47,7 +47,7 @@ async function handleSubmit() {
   try {
     if (!isEdit.value) {
       const [result] = await db.query<[T]>(`CREATE ONLY ${props.table} CONTENT $data`, {
-        data: props.transformBeforeCreate(formData.value),
+        data: { ...props.transformBeforeCreate(formData.value), household: currentHousehold.value!.id },
       })
 
       useNebToast({

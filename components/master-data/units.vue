@@ -2,7 +2,7 @@
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
 import type { OutUnit } from '~/db'
 
-const getQuery = surql`SELECT * FROM unit ORDER BY name ASC`
+const getQuery = surql`SELECT * FROM unit WHERE household = type::thing(${householdGap}) ORDER BY name ASC`
 
 const columns: Columns<OutUnit> = {
   name: { text: 'Name' },

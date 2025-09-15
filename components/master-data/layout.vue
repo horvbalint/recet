@@ -13,9 +13,9 @@ const props = defineProps<{
 const showModal = ref(false)
 
 const { data, status, refresh } = await useAsyncData(`${props.table}-master-data-layout`, async () => {
-  const [result] = await db.query<[T[]]>(props.getQuery)
+  const [result] = await db.query<[T[]]>(props.getQuery, [householdGap.fill(currentHousehold.value!.id)])
   return result || []
-})
+}, { watch: [currentHousehold] })
 
 function handleCreateClick() {
   showModal.value = true

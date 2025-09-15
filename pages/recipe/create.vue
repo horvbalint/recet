@@ -47,6 +47,7 @@ async function handleSubmit() {
   try {
     const [result] = await db.query<[OutIngredient[]]>('INSERT INTO recipe $data RETURN id', { data: {
       ...formData.value,
+      household: currentHousehold.value!.id,
       author: authUser.value!.id,
       ingredients: formData.value.ingredients?.map(ing => ({ ...ing, unit: ing.unit?.id, ingredient: ing.ingredient.id })),
       steps: formData.value.steps?.map(step => step.trim()).filter(step => step),

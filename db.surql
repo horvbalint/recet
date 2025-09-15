@@ -23,8 +23,20 @@ DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
 	DURATION FOR TOKEN 15m, FOR SESSION 12h
 ;
 
+DEFINE FUNCTION OVERWRITE fn::can_read_household($household: record<household>) {
+	RETURN $household IN $auth.id -> member -> household.id;
+};
+
+DEFINE FUNCTION OVERWRITE fn::can_write_household($household: record<household>) {
+	RETURN $household IN (SELECT VALUE out FROM member WHERE in = $auth && role IN ["owner", "writer"])
+};
+
 // TABLE: recipe
-DEFINE TABLE OVERWRITE recipe SCHEMAFULL PERMISSIONS FULL;
+DEFINE TABLE OVERWRITE recipe SCHEMAFULL PERMISSIONS
+	for create WHERE fn::can_write_household(household)
+	for select WHERE fn::can_read_household(household)
+	for delete, update WHERE fn::can_write_household(household);
+
 DEFINE FIELD OVERWRITE name ON recipe TYPE string;
 DEFINE FIELD OVERWRITE ingredients ON recipe TYPE array<object> DEFAULT [];
 DEFINE FIELD OVERWRITE ingredients.*.ingredient ON recipe TYPE record<ingredient>;
@@ -33,6 +45,7 @@ DEFINE FIELD OVERWRITE ingredients.*.unit ON recipe TYPE option<record<unit>>;
 DEFINE FIELD OVERWRITE ingredients.*.description ON recipe TYPE option<string>;
 DEFINE FIELD OVERWRITE steps ON recipe TYPE array<string> DEFAULT [];
 DEFINE FIELD OVERWRITE author ON recipe TYPE record<user>;
+DEFINE FIELD OVERWRITE household ON recipe TYPE record<household>;
 DEFINE FIELD OVERWRITE tags ON recipe TYPE array<record<recipe_tag>> DEFAULT [];
 DEFINE FIELD OVERWRITE cuisine ON recipe TYPE option<record<cuisine>>;
 DEFINE FIELD OVERWRITE meal ON recipe TYPE array<record<meal>> DEFAULT [];
@@ -40,35 +53,66 @@ DEFINE FIELD OVERWRITE created_at ON recipe TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON recipe TYPE datetime VALUE time::now();
 
 // TABLE: meal
-DEFINE TABLE OVERWRITE meal SCHEMAFULL PERMISSIONS FULL;
+DEFINE TABLE OVERWRITE meal SCHEMAFULL PERMISSIONS 
+	for create WHERE fn::can_write_household(household)
+	for select WHERE fn::can_read_household(household)
+	for delete, update WHERE fn::can_write_household(household);
+	
 DEFINE FIELD OVERWRITE name ON meal TYPE string;
 DEFINE FIELD OVERWRITE color ON meal TYPE string;
+DEFINE FIELD OVERWRITE household ON meal TYPE record<household>;
+
 
 // TABLE: cuisine
-DEFINE TABLE OVERWRITE cuisine SCHEMAFULL PERMISSIONS FULL;
+DEFINE TABLE OVERWRITE cuisine SCHEMAFULL PERMISSIONS 
+	for create WHERE fn::can_write_household(household)
+	for select WHERE fn::can_read_household(household)
+	for delete, update WHERE fn::can_write_household(household);
+	
 DEFINE FIELD OVERWRITE name ON cuisine TYPE string;
 DEFINE FIELD OVERWRITE color ON cuisine TYPE string;
 DEFINE FIELD OVERWRITE flag ON cuisine TYPE option<string>;
+DEFINE FIELD OVERWRITE household ON cuisine TYPE record<household>;
 
 // TABLE: recipe_tag
-DEFINE TABLE OVERWRITE recipe_tag SCHEMAFULL PERMISSIONS FULL;
+DEFINE TABLE OVERWRITE recipe_tag SCHEMAFULL PERMISSIONS 
+	for create WHERE fn::can_write_household(household)
+	for select WHERE fn::can_read_household(household)
+	for delete, update WHERE fn::can_write_household(household);
+	
 DEFINE FIELD OVERWRITE name ON recipe_tag TYPE string;  
 DEFINE FIELD OVERWRITE color ON recipe_tag TYPE string;
 DEFINE FIELD OVERWRITE icon ON recipe_tag TYPE string;
+DEFINE FIELD OVERWRITE household ON recipe_tag TYPE record<household>;
 
 // TABLE: ingredient
-DEFINE TABLE OVERWRITE ingredient SCHEMAFULL PERMISSIONS FULL;
+DEFINE TABLE OVERWRITE ingredient SCHEMAFULL PERMISSIONS 
+	for create WHERE fn::can_write_household(household)
+	for select WHERE fn::can_read_household(household)
+	for delete, update WHERE fn::can_write_household(household);
+	
 DEFINE FIELD OVERWRITE name ON ingredient TYPE string;
 DEFINE FIELD OVERWRITE category ON ingredient TYPE option<record<ingredient_category>>;
 DEFINE FIELD OVERWRITE skip_from_shopping_list ON ingredient TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE household ON ingredient TYPE record<household>;
 
 // TABLE: category
-DEFINE TABLE OVERWRITE ingredient_category SCHEMAFULL PERMISSIONS FULL;
+DEFINE TABLE OVERWRITE ingredient_category SCHEMAFULL PERMISSIONS 
+	for create WHERE fn::can_write_household(household)
+	for select WHERE fn::can_read_household(household)
+	for delete, update WHERE fn::can_write_household(household);
+	
 DEFINE FIELD OVERWRITE name ON ingredient_category TYPE string;
+DEFINE FIELD OVERWRITE household ON ingredient_category TYPE record<household>;
 
 // TABLE: unit
-DEFINE TABLE OVERWRITE unit SCHEMAFULL PERMISSIONS FULL;
+DEFINE TABLE OVERWRITE unit SCHEMAFULL PERMISSIONS 
+	for create WHERE fn::can_write_household(household)
+	for select WHERE fn::can_read_household(household)
+	for delete, update WHERE fn::can_write_household(household);
+	
 DEFINE FIELD OVERWRITE name ON unit TYPE string;
+DEFINE FIELD OVERWRITE household ON unit TYPE record<household>;
 
 // TABLE: household
 DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
@@ -88,7 +132,11 @@ DEFINE TABLE OVERWRITE member SCHEMAFULL TYPE RELATION FROM user TO household PE
 DEFINE FIELD OVERWRITE role ON member TYPE string ASSERT $value IN ["owner", "writer", "guest"];
 
 // TABLE: shopping_list
-DEFINE TABLE OVERWRITE shopping_list SCHEMAFULL PERMISSIONS FULL;
+DEFINE TABLE OVERWRITE shopping_list SCHEMAFULL PERMISSIONS 
+	for create WHERE fn::can_write_household(household)
+	for select WHERE fn::can_read_household(household)
+	for delete, update WHERE fn::can_write_household(household);
+	
 DEFINE FIELD OVERWRITE household ON shopping_list TYPE record<household>;
 DEFINE FIELD OVERWRITE name ON shopping_list TYPE string;
 DEFINE FIELD OVERWRITE items ON shopping_list TYPE array<object> DEFAULT [];
@@ -100,8 +148,13 @@ DEFINE FIELD OVERWRITE items.*.flagged ON shopping_list TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE updated_at ON shopping_list TYPE datetime VALUE time::now();
 
 // TABLE: weekly_plan
-DEFINE TABLE OVERWRITE weekly_plan SCHEMAFULL PERMISSIONS FULL;
+DEFINE TABLE OVERWRITE weekly_plan SCHEMAFULL PERMISSIONS 
+	for create WHERE fn::can_write_household(household)
+	for select WHERE fn::can_read_household(household)
+	for delete, update WHERE fn::can_write_household(household);
+	
 DEFINE FIELD OVERWRITE name ON weekly_plan TYPE string;
+DEFINE FIELD OVERWRITE household ON weekly_plan TYPE record<household>;
 
 DEFINE FIELD OVERWRITE monday ON weekly_plan TYPE object;
 DEFINE FIELD OVERWRITE monday.breakfast ON weekly_plan TYPE object;

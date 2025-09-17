@@ -16,22 +16,26 @@ const tabs = {
         title="Master Data Management"
         description="Manage units, meal types, cuisines, tags, and ingredients for your recipes"
         type="page"
+        has-separator
       />
-
-      <neb-tabs v-model="activeTable" :tabs="tabs" class="master-data-tabs" />
     </template>
 
-    <master-data-units v-if="activeTable === 'unit'" />
-    <master-data-meals v-if="activeTable === 'meal'" />
-    <master-data-cuisines v-if="activeTable === 'cuisine'" />
-    <master-data-tags v-if="activeTable === 'recipe_tag'" />
-    <master-data-ingredients v-if="activeTable === 'ingredient'" />
+    <div class="content-wrapper">
+      <neb-tabs v-model="activeTable" :tabs="tabs" />
+
+      <master-data-units v-if="activeTable === 'unit'" />
+      <master-data-meals v-if="activeTable === 'meal'" />
+      <master-data-cuisines v-if="activeTable === 'cuisine'" />
+      <master-data-tags v-if="activeTable === 'recipe_tag'" />
+      <master-data-ingredients v-if="activeTable === 'ingredient'" />
+    </div>
   </nuxt-layout>
 </template>
 
 <style scoped>
-.master-data-tabs {
-  margin-top: var(--space-6);
-  margin-bottom: var(--space-6);
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 </style>

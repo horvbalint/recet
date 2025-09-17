@@ -5,6 +5,7 @@ export type InCuisine = {
   id?: RecordId<"cuisine">,
   color: string,
   flag?: string | undefined,
+  household: Required<InHousehold>['id'],
   name: string,
 }
 
@@ -12,6 +13,7 @@ export type OutCuisine = {
   id: RecordId<"cuisine">,
   color: string,
   flag?: string | undefined,
+  household: OutHousehold,
   name: string,
 }
 
@@ -20,7 +22,6 @@ export type InHousehold = {
   created_at?: Date | string,
   name: string,
   updated_at: Date | string,
-  users: Array<Required<InUser>['id']>,
 }
 
 export type OutHousehold = {
@@ -28,12 +29,12 @@ export type OutHousehold = {
   created_at: string,
   name: string,
   updated_at: string,
-  users: Array<OutUser>,
 }
 
 export type InIngredient = {
   id?: RecordId<"ingredient">,
   category?: Required<InIngredientCategory>['id'] | undefined,
+  household: Required<InHousehold>['id'],
   name: string,
   skip_from_shopping_list?: boolean,
 }
@@ -41,30 +42,49 @@ export type InIngredient = {
 export type OutIngredient = {
   id: RecordId<"ingredient">,
   category?: OutIngredientCategory | undefined,
+  household: OutHousehold,
   name: string,
   skip_from_shopping_list: boolean,
 }
 
 export type InIngredientCategory = {
   id?: RecordId<"ingredient_category">,
+  household: Required<InHousehold>['id'],
   name: string,
 }
 
 export type OutIngredientCategory = {
   id: RecordId<"ingredient_category">,
+  household: OutHousehold,
   name: string,
 }
 
 export type InMeal = {
   id?: RecordId<"meal">,
   color: string,
+  household: Required<InHousehold>['id'],
   name: string,
 }
 
 export type OutMeal = {
   id: RecordId<"meal">,
   color: string,
+  household: OutHousehold,
   name: string,
+}
+
+export type InMember = {
+  id?: RecordId<"member">,
+  in: Required<InUser>['id'],
+  out: Required<InHousehold>['id'],
+  role: 'owner' | 'writer' | 'guest',
+}
+
+export type OutMember = {
+  id: RecordId<"member">,
+  in: OutUser,
+  out: OutHousehold,
+  role: 'owner' | 'writer' | 'guest',
 }
 
 export type InRecipe = {
@@ -72,6 +92,7 @@ export type InRecipe = {
   author: Required<InUser>['id'],
   created_at?: Date | string,
   cuisine?: Required<InCuisine>['id'] | undefined,
+  household: Required<InHousehold>['id'],
   ingredients?: Array<{
     amount?: number | undefined,
     description?: string | undefined,
@@ -90,6 +111,7 @@ export type OutRecipe = {
   author: OutUser,
   created_at: string,
   cuisine?: OutCuisine | undefined,
+  household: OutHousehold,
   ingredients: Array<{
     amount?: number | undefined,
     description?: string | undefined,
@@ -106,6 +128,7 @@ export type OutRecipe = {
 export type InRecipeTag = {
   id?: RecordId<"recipe_tag">,
   color: string,
+  household: Required<InHousehold>['id'],
   icon: string,
   name: string,
 }
@@ -113,6 +136,7 @@ export type InRecipeTag = {
 export type OutRecipeTag = {
   id: RecordId<"recipe_tag">,
   color: string,
+  household: OutHousehold,
   icon: string,
   name: string,
 }
@@ -147,11 +171,13 @@ export type OutShoppingList = {
 
 export type InUnit = {
   id?: RecordId<"unit">,
+  household: Required<InHousehold>['id'],
   name: string,
 }
 
 export type OutUnit = {
   id: RecordId<"unit">,
+  household: OutHousehold,
   name: string,
 }
 
@@ -195,6 +221,7 @@ export type InWeeklyPlan = {
       rules: Array<Required<InRecipeTag>['id']>,
     },
   },
+  household: Required<InHousehold>['id'],
   monday: {
     breakfast: {
       recipes: Array<Required<InRecipe>['id']>,
@@ -326,6 +353,7 @@ export type OutWeeklyPlan = {
       rules: Array<OutRecipeTag>,
     },
   },
+  household: OutHousehold,
   monday: {
     breakfast: {
       recipes: Array<OutRecipe>,
@@ -454,6 +482,14 @@ export const tables = {
           }
         }
       },
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
+        }
+      },
       "name": {
         "type": {
           "name": "string"
@@ -478,17 +514,6 @@ export const tables = {
         "type": {
           "name": "date"
         }
-      },
-      "users": {
-        "type": {
-          "name": "array",
-          "item": {
-            "name": "record",
-            "tables": [
-              "user"
-            ]
-          }
-        }
       }
     }
   },
@@ -503,6 +528,14 @@ export const tables = {
               "ingredient_category"
             ]
           }
+        }
+      },
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
         }
       },
       "name": {
@@ -520,6 +553,14 @@ export const tables = {
   },
   "ingredient_category": {
     "fields": {
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
+        }
+      },
       "name": {
         "type": {
           "name": "string"
@@ -534,9 +575,48 @@ export const tables = {
           "name": "string"
         }
       },
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
+        }
+      },
       "name": {
         "type": {
           "name": "string"
+        }
+      }
+    }
+  },
+  "member": {
+    "fields": {
+      "in": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "user"
+          ]
+        }
+      },
+      "out": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
+        }
+      },
+      "role": {
+        "type": {
+          "name": "union",
+          "enum": "string",
+          "variants": [
+            "owner",
+            "writer",
+            "guest"
+          ]
         }
       }
     }
@@ -566,6 +646,14 @@ export const tables = {
               "cuisine"
             ]
           }
+        }
+      },
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
         }
       },
       "ingredients": {
@@ -666,6 +754,14 @@ export const tables = {
           "name": "string"
         }
       },
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
+        }
+      },
       "icon": {
         "type": {
           "name": "string"
@@ -752,6 +848,14 @@ export const tables = {
   },
   "unit": {
     "fields": {
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
+        }
+      },
       "name": {
         "type": {
           "name": "string"
@@ -918,6 +1022,14 @@ export const tables = {
               }
             }
           }
+        }
+      },
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
         }
       },
       "monday": {

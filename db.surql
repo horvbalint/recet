@@ -2,14 +2,13 @@ BEGIN TRANSACTION;
 
 // TABLE: user
 DEFINE TABLE OVERWRITE user SCHEMAFULL PERMISSIONS
-	FOR select WHERE deleted = false
+	FOR select FULL
 	FOR update WHERE id = $auth.id
 	FOR create, delete NONE;
 
 DEFINE FIELD OVERWRITE email ON user TYPE string ASSERT string::is::email($value) PERMISSIONS FOR select WHERE id = $auth.id;
 DEFINE FIELD OVERWRITE username ON user TYPE string;
 DEFINE FIELD OVERWRITE password ON user TYPE string PERMISSIONS NONE;
-DEFINE FIELD OVERWRITE deleted ON user TYPE bool DEFAULT false PERMISSIONS NONE;
 DEFINE FIELD OVERWRITE created_at ON user TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON user TYPE datetime VALUE time::now() PERMISSIONS NONE;
 
@@ -19,7 +18,7 @@ DEFINE INDEX OVERWRITE username_unique ON user FIELDS username UNIQUE;
 // Define user authentication
 DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
 	SIGNUP ( CREATE user SET email = $email, username = $username, password = crypto::argon2::generate($password) )
-	SIGNIN ( SELECT * FROM ONLY user WHERE email = $email && crypto::argon2::compare(password, $password) && deleted = false )
+	SIGNIN ( SELECT * FROM ONLY user WHERE email = $email && crypto::argon2::compare(password, $password))
 	DURATION FOR TOKEN 15m, FOR SESSION 12h
 ;
 
@@ -244,5 +243,18 @@ DEFINE FIELD OVERWRITE sunday.dinner.rules ON weekly_plan TYPE array<record<reci
 DEFINE FIELD OVERWRITE sunday.other ON weekly_plan TYPE object;
 DEFINE FIELD OVERWRITE sunday.other.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
 DEFINE FIELD OVERWRITE sunday.other.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
+
+DEFINE FUNCTION OVERWRITE fn::add_member_to_household($household: record<household>, $username: string, $role: "owner" | "writer" | "guest") {
+	LET $user = (SELECT id FROM ONLY user WHERE username = $username);
+	IF ($user == NONE) {
+		THROW "User with the provided username does not exist.";
+	};
+
+	IF ((SELECT id FROM member WHERE in = $user.id && out = $household) != NONE) {
+		THROW "User is already a member of the household.";
+	};
+
+	RELATE ONLY $user -> member -> $household SET role = $role;
+};
 
 COMMIT;

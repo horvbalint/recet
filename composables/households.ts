@@ -1,5 +1,8 @@
+import type { AsyncData } from '#app'
 import type { OutHousehold } from '~/db'
 import { Gap } from 'surrealdb'
+
+export const householdQuery = ref<AsyncData<OutHousehold[], any> | null>(null)
 
 export const currentHousehold = ref<OutHousehold | null>(null)
 export const householdGap = new Gap<OutHousehold['id']>()

@@ -152,14 +152,14 @@ function onUnitCreated(unit: OutUnit) {
         has-separator
       >
         <template #actions>
-          <neb-button type="secondary" @click="handleCancel">
+          <neb-button type="secondary" @click="handleCancel()">
             Cancel
           </neb-button>
 
           <neb-button
             type="primary"
             :disabled="!isFormValid"
-            @click="handleSubmit"
+            @click="handleSubmit()"
           >
             <icon name="material-symbols:save-rounded" />
             Save Recipe

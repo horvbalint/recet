@@ -17,22 +17,14 @@ async function handleCreate() {
   try {
     const household = await createHousehold(householdName.value.trim())
 
-    useNebToast({
-      type: 'success',
-      title: 'Household created!',
-      description: `${household.name} has been created successfully.`,
-    })
+    useNebToast({ type: 'success', title: 'Household created!', description: `${household.name} has been created successfully.` })
 
     emit('created', household)
     modelValue.value = false
   }
   catch (error) {
     console.error('Error creating household:', error)
-    useNebToast({
-      type: 'error',
-      title: 'Creation failed',
-      description: 'Could not create household. Please try again.',
-    })
+    useNebToast({ type: 'error', title: 'Creation failed', description: 'Could not create household. Please try again.' })
   }
 }
 
@@ -60,11 +52,7 @@ watch(modelValue, (visible) => {
         Cancel
       </neb-button>
 
-      <neb-button
-        type="primary"
-        :disabled="!isFormValid"
-        @click="handleCreate"
-      >
+      <neb-button type="primary" :disabled="!isFormValid" @click="handleCreate()">
         Create Household
       </neb-button>
     </template>

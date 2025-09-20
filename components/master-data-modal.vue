@@ -50,22 +50,14 @@ async function handleSubmit() {
         data: { ...props.transformBeforeCreate(formData.value), household: currentHousehold.value!.id },
       })
 
-      useNebToast({
-        type: 'success',
-        title: `${props.name} created!`,
-        description: `The ${props.name} was saved successfully.`,
-      })
+      useNebToast({ type: 'success', title: `${props.name} created!`, description: `The ${props.name} was saved successfully.` })
 
       emit('saved', result)
     }
     else {
       const [result] = await db.query<[T]>(surql`UPDATE ONLY ${formData.value.id} MERGE ${props.transformBeforeEdit(formData.value)} RETURN AFTER`)
 
-      useNebToast({
-        type: 'success',
-        title: `${props.name} updated!`,
-        description: `The ${props.name} was updated successfully.`,
-      })
+      useNebToast({ type: 'success', title: `${props.name} updated!`, description: `The ${props.name} was updated successfully.` })
 
       emit('saved', result)
     }
@@ -74,11 +66,7 @@ async function handleSubmit() {
   }
   catch (error) {
     console.error(error)
-    useNebToast({
-      type: 'error',
-      title: `${!isEdit.value ? 'Creation' : 'Update'} failed!`,
-      description: `Could not ${!isEdit.value ? 'create' : 'update'} the ${props.name}. Please try again.`,
-    })
+    useNebToast({ type: 'error', title: `${!isEdit.value ? 'Creation' : 'Update'} failed!`, description: `Could not ${!isEdit.value ? 'create' : 'update'} the ${props.name}. Please try again.` })
   }
 }
 
@@ -104,11 +92,11 @@ function handleCancel() {
     </template>
 
     <template #actions>
-      <neb-button type="tertiary-neutral" @click="handleCancel">
+      <neb-button type="tertiary-neutral" @click="handleCancel()">
         Cancel
       </neb-button>
 
-      <neb-button type="primary" :disabled="!isFormValid" @click="handleSubmit">
+      <neb-button type="primary" :disabled="!isFormValid" @click="handleSubmit()">
         {{ actionLabel }}
       </neb-button>
     </template>

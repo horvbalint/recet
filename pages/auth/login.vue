@@ -17,11 +17,7 @@ async function handleSubmit() {
   catch (err) {
     console.error(err)
 
-    useNebToast({
-      type: 'error',
-      title: 'Login failed',
-      description: 'Invalid email or password.',
-    })
+    useNebToast({ type: 'error', title: 'Login failed', description: 'Invalid email or password.' })
   }
 }
 
@@ -66,14 +62,14 @@ function handleSignupClick() {
               type="primary"
               :disabled="!isFormValid"
               class="submit-button"
-              @click="handleSubmit"
+              @click="handleSubmit()"
             >
               Sign In
             </neb-button>
 
             <div class="auth-link">
               <span>Don't have an account?</span>
-              <neb-button type="link" @click="handleSignupClick">
+              <neb-button type="link" @click="handleSignupClick()">
                 Sign up here
               </neb-button>
             </div>

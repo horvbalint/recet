@@ -168,7 +168,7 @@ function mapRoleToColor(role: OutMember['role']) {
         :refresh="refresh"
       >
         <template v-if="isCurrHouseholdOwner" #actions>
-          <neb-button small @click="handleAddMember">
+          <neb-button small @click="handleAddMember()">
             <icon name="material-symbols:person-add-outline-rounded" />
             Add Member
           </neb-button>
@@ -219,17 +219,15 @@ function mapRoleToColor(role: OutMember['role']) {
       </template>
 
       <template #actions>
-        <neb-button
-          variant="secondary"
-          @click="closeModal"
-        >
+        <neb-button variant="secondary" @click="closeModal()">
           Cancel
         </neb-button>
+
         <neb-button
           variant="primary"
           :disabled="!addForm.username || isLoading"
           :loading="isLoading"
-          @click="handleAddSubmit"
+          @click="handleAddSubmit()"
         >
           Add Member
         </neb-button>
@@ -268,12 +266,10 @@ function mapRoleToColor(role: OutMember['role']) {
       </template>
 
       <template #actions>
-        <neb-button
-          variant="secondary"
-          @click="closeModal()"
-        >
+        <neb-button variant="secondary" @click="closeModal()">
           Cancel
         </neb-button>
+
         <neb-button
           variant="primary"
           :disabled="isLoading"

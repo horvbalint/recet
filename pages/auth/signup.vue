@@ -12,33 +12,21 @@ const isFormValid = ref(false)
 
 async function handleSubmit() {
   if (formData.value.password !== formData.value.confirmPassword) {
-    useNebToast({
-      type: 'error',
-      title: 'Password mismatch',
-      description: 'Passwords do not match. Please try again.',
-    })
+    useNebToast({ type: 'error', title: 'Password mismatch', description: 'Passwords do not match. Please try again.' })
     return
   }
 
   try {
     await signUp(formData.value.email, formData.value.password, formData.value.username)
 
-    useNebToast({
-      type: 'success',
-      title: 'Account created!',
-      description: 'Your account has been created successfully. Please sign in.',
-    })
+    useNebToast({ type: 'success', title: 'Account created!', description: 'Your account has been created successfully. Please sign in.' })
 
     router.push('/auth/login')
   }
   catch (error) {
     console.error('Signup error:', error)
 
-    useNebToast({
-      type: 'error',
-      title: 'Signup failed',
-      description: 'Could not create account. Email or username may already be in use.',
-    })
+    useNebToast({ type: 'error', title: 'Signup failed', description: 'Could not create account. Email or username may already be in use.' })
   }
 }
 
@@ -98,14 +86,14 @@ function handleLoginClick() {
               type="primary"
               :disabled="!isFormValid"
               class="submit-button"
-              @click="handleSubmit"
+              @click="handleSubmit()"
             >
               Create Account
             </neb-button>
 
             <div class="auth-link">
               <span>Already have an account?</span>
-              <neb-button type="link" @click="handleLoginClick">
+              <neb-button type="link" @click="handleLoginClick()">
                 Sign in here
               </neb-button>
             </div>

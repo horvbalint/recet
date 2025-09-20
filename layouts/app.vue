@@ -1,28 +1,36 @@
 <script setup lang="ts">
 // Navigation structure based on wireframe
-const navigationGroups = [
-  {
-    title: 'Planning',
-    items: [
-      { id: 'recipes', name: 'Recipes', path: '/', icon: 'material-symbols:menu-book-2-outline-rounded' },
-      { id: 'meal-planner', name: 'Meal Planner', path: '/meal-planner', icon: 'material-symbols:calendar-month-outline-rounded' },
-      { id: 'shopping-lists', name: 'Shopping Lists', path: '/shopping-lists', icon: 'material-symbols:shopping-cart-outline-rounded' },
-    ],
-  },
-  {
-    title: 'Household',
-    items: [
-      { id: 'members', name: 'Members', path: '/members', icon: 'material-symbols:group-outline-rounded' },
-      { id: 'settings', name: 'Settings', path: '/settings', icon: 'material-symbols:settings-outline-rounded' },
-    ],
-  },
-  {
-    title: 'Data',
-    items: [
-      { id: 'master-data', name: 'Master Data', path: '/masterData', icon: 'material-symbols:category-outline-rounded' },
-    ],
-  },
-]
+const navigationGroups = computed(() => {
+  const householdItems = [
+    { id: 'members', name: 'Members', path: '/members', icon: 'material-symbols:group-outline-rounded' },
+  ]
+
+  // Only show settings to household owners
+  if (isCurrHouseholdOwner.value) {
+    householdItems.push({ id: 'settings', name: 'Settings', path: '/settings', icon: 'material-symbols:settings-outline-rounded' })
+  }
+
+  return [
+    {
+      title: 'Planning',
+      items: [
+        { id: 'recipes', name: 'Recipes', path: '/', icon: 'material-symbols:menu-book-2-outline-rounded' },
+        { id: 'meal-planner', name: 'Meal Planner', path: '/meal-planner', icon: 'material-symbols:calendar-month-outline-rounded' },
+        { id: 'shopping-lists', name: 'Shopping Lists', path: '/shopping-lists', icon: 'material-symbols:shopping-cart-outline-rounded' },
+      ],
+    },
+    {
+      title: 'Household',
+      items: householdItems,
+    },
+    {
+      title: 'Data',
+      items: [
+        { id: 'master-data', name: 'Master Data', path: '/masterData', icon: 'material-symbols:category-outline-rounded' },
+      ],
+    },
+  ]
+})
 
 const route = useRoute()
 const currentPath = computed(() => route.path)

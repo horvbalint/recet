@@ -100,10 +100,4 @@ async function handleDeleteClick(item: T) {
 .delete-icon:hover {
   color: var(--error-color-600);
 }
-
-.modal-form-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
 </style>

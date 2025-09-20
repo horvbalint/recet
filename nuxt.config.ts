@@ -7,11 +7,12 @@ export default defineNuxtConfig({
 
   routeRules: {
     '**': {
-      appMiddleware: ['auth'],
+      appMiddleware: ['auth', 'household'],
     },
     '/auth/**': {
       appMiddleware: {
         auth: false,
+        household: false,
       },
     },
   },

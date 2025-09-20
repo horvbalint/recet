@@ -2,20 +2,8 @@
 import type { OutHousehold } from '~/db'
 
 const showCreateModal = ref(false)
-const { data, refresh, error } = useAsyncData(async () => {
-  const [households] = await db.query<[OutHousehold[]]>(surql`
-    ${authUser.value!.id} -> member -> household.{ id, name }
-  `)
 
-  return households
-})
-
-watchOnce(data, () => {
-  const stored = localStorage.getItem('currentHousehold')
-  const sameId = data.value?.find(h => h.id.toString() === stored)
-  if (sameId)
-    switchHousehold(sameId)
-})
+const { data, refresh } = householdQuery.value!
 
 async function handleHouseholdCreated(household: OutHousehold) {
   await refresh()

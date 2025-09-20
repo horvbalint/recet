@@ -94,8 +94,7 @@ async function handleAddSubmit() {
 
   isLoading.value = true
   try {
-    console.log(`RETURN fn::add_member_to_household(type::thing(${currentHousehold.value!.id}), "${addForm.value.username}", "${addForm.value.role}")`)
-    await db.query(`RETURN fn::add_member_to_household(type::thing(${currentHousehold.value!.id}), "${addForm.value.username}", "${addForm.value.role}")`)
+    await db.query(surql`fn::add_member_to_household(${currentHousehold.value!.id}, ${addForm.value.username}, ${addForm.value.role})`)
 
     useNebToast({ type: 'success', title: 'Member added!', description: 'The user has been successfully added to the household.' })
     showAddModal.value = false
@@ -117,7 +116,7 @@ async function handleEditSubmit() {
 
   isLoading.value = true
   try {
-    await db.query(surql`UPDATE type::thing(${memberToEdit.value.member}) SET role = ${editForm.value.role}`)
+    await db.query(surql`UPDATE ${memberToEdit.value.member} SET role = ${editForm.value.role}`)
     useNebToast({ type: 'success', title: 'Role updated!', description: 'The member role has been successfully updated.' })
 
     showEditModal.value = false
@@ -168,7 +167,7 @@ function mapRoleToColor(role: OutMember['role']) {
         :status="status"
         :refresh="refresh"
       >
-        <template #actions>
+        <template v-if="isCurrHouseholdOwner" #actions>
           <neb-button small @click="handleAddMember">
             <icon name="material-symbols:person-add-outline-rounded" />
             Add Member
@@ -182,8 +181,8 @@ function mapRoleToColor(role: OutMember['role']) {
         </template>
 
         <template #row-actions="{ data: { original } }">
-          <icon name="material-symbols:edit-outline-rounded" @click="handleEditMember(original)" />
-          <icon name="material-symbols:delete-outline-rounded" @click="handleDeleteMember(original)" />
+          <icon v-if="isCurrHouseholdOwner" name="material-symbols:edit-outline-rounded" @click="handleEditMember(original)" />
+          <icon v-if="isCurrHouseholdOwner" name="material-symbols:delete-outline-rounded" @click="handleDeleteMember(original)" />
         </template>
       </neb-table>
     </div>
@@ -271,7 +270,7 @@ function mapRoleToColor(role: OutMember['role']) {
       <template #actions>
         <neb-button
           variant="secondary"
-          @click="closeModal"
+          @click="closeModal()"
         >
           Cancel
         </neb-button>
@@ -279,7 +278,7 @@ function mapRoleToColor(role: OutMember['role']) {
           variant="primary"
           :disabled="isLoading"
           :loading="isLoading"
-          @click="handleEditSubmit"
+          @click="handleEditSubmit()"
         >
           Update Role
         </neb-button>

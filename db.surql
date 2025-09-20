@@ -6,7 +6,8 @@ DEFINE TABLE OVERWRITE user SCHEMAFULL PERMISSIONS
 	FOR update WHERE id = $auth.id
 	FOR create, delete NONE;
 
-DEFINE FIELD OVERWRITE email ON user TYPE string ASSERT string::is::email($value) PERMISSIONS FOR select WHERE id = $auth.id;
+DEFINE FIELD OVERWRITE email ON user TYPE string ASSERT string::is::email($value) PERMISSIONS
+	FOR select WHERE id = $auth.id || id IN ($auth.id -> member -> household <- member <- user);
 DEFINE FIELD OVERWRITE username ON user TYPE string;
 DEFINE FIELD OVERWRITE password ON user TYPE string PERMISSIONS NONE;
 DEFINE FIELD OVERWRITE created_at ON user TYPE datetime DEFAULT time::now();
@@ -19,7 +20,7 @@ DEFINE INDEX OVERWRITE username_unique ON user FIELDS username UNIQUE;
 DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
 	SIGNUP ( CREATE user SET email = $email, username = $username, password = crypto::argon2::generate($password) )
 	SIGNIN ( SELECT * FROM ONLY user WHERE email = $email && crypto::argon2::compare(password, $password))
-	DURATION FOR TOKEN 15m, FOR SESSION 12h
+	DURATION FOR TOKEN 8h, FOR SESSION 12h
 ;
 
 DEFINE FUNCTION OVERWRITE fn::can_read_household($household: record<household>) {
@@ -109,8 +110,8 @@ DEFINE FIELD OVERWRITE household ON unit TYPE record<household>;
 // TABLE: household
 DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
 	for create FULL
-	for select WHERE (SELECT id FROM member WHERE in = $auth.id && out = id) != NONE
-	for delete, update WHERE (SELECT id FROM member WHERE in = $auth.id && out = id && role = "owner") != NONE;
+	for select WHERE (SELECT id FROM member WHERE in = $auth.id && out = $parent.id) != NONE
+	for delete, update WHERE (SELECT id FROM member WHERE in = $auth.id && out = $parent.id && role = "owner") != NONE;
 DEFINE FIELD OVERWRITE name ON household TYPE string;
 DEFINE FIELD OVERWRITE created_at ON household TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON household TYPE datetime VALUE time::now();
@@ -120,8 +121,12 @@ DEFINE EVENT OVERWRITE relate_owner ON household WHEN $event = "CREATE" THEN (
 );
 
 // TABLE: member
-DEFINE TABLE OVERWRITE member SCHEMAFULL TYPE RELATION FROM user TO household PERMISSIONS FOR select WHERE in = $auth.id;
+DEFINE TABLE OVERWRITE member SCHEMAFULL TYPE RELATION FROM user TO household PERMISSIONS
+	FOR select WHERE (SELECT id FROM ONLY member WHERE in = $auth.id && out = $parent.out) != NONE
+	FOR create, update, delete WHERE (SELECT VALUE role FROM ONLY member WHERE in = $auth.id && out = $parent.out) == "owner";
 DEFINE FIELD OVERWRITE role ON member TYPE "owner" | "writer" | "guest";
+
+DEFINE INDEX OVERWRITE member_unique ON member FIELDS in, out UNIQUE;
 
 // TABLE: shopping_list
 DEFINE TABLE OVERWRITE shopping_list SCHEMAFULL PERMISSIONS 
@@ -250,11 +255,11 @@ DEFINE FUNCTION OVERWRITE fn::add_member_to_household($household: record<househo
 		THROW "User with the provided username does not exist.";
 	};
 
-	IF ((SELECT id FROM member WHERE in = $user.id && out = $household) != NONE) {
+	IF ((SELECT id FROM ONLY member WHERE in = $user.id && out = $household) != NONE) {
 		THROW "User is already a member of the household.";
 	};
 
-	RELATE ONLY $user -> member -> $household SET role = $role;
+	RELATE ONLY ($user.id) -> member -> $household SET role = $role;
 };
 
 COMMIT;

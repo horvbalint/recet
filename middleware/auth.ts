@@ -1,4 +1,5 @@
-import type { OutUser } from '~/db'
+import type { RecordId } from 'surrealdb'
+import type { OutMember, OutUser } from '~/db'
 
 export default defineNuxtRouteMiddleware(async () => {
   try {
@@ -9,6 +10,8 @@ export default defineNuxtRouteMiddleware(async () => {
       await db.authenticate(localStorage.recet_token)
 
     authUser.value = await db.info<OutUser>() || null
+    const [memberships] = await db.query<[{ out: RecordId<'household'>, role: OutMember['role'] }[]]>(surql`SELECT out, role FROM member WHERE in = $auth.id`)
+    authMemberships.value = new Map(memberships.map(m => [m.out.toString(), m.role]))
 
     if (!authUser.value)
       throw new Error('Not authenticated')

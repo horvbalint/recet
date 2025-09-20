@@ -219,12 +219,12 @@ function mapRoleToColor(role: OutMember['role']) {
       </template>
 
       <template #actions>
-        <neb-button variant="secondary" @click="closeModal()">
+        <neb-button type="secondary" @click="closeModal()">
           Cancel
         </neb-button>
 
         <neb-button
-          variant="primary"
+          type="primary"
           :disabled="!addForm.username || isLoading"
           :loading="isLoading"
           @click="handleAddSubmit()"
@@ -245,13 +245,7 @@ function mapRoleToColor(role: OutMember['role']) {
       <template #content>
         <neb-validator v-model="isFormValid">
           <div class="modal-form-content">
-            <div class="existing-user-info">
-              <label class="form-label">User</label>
-              <div class="user-info">
-                <strong>{{ memberToEdit?.username }}</strong>
-                <span class="user-email">{{ memberToEdit?.email }}</span>
-              </div>
-            </div>
+            <neb-avatar-card :title="memberToEdit?.username" :text="memberToEdit?.email" />
 
             <neb-select
               v-model="editForm.role"
@@ -266,12 +260,12 @@ function mapRoleToColor(role: OutMember['role']) {
       </template>
 
       <template #actions>
-        <neb-button variant="secondary" @click="closeModal()">
+        <neb-button type="secondary" @click="closeModal()">
           Cancel
         </neb-button>
 
         <neb-button
-          variant="primary"
+          type="primary"
           :disabled="isLoading"
           :loading="isLoading"
           @click="handleEditSubmit()"
@@ -294,32 +288,5 @@ function mapRoleToColor(role: OutMember['role']) {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-}
-
-.existing-user-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.form-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-neutral-700);
-}
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3);
-  background-color: var(--color-neutral-50);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-neutral-200);
-}
-
-.user-email {
-  font-size: var(--text-sm);
-  color: var(--color-neutral-600);
 }
 </style>

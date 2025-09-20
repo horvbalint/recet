@@ -24,12 +24,21 @@ DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
 ;
 
 DEFINE FUNCTION OVERWRITE fn::can_read_household($household: record<household>) {
-	RETURN $household IN $auth.id -> member -> household.id;
+	RETURN fn::users_role_in_household($household) != NONE;
 };
 
 DEFINE FUNCTION OVERWRITE fn::can_write_household($household: record<household>) {
-	RETURN $household IN (SELECT VALUE out FROM member WHERE in = $auth && role IN ["owner", "writer"])
+	RETURN fn::users_role_in_household($household) IN ["owner", "writer"];
 };
+
+DEFINE FUNCTION OVERWRITE fn::is_household_owner($household: record<household>) {
+	RETURN fn::users_role_in_household($household) == "owner";
+};
+
+DEFINE FUNCTION OVERWRITE fn::users_role_in_household($household: record<household>) {
+	RETURN SELECT VALUE role FROM ONLY member WHERE in = $auth.id && out = $household;
+};
+
 
 // TABLE: recipe
 DEFINE TABLE OVERWRITE recipe SCHEMAFULL PERMISSIONS
@@ -110,8 +119,8 @@ DEFINE FIELD OVERWRITE household ON unit TYPE record<household>;
 // TABLE: household
 DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
 	for create FULL
-	for select WHERE (SELECT id FROM ONLY member WHERE in = $auth.id && out = $parent.id) != NONE
-	for delete, update WHERE (SELECT id FROM ONLY member WHERE in = $auth.id && out = $parent.id && role = "owner") != NONE;
+	for select WHERE fn::can_read_household(id)
+	for delete, update WHERE fn::is_household_owner(id);
 DEFINE FIELD OVERWRITE name ON household TYPE string;
 DEFINE FIELD OVERWRITE created_at ON household TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON household TYPE datetime VALUE time::now();
@@ -122,8 +131,8 @@ DEFINE EVENT OVERWRITE relate_owner ON household WHEN $event = "CREATE" THEN (
 
 // TABLE: member
 DEFINE TABLE OVERWRITE member SCHEMAFULL TYPE RELATION FROM user TO household PERMISSIONS
-	FOR select WHERE (SELECT id FROM ONLY member WHERE in = $auth.id && out = $parent.out) != NONE
-	FOR create, update, delete WHERE (SELECT VALUE role FROM ONLY member WHERE in = $auth.id && out = $parent.out) == "owner";
+	FOR select WHERE fn::can_read_household(out)
+	FOR create, update, delete WHERE fn::is_household_owner(out);
 DEFINE FIELD OVERWRITE role ON member TYPE "owner" | "writer" | "guest";
 
 DEFINE INDEX OVERWRITE member_unique ON member FIELDS in, out UNIQUE;
@@ -139,8 +148,8 @@ DEFINE FIELD OVERWRITE items ON shopping_list TYPE array<object> DEFAULT [];
 DEFINE FIELD OVERWRITE items.*.ingredient ON shopping_list TYPE record<ingredient> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE items.*.amount ON shopping_list TYPE option<number>;
 DEFINE FIELD OVERWRITE items.*.unit ON shopping_list TYPE option<record<unit>> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE items.*.recipe ON shopping_list TYPE option<record<recipe>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE items.*.checked ON shopping_list TYPE bool DEFAULT false;
-DEFINE FIELD OVERWRITE items.*.flagged ON shopping_list TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE updated_at ON shopping_list TYPE datetime VALUE time::now();
 
 // TABLE: weekly_plan

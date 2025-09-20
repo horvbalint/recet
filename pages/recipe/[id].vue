@@ -476,7 +476,7 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
 
 @media (--mobile-lg-viewport) {
   .recipe-container {
-    padding: var(--space-3);
+    padding: 0;
   }
 
   .recipe-hero {

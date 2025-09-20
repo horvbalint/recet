@@ -9,6 +9,11 @@ export default defineNuxtConfig({
     '**': {
       appMiddleware: ['auth', 'household'],
     },
+    '/create-first-household': {
+      appMiddleware: {
+        household: false,
+      },
+    },
     '/auth/**': {
       appMiddleware: {
         auth: false,

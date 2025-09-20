@@ -61,7 +61,7 @@ async function handleSaveHousehold() {
 
         <div class="form-actions">
           <neb-button
-            variant="primary"
+            type="primary"
             :disabled="!isFormValid || isLoading"
             :loading="isLoading"
             @click="handleSaveHousehold()"
@@ -98,7 +98,7 @@ async function handleSaveHousehold() {
   gap: var(--space-5);
   padding: var(--space-6);
   background-color: var(--color-neutral-25);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-large);
   border: 1px solid var(--color-neutral-200);
 }
 
@@ -120,7 +120,7 @@ async function handleSaveHousehold() {
   padding: var(--space-6);
   text-align: center;
   background-color: var(--color-neutral-50);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-default);
   border: 1px dashed var(--color-neutral-300);
 }
 

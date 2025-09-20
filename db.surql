@@ -110,8 +110,8 @@ DEFINE FIELD OVERWRITE household ON unit TYPE record<household>;
 // TABLE: household
 DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
 	for create FULL
-	for select WHERE (SELECT id FROM member WHERE in = $auth.id && out = $parent.id) != NONE
-	for delete, update WHERE (SELECT id FROM member WHERE in = $auth.id && out = $parent.id && role = "owner") != NONE;
+	for select WHERE (SELECT id FROM ONLY member WHERE in = $auth.id && out = $parent.id) != NONE
+	for delete, update WHERE (SELECT id FROM ONLY member WHERE in = $auth.id && out = $parent.id && role = "owner") != NONE;
 DEFINE FIELD OVERWRITE name ON household TYPE string;
 DEFINE FIELD OVERWRITE created_at ON household TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON household TYPE datetime VALUE time::now();

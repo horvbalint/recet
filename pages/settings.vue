@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { OutHousehold } from '~/db'
 
-// Form data
+watch(isCurrHouseholdOwner, () => {
+  if (!isCurrHouseholdOwner.value)
+    navigateTo('/')
+}, { immediate: true })
+
 const householdForm = ref({
   name: currentHousehold.value!.name,
 })

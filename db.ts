@@ -141,17 +141,33 @@ export type OutRecipeTag = {
   name: string,
 }
 
+export type InShop = {
+  id?: RecordId<"shop">,
+  categories: Array<Required<InIngredientCategory>['id']>,
+  household: Required<InHousehold>['id'],
+  name: string,
+}
+
+export type OutShop = {
+  id: RecordId<"shop">,
+  categories: Array<OutIngredientCategory>,
+  household: OutHousehold,
+  name: string,
+}
+
 export type InShoppingList = {
   id?: RecordId<"shopping_list">,
   household: Required<InHousehold>['id'],
   items?: Array<{
     amount?: number | undefined,
+    category?: Required<InIngredientCategory>['id'] | undefined,
     checked?: boolean,
-    flagged?: boolean,
     ingredient: Required<InIngredient>['id'],
+    recipe?: Required<InRecipe>['id'] | undefined,
     unit?: Required<InUnit>['id'] | undefined,
   }>,
   name: string,
+  shop?: Required<InShop>['id'] | undefined,
   updated_at: Date | string,
 }
 
@@ -160,12 +176,14 @@ export type OutShoppingList = {
   household: OutHousehold,
   items: Array<{
     amount?: number | undefined,
+    category?: OutIngredientCategory | undefined,
     checked: boolean,
-    flagged: boolean,
     ingredient: OutIngredient,
+    recipe?: OutRecipe | undefined,
     unit?: OutUnit | undefined,
   }>,
   name: string,
+  shop?: OutShop | undefined,
   updated_at: string,
 }
 
@@ -774,6 +792,34 @@ export const tables = {
       }
     }
   },
+  "shop": {
+    "fields": {
+      "categories": {
+        "type": {
+          "name": "array",
+          "item": {
+            "name": "record",
+            "tables": [
+              "ingredient_category"
+            ]
+          }
+        }
+      },
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
+        }
+      },
+      "name": {
+        "type": {
+          "name": "string"
+        }
+      }
+    }
+  },
   "shopping_list": {
     "fields": {
       "household": {
@@ -798,13 +844,18 @@ export const tables = {
                   }
                 }
               },
-              "checked": {
+              "category": {
                 "type": {
-                  "name": "boolean"
-                },
-                "hasDefault": true
+                  "name": "option",
+                  "inner": {
+                    "name": "record",
+                    "tables": [
+                      "ingredient_category"
+                    ]
+                  }
+                }
               },
-              "flagged": {
+              "checked": {
                 "type": {
                   "name": "boolean"
                 },
@@ -816,6 +867,17 @@ export const tables = {
                   "tables": [
                     "ingredient"
                   ]
+                }
+              },
+              "recipe": {
+                "type": {
+                  "name": "option",
+                  "inner": {
+                    "name": "record",
+                    "tables": [
+                      "recipe"
+                    ]
+                  }
                 }
               },
               "unit": {
@@ -837,6 +899,17 @@ export const tables = {
       "name": {
         "type": {
           "name": "string"
+        }
+      },
+      "shop": {
+        "type": {
+          "name": "option",
+          "inner": {
+            "name": "record",
+            "tables": [
+              "shop"
+            ]
+          }
         }
       },
       "updated_at": {

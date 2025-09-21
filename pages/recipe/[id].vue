@@ -38,7 +38,7 @@ const route = useRoute()
 const recipeId = route.params.id as string
 
 const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | null>(`recipe-${recipeId}`, async () => {
-  const [result] = await db.query<[Recipe[]]>(surql`
+  const [result] = await db.query<[Recipe]>(surql`
     SELECT
       *,
       author.{username},
@@ -50,12 +50,14 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
           ingredient: $i.ingredient.name,
           unit: $i.unit.name
       })
-    FROM
+    FROM ONLY
       type::thing('recipe', ${recipeId})
   `)
 
-  return result?.[0] || null
+  return result
 })
+
+watch(currentHousehold, async () => await navigateTo('/'))
 </script>
 
 <template>

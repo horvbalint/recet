@@ -11,7 +11,10 @@ const emit = defineEmits<{
 
 const modelValue = defineModel<boolean>({ required: true })
 
-const { data: categories } = await useAsyncData(async () => {
+const dynamicCreateTable = ref<'ingredient_category' | null>(null)
+const dynamicCreateSearchTerm = ref<string>('')
+
+const { data: categories, refresh: refreshCategories } = await useAsyncData(async () => {
   const [result] = await db.query<[OutIngredientCategory[]]>(surql`SELECT id, name FROM ingredient_category ORDER BY name ASC`)
   return result || []
 })
@@ -32,6 +35,15 @@ function transformBeforeEdit(data: any) {
 
 function handleSave(item: OutIngredient) {
   emit('saved', item)
+}
+
+function handleCreateCategory(searchTerm: string) {
+  dynamicCreateSearchTerm.value = searchTerm
+  dynamicCreateTable.value = 'ingredient_category'
+}
+
+function onCategoryCreated() {
+  refreshCategories()
 }
 </script>
 
@@ -57,7 +69,16 @@ function handleSave(item: OutIngredient) {
         track-by-key="name"
         placeholder="Select a category"
         allow-empty
+        @new="handleCreateCategory($event)"
       />
     </template>
   </master-data-modal>
+
+  <ingredient-category-master-data-modal
+    v-if="dynamicCreateTable === 'ingredient_category'"
+    :model-value="true"
+    :initial-data="{ name: dynamicCreateSearchTerm }"
+    @update:model-value="dynamicCreateTable = null"
+    @saved="onCategoryCreated()"
+  />
 </template>

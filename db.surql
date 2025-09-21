@@ -100,13 +100,17 @@ DEFINE FIELD OVERWRITE category ON ingredient TYPE option<record<ingredient_cate
 DEFINE FIELD OVERWRITE skip_from_shopping_list ON ingredient TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE household ON ingredient TYPE record<household>;
 
-// TABLE: category
+// TABLE: ingredient_category
 DEFINE TABLE OVERWRITE ingredient_category SCHEMAFULL PERMISSIONS 
 	for select WHERE fn::can_read_household(household)
 	for create, delete, update WHERE fn::can_write_household(household);
 	
 DEFINE FIELD OVERWRITE name ON ingredient_category TYPE string;
 DEFINE FIELD OVERWRITE household ON ingredient_category TYPE record<household>;
+
+DEFINE EVENT OVERWRITE add_to_shops ON ingredient_category WHEN $event = "CREATE" THEN (
+	UPDATE shop SET categories = categories + [$after] WHERE household = $after.household
+);
 
 // TABLE: unit
 DEFINE TABLE OVERWRITE unit SCHEMAFULL PERMISSIONS 
@@ -115,6 +119,15 @@ DEFINE TABLE OVERWRITE unit SCHEMAFULL PERMISSIONS
 	
 DEFINE FIELD OVERWRITE name ON unit TYPE string;
 DEFINE FIELD OVERWRITE household ON unit TYPE record<household>;
+
+// TABLE: shop
+DEFINE TABLE OVERWRITE shop SCHEMAFULL PERMISSIONS 
+	for select WHERE fn::can_read_household(household)
+	for create, delete, update WHERE fn::can_write_household(household);
+	
+DEFINE FIELD OVERWRITE name ON shop TYPE string;
+DEFINE FIELD OVERWRITE household ON shop TYPE record<household>;
+DEFINE FIELD OVERWRITE categories ON shop TYPE array<record<ingredient_category>> ASSERT $value.all(|$v| household = $v.household);
 
 // TABLE: household
 DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
@@ -143,9 +156,11 @@ DEFINE TABLE OVERWRITE shopping_list SCHEMAFULL PERMISSIONS
 	for create, delete, update WHERE fn::can_write_household(household);
 	
 DEFINE FIELD OVERWRITE household ON shopping_list TYPE record<household>;
+DEFINE FIELD OVERWRITE shop ON shopping_list TYPE option<record<shop>>;
 DEFINE FIELD OVERWRITE name ON shopping_list TYPE string;
 DEFINE FIELD OVERWRITE items ON shopping_list TYPE array<object> DEFAULT [];
 DEFINE FIELD OVERWRITE items.*.ingredient ON shopping_list TYPE record<ingredient> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE items.*.category ON shopping_list TYPE option<record<ingredient_category>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE items.*.amount ON shopping_list TYPE option<number>;
 DEFINE FIELD OVERWRITE items.*.unit ON shopping_list TYPE option<record<unit>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE items.*.recipe ON shopping_list TYPE option<record<recipe>> ASSERT household = $value.household;

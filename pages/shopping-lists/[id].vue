@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import type { InShoppingList, OutIngredient, OutShoppingList, OutUnit } from '~/db'
+import type { OutIngredient, OutIngredientCategory, OutShop, OutShoppingList, OutUnit } from '~/db'
 
 const route = useRoute()
 const listId = route.params.id as string
 
 const { status, data, refresh, error } = useAsyncData('shopping-list', async () => {
-  const [shoppingList, ingredients, units] = await db.query<[OutShoppingList, OutIngredient[], OutUnit[]]>(surql`
-    SELECT * FROM ONLY type::thing(shopping_list, ${listId}) FETCH items.ingredient, items.unit, items.recipe, items.ingredient.category;
-    SELECT * FROM ingredient;
+  const [shoppingList, ingredients, units, categories, shops] = await db.query<[OutShoppingList, OutIngredient[], OutUnit[], OutIngredientCategory[], OutShop[]]>(surql`
+    SELECT * FROM ONLY type::thing(shopping_list, ${listId}) FETCH shop, items.ingredient, items.unit, items.recipe, items.ingredient.category, items.category;
+    SELECT * FROM ingredient FETCH category;
     SELECT * FROM unit;
+    SELECT * FROM ingredient_category ORDER BY name ASC;
+    SELECT * FROM shop ORDER BY name ASC FETCH categories;
   `)
-  return { shoppingList, ingredients, units }
+  return { shoppingList, ingredients, units, categories, shops }
 })
 
 const isLoading = ref(false)
@@ -19,21 +21,35 @@ const newItem = ref({
   ingredient: null as OutIngredient | null,
   amount: '',
   unit: null as OutUnit | null,
+  category: undefined as OutIngredientCategory | undefined,
 })
+
+type Table = 'ingredient' | 'unit'
+const dynamicCreateTable = ref<Table | null>(null)
+const dynamicCreateSearchTerm = ref<string>('')
+
+const shop = ref(data.value?.shoppingList.shop)
+watchOnce(data, () => shop.value = data.value?.shoppingList.shop)
 
 const groupedItems = computed(() => {
   if (!data.value?.shoppingList.items)
     return {}
 
-  const groups: Record<string, OutShoppingList['items'][number][]> = {}
+  const categoryList = shop.value?.categories || data.value.categories
+  const groups: Record<string, OutShoppingList['items'][number][]> = Object.fromEntries(categoryList.map(c => [c.name, []]))
 
   for (const item of data.value.shoppingList.items) {
-    const categoryName = item.ingredient.category?.name || 'Other'
+    const categoryName = item.category?.name || item.ingredient.category?.name || 'Other'
 
     if (!groups[categoryName])
       groups[categoryName] = []
 
     groups[categoryName].push(item)
+  }
+
+  for (const category in groups) {
+    if (groups[category]!.length === 0)
+      delete groups[category]
   }
 
   return groups
@@ -49,6 +65,7 @@ async function updateListItems(onSuccess?: () => void) {
       unit: item.unit?.id,
       checked: item.checked,
       recipe: item.recipe?.id,
+      category: item.category?.id,
     }))
 
     await db.query(surql`UPDATE ${data.value!.shoppingList.id} SET items = ${items}`)
@@ -76,6 +93,7 @@ function handleSubmit() {
       ingredient: newItem.value.ingredient,
       amount: newItem.value.amount ? Number(newItem.value.amount) : undefined,
       unit: newItem.value.unit,
+      category: newItem.value.category,
       checked: false,
     })
   }
@@ -121,8 +139,30 @@ function startEditItem(categoryName: string, index: number) {
 const modalTitle = computed(() => showFormModal.value === 'add' ? 'Add Item' : 'Edit Item')
 const modalSubmitText = computed(() => typeof showFormModal.value === 'object' ? 'Save Changes' : 'Add Item')
 
-function goBack() {
+watch(currentHousehold, () => goToShoppingLists())
+
+function goToShoppingLists() {
   navigateTo('/shopping-lists')
+}
+
+function handleCreateIngredient(searchTerm: string) {
+  dynamicCreateSearchTerm.value = searchTerm
+  dynamicCreateTable.value = 'ingredient'
+}
+
+function handleCreateUnit(searchTerm: string) {
+  dynamicCreateSearchTerm.value = searchTerm
+  dynamicCreateTable.value = 'unit'
+}
+
+function onIngredientCreated(ingredient: OutIngredient) {
+  newItem.value.ingredient = ingredient
+  refresh()
+}
+
+function onUnitCreated(unit: OutUnit) {
+  newItem.value.unit = unit
+  refresh()
 }
 </script>
 
@@ -136,12 +176,25 @@ function goBack() {
         icon="material-symbols:shopping-cart-outline-rounded"
       >
         <template #actions>
-          <neb-button type="secondary" @click="goBack()">
+          <div class="shop-select-wrapper">
+            <neb-select
+              v-if="data"
+              v-model="shop"
+              :options="data!.shops"
+              track-by-key="name"
+              label-key="name"
+              placeholder="Shop"
+              no-search
+              allow-empty
+            />
+          </div>
+
+          <neb-button type="secondary" small @click="goToShoppingLists()">
             <icon name="material-symbols:arrow-back-rounded" />
             Back
           </neb-button>
 
-          <neb-button type="primary" @click="showFormModal = 'add'">
+          <neb-button type="primary" small @click="showFormModal = 'add'">
             <icon name="material-symbols:add-rounded" />
             Add Item
           </neb-button>
@@ -224,13 +277,15 @@ function goBack() {
         <div class="modal-form-content">
           <neb-select
             v-model="newItem.ingredient"
-            :options="data!.ingredients || []"
+            :options="data!.ingredients"
             label="Ingredient"
             placeholder="Select an ingredient"
             track-by-key="name"
             label-key="name"
             required
             :disabled="isLoading"
+            @new="handleCreateIngredient($event)"
+            @update:model-value="newItem.category = ($event as OutIngredient)?.category"
           />
 
           <div class="amount-row">
@@ -241,21 +296,31 @@ function goBack() {
               placeholder="e.g., 2"
               step="0.1"
               :disabled="isLoading"
-              class="amount-input"
             />
 
             <neb-select
               v-model="newItem.unit"
-              :options="data!.units || []"
+              :options="data!.units"
               label="Unit"
               placeholder="Select unit"
               track-by-key="name"
               label-key="name"
               :disabled="isLoading"
               allow-empty
-              class="unit-select"
+              @new="handleCreateUnit($event)"
             />
           </div>
+
+          <neb-select
+            v-model="newItem.category"
+            :options="data!.categories"
+            label="Category"
+            placeholder="Select a category"
+            track-by-key="name"
+            label-key="name"
+            :disabled="isLoading"
+            allow-empty
+          />
         </div>
       </template>
 
@@ -274,12 +339,33 @@ function goBack() {
         </neb-button>
       </template>
     </neb-modal>
+
+    <!-- Create modals -->
+    <ingredient-master-data-modal
+      v-if="dynamicCreateTable === 'ingredient'"
+      :model-value="true"
+      :initial-data="{ name: dynamicCreateSearchTerm }"
+      @update:model-value="dynamicCreateTable = null"
+      @saved="onIngredientCreated"
+    />
+
+    <unit-master-data-modal
+      v-if="dynamicCreateTable === 'unit'"
+      :model-value="true"
+      :initial-data="{ name: dynamicCreateSearchTerm }"
+      @update:model-value="dynamicCreateTable = null"
+      @saved="onUnitCreated"
+    />
   </nuxt-layout>
 </template>
 
 <style scoped>
 .page-wrapper {
   position: relative;
+}
+
+.shop-select-wrapper {
+  width: 110px;
 }
 
 .loading-wrapper {

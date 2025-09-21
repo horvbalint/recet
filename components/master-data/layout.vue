@@ -54,18 +54,18 @@ async function handleDeleteClick(item: T) {
     >
       <template #actions>
         <neb-button small @click="handleCreateClick()">
-          <icon name="material-symbols:add-rounded" />
+          <Icon name="material-symbols:add-rounded" />
           Add {{ props.name }}
         </neb-button>
       </template>
 
       <template #row-actions="{ data: { original } }">
-        <icon
+        <Icon
           name="material-symbols:edit-outline-rounded"
           class="action-icon"
           @click="handleEditClick(original)"
         />
-        <icon
+        <Icon
           name="material-symbols:delete-outline-rounded"
           class="action-icon delete-icon"
           @click="handleDeleteClick(original)"

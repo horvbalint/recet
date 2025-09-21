@@ -270,6 +270,7 @@ const isMobileMenuOpen = ref(false)
   display: flex;
   flex-direction: column;
   padding: var(--space-6) 0 0;
+  max-width: 100vw;
 }
 
 .content-header-area {

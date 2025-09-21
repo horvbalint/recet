@@ -21,7 +21,7 @@ function handleSave(item: OutIngredientCategory) {
     v-model="modelValue"
     table="ingredient_category"
     name="category"
-    icon="material-symbols:category-rounded"
+    icon="material-symbols:category-outline-rounded"
     :initial-data
     @saved="handleSave"
   >

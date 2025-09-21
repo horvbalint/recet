@@ -4,43 +4,33 @@ import type { OutShoppingList } from '~/db'
 
 const router = useRouter()
 
-const { status, data: shoppingLists, refresh } = await useAsyncData('shopping-lists', () => db.select('shopping_list') as Promise<OutShoppingList[]>)
+const { data: shoppingLists, status: shoppingListsStatus, refresh: refreshShoppingLists } = useAsyncData('shopping-lists', async () => {
+  const [shoppingLists] = await db.query<[OutShoppingList[]]>(surql`
+    SELECT
+      *
+    FROM
+      shopping_list
+    WHERE
+      household = ${currentHousehold.value!.id}
+    ORDER BY
+      updated_at DESC
+    FETCH
+      shop
+  `)
 
-const isLoading = ref(false)
-const showCreateModal = ref(false)
-const newListName = ref('')
+  return shoppingLists
+}, { watch: [currentHousehold] })
 
-async function handleCreateList() {
-  if (!newListName.value.trim()) {
-    return
-  }
-
-  isLoading.value = true
-  try {
-    await db.query(surql`CREATE shopping_list CONTENT ${{
-      name: newListName.value.trim(),
-      items: [],
-      household: currentHousehold.value!.id,
-    }}`)
-
-    useNebToast({ type: 'success', title: 'List created', description: `"${newListName.value}" has been created.` })
-
-    newListName.value = ''
-    showCreateModal.value = false
-    await refresh()
-  }
-  catch (error) {
-    console.error('Error creating list:', error)
-    useNebToast({ type: 'error', title: 'Creation failed', description: 'Could not create the shopping list.' })
-  }
-  finally {
-    isLoading.value = false
-  }
+const status = shoppingListsStatus
+async function refresh() {
+  await refreshShoppingLists()
 }
 
-function handleCloseModal() {
+const showCreateModal = ref(false)
+
+async function handleListChange() {
   showCreateModal.value = false
-  newListName.value = ''
+  await refresh()
 }
 
 function handleViewList(listId: RecordId<'shopping_list'>) {
@@ -90,42 +80,10 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
       </div>
     </neb-state-content>
 
-    <!-- Create List Modal -->
-    <neb-modal
+    <shopping-list-modal
       v-model="showCreateModal"
-      title="Create Shopping List"
-      header-icon="material-symbols:add-rounded"
-      max-width="500px"
-      :close-on-background-click="false"
-    >
-      <template #content>
-        <div class="modal-form-content">
-          <neb-input
-            v-model="newListName"
-            label="List Name"
-            placeholder="e.g., Weekly Groceries, Party Shopping"
-            required
-            :disabled="isLoading"
-            @keydown.enter="handleCreateList()"
-          />
-        </div>
-      </template>
-
-      <template #actions>
-        <neb-button type="secondary" @click="handleCloseModal()">
-          Cancel
-        </neb-button>
-
-        <neb-button
-          type="primary"
-          :disabled="!newListName.trim() || isLoading"
-          :loading="isLoading"
-          @click="handleCreateList()"
-        >
-          Create List
-        </neb-button>
-      </template>
-    </neb-modal>
+      @change="handleListChange()"
+    />
   </nuxt-layout>
 </template>
 
@@ -140,12 +98,6 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: var(--space-6);
-}
-
-.modal-form-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
 }
 
 @media (--tablet-viewport) {

@@ -1,24 +1,24 @@
 <script setup lang="ts">
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
-import type { OutIngredientCategory } from '~/db'
+import type { OutShop } from '~/db'
 
-const getQuery = surql`SELECT * FROM ingredient_category WHERE household = type::thing(${householdGap}) ORDER BY name ASC`
+const getQuery = surql`SELECT *, categories.* FROM shop WHERE household = type::thing(${householdGap}) ORDER BY name ASC FETCH categories`
 
-const columns: Columns<OutIngredientCategory> = {
+const columns: Columns<OutShop> = {
   name: { text: 'Name' },
 }
 </script>
 
 <template>
   <master-data-layout
-    table="ingredient_category"
-    name="category"
-    icon="material-symbols:category-outline-rounded"
+    table="shop"
+    name="shop"
+    icon="material-symbols:store-outline"
     :get-query
     :columns="columns"
   >
     <template #modal="{ close, afterSave, docToEdit }">
-      <ingredient-category-master-data-modal
+      <shop-master-data-modal
         :model-value="true"
         :initial-data="docToEdit"
         @update:model-value="close()"

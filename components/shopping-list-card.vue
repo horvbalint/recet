@@ -14,9 +14,7 @@ const emit = defineEmits<{
 
 dayjs.extend(relativeTime)
 
-const showRenameModal = ref(false)
-const newListName = ref('')
-const isRenaming = ref(false)
+const showEditModal = ref(false)
 
 const menuItems = [
   {
@@ -33,29 +31,12 @@ const menuItems = [
 ]
 
 function startRename() {
-  newListName.value = props.list.name
-  showRenameModal.value = true
+  showEditModal.value = true
 }
 
-function handleRenameCancel() {
-  showRenameModal.value = false
-  newListName.value = ''
-}
-
-async function renameList() {
-  try {
-    isRenaming.value = true
-    await db.query(surql`UPDATE ONLY ${props.list.id} SET name = ${newListName.value}`)
-    useNebToast({ type: 'success', title: 'List renamed', description: `List has been renamed to "${newListName.value}".` })
-    emit('changed')
-  }
-  catch (error) {
-    console.error('Error renaming list:', error)
-    useNebToast({ type: 'error', title: 'Rename failed', description: 'Could not rename the shopping list.' })
-  }
-  finally {
-    isRenaming.value = false
-  }
+async function handleListChange() {
+  showEditModal.value = false
+  emit('changed')
 }
 
 async function deleteList() {
@@ -111,25 +92,7 @@ async function deleteList() {
     </div>
   </div>
 
-  <neb-modal v-model="showRenameModal" title="Rename Shopping List">
-    <template #content>
-      <neb-input
-        v-model="newListName"
-        label="List Name"
-        required
-      />
-    </template>
-
-    <template #actions>
-      <neb-button type="secondary" @click="handleRenameCancel()">
-        Cancel
-      </neb-button>
-
-      <neb-button type="primary" :loading="isRenaming" :disabled="isRenaming" @click="renameList()">
-        Save
-      </neb-button>
-    </template>
-  </neb-modal>
+  <shopping-list-modal v-if="showEditModal" v-model="showEditModal" :initial-data="list" @change="handleListChange()" />
 </template>
 
 <style scoped>

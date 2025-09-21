@@ -12,6 +12,7 @@
     "generate-types": "surreal-ts -n recet -d recet --links-fetched -o ./db.ts"
   },
   "dependencies": {
+    "@formkit/drag-and-drop": "^0.5.3",
     "dayjs": "^1.11.18",
     "nebula": "github:horvbalint/nebula",
     "nuxt": "^4.0.3",

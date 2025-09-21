@@ -45,9 +45,10 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
         title="Shopping Lists"
         description="Manage your household shopping lists"
         has-separator
+        :type="pageHeaderType"
       >
-        <template #actions>
-          <neb-button type="primary" @click="showCreateModal = true">
+        <template v-if="shoppingLists?.length" #actions>
+          <neb-button small type="primary" @click="showCreateModal = true">
             <icon name="material-symbols:add-rounded" />
             New List
           </neb-button>

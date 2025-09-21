@@ -155,9 +155,16 @@ function mapRoleToColor(role: OutMember['role']) {
       <neb-content-header
         title="Household Members"
         description="Manage who has access to this household and their permissions"
-        type="page"
+        :type="pageHeaderType"
         has-separator
-      />
+      >
+        <template v-if="isCurrHouseholdOwner" #actions>
+          <neb-button small @click="handleAddMember()">
+            <icon name="material-symbols:person-add-outline-rounded" />
+            Add Member
+          </neb-button>
+        </template>
+      </neb-content-header>
     </template>
 
     <div class="members-page">
@@ -167,13 +174,6 @@ function mapRoleToColor(role: OutMember['role']) {
         :status="status"
         :refresh="refresh"
       >
-        <template v-if="isCurrHouseholdOwner" #actions>
-          <neb-button small @click="handleAddMember()">
-            <icon name="material-symbols:person-add-outline-rounded" />
-            Add Member
-          </neb-button>
-        </template>
-
         <template #td-role="{ data: { original } }">
           <neb-badge :color="mapRoleToColor(original.role)">
             {{ original.role }}

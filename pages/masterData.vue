@@ -17,7 +17,7 @@ const tabs = {
       <neb-content-header
         title="Master Data Management"
         description="Manage units, meal types, cuisines, tags, ingredients, categories, and shops for your recipes"
-        type="page"
+        :type="pageHeaderType"
         has-separator
       />
     </template>

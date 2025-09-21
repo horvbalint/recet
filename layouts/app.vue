@@ -100,7 +100,7 @@ const isMobileMenuOpen = ref(false)
         <header class="top-bar">
           <neb-button
             type="tertiary-neutral"
-            size="small"
+            small
             class="mobile-menu-button"
             @click="isMobileMenuOpen = true"
           >
@@ -254,11 +254,10 @@ const isMobileMenuOpen = ref(false)
 .top-bar {
   display: none;
   background: white;
-  padding: 16px 24px;
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--neutral-color-200);
   align-items: center;
   gap: 16px;
-  min-height: 72px;
 }
 
 .mobile-menu-button {

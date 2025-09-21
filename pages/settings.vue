@@ -38,7 +38,7 @@ async function handleSaveHousehold() {
       <neb-content-header
         title="Household Settings"
         description="Manage your household configuration and preferences"
-        type="page"
+        :type="pageHeaderType"
         has-separator
       />
     </template>

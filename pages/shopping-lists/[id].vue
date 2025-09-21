@@ -174,6 +174,7 @@ function onUnitCreated(unit: OutUnit) {
         :title="data?.shoppingList.name || 'Shopping List'"
         :description="`${data?.shoppingList.items.length || 0} items`"
         icon="material-symbols:shopping-cart-outline-rounded"
+        :type="pageHeaderType"
       >
         <template #actions>
           <div class="shop-select-wrapper">
@@ -188,11 +189,6 @@ function onUnitCreated(unit: OutUnit) {
               allow-empty
             />
           </div>
-
-          <neb-button type="secondary" small @click="goToShoppingLists()">
-            <icon name="material-symbols:arrow-back-rounded" />
-            Back
-          </neb-button>
 
           <neb-button type="primary" small @click="showFormModal = 'add'">
             <icon name="material-symbols:add-rounded" />

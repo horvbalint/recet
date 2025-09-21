@@ -59,11 +59,11 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
       <neb-content-header
         title="Recipes"
         description="Discover and explore delicious recipes from our collection"
-        type="page"
+        :type="pageHeaderType"
         has-separator
       >
-        <template #actions>
-          <neb-button type="primary" @click="$router.push('/recipe/create')">
+        <template v-if="recipes?.length" #actions>
+          <neb-button small type="primary" @click="$router.push('/recipe/create')">
             <icon name="material-symbols:add-rounded" />
             Add Recipe
           </neb-button>

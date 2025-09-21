@@ -148,20 +148,17 @@ function onUnitCreated(unit: OutUnit) {
       <neb-content-header
         title="Create Recipe"
         description="Add a new recipe to your collection"
-        type="page"
+        :type="pageHeaderType"
         has-separator
       >
         <template #actions>
-          <neb-button type="secondary" @click="handleCancel()">
-            Cancel
-          </neb-button>
-
           <neb-button
             type="primary"
+            small
             :disabled="!isFormValid"
             @click="handleSubmit()"
           >
-            <icon name="material-symbols:save-rounded" />
+            <icon name="material-symbols:save-outline-rounded" />
             Save Recipe
           </neb-button>
         </template>

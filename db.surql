@@ -109,7 +109,11 @@ DEFINE FIELD OVERWRITE name ON ingredient_category TYPE string;
 DEFINE FIELD OVERWRITE household ON ingredient_category TYPE record<household>;
 
 DEFINE EVENT OVERWRITE add_to_shops ON ingredient_category WHEN $event = "CREATE" THEN (
-	UPDATE shop SET categories = categories + [$after] WHERE household = $after.household
+	UPDATE shop SET categories = array::push(categories, $after.id) WHERE household = $after.household
+);
+
+DEFINE EVENT OVERWRITE remove_from_shops ON ingredient_category WHEN $event = "DELETE" THEN (
+	UPDATE shop SET categories = array::remove(categories, array::find_index(categories, $before.id)) WHERE household = $before.household && $before.id IN categories
 );
 
 // TABLE: unit

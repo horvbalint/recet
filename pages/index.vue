@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { RecordId } from 'surrealdb'
 
-useColorMode().value = 'dark'
-
 interface Recipe {
   id: RecordId
   name: string

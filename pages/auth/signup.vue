@@ -17,7 +17,7 @@ async function handleSubmit() {
   }
 
   try {
-    await signUp(formData.value.email, formData.value.password, formData.value.username)
+    await signUp(formData.value.email, formData.value.username, formData.value.password)
 
     useNebToast({ type: 'success', title: 'Account created!', description: 'Your account has been created successfully. Please sign in.' })
 

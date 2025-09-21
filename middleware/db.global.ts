@@ -3,7 +3,7 @@ export default defineNuxtRouteMiddleware(async () => {
     return
 
   if (db.status === 'disconnected' || db.status === 'error')
-    await db.connect('ws://localhost:8000/rpc')
+    await db.connect(useRuntimeConfig().public.surrealDbUrl)
 
   await db.ready
 

@@ -73,6 +73,7 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
             :key="list.id.toString()"
             :list="list"
             @view="handleViewList(list.id)"
+            @changed="refresh()"
           />
         </div>
 

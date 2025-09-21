@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { OutIngredient, OutShoppingList, OutUnit } from '~/db'
+import type { InShoppingList, OutIngredient, OutShoppingList, OutUnit } from '~/db'
 
 const route = useRoute()
 const listId = route.params.id as string
@@ -14,12 +14,11 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
 })
 
 const isLoading = ref(false)
-const showAddItemModal = ref(false)
+const showFormModal = ref<'add' | { type: 'edit', categoryName: string, index: number } | null>(null)
 const newItem = ref({
   ingredient: null as OutIngredient | null,
   amount: '',
   unit: null as OutUnit | null,
-  note: '',
 })
 
 const groupedItems = computed(() => {
@@ -38,14 +37,6 @@ const groupedItems = computed(() => {
   }
 
   return groups
-})
-
-const completionProgress = computed(() => {
-  if (!data.value?.shoppingList.items.length)
-    return 0
-
-  const checkedItems = data.value.shoppingList.items.filter(item => item.checked).length
-  return Math.round((checkedItems / data.value.shoppingList.items.length) * 100)
 })
 
 async function updateListItems(onSuccess?: () => void) {
@@ -76,13 +67,18 @@ async function updateListItems(onSuccess?: () => void) {
   }
 }
 
-function handleAddItem() {
-  data.value!.shoppingList.items.push({
-    ingredient: newItem.value.ingredient,
-    amount: newItem.value.amount ? Number(newItem.value.amount) : undefined,
-    unit: newItem.value.unit,
-    checked: false,
-  })
+function handleSubmit() {
+  if (typeof showFormModal.value === 'object') {
+    Object.assign(groupedItems.value[showFormModal.value!.categoryName]![showFormModal.value!.index]!, newItem.value)
+  }
+  else {
+    data.value!.shoppingList.items.push({
+      ingredient: newItem.value.ingredient,
+      amount: newItem.value.amount ? Number(newItem.value.amount) : undefined,
+      unit: newItem.value.unit,
+      checked: false,
+    })
+  }
 
   updateListItems(closeModal)
 }
@@ -100,12 +96,11 @@ async function removeItem(item: OutShoppingList['items'][number]) {
 }
 
 function closeModal() {
-  showAddItemModal.value = false
+  showFormModal.value = null
   newItem.value = {
     ingredient: null,
     amount: '',
     unit: null,
-    note: '',
   }
 }
 
@@ -118,6 +113,14 @@ function getItemAmount(item: OutShoppingList['items'][number]) {
   return parts.join(' ')
 }
 
+function startEditItem(categoryName: string, index: number) {
+  newItem.value = { ...groupedItems.value[categoryName]![index] }
+  showFormModal.value = { type: 'edit', categoryName, index }
+}
+
+const modalTitle = computed(() => showFormModal.value === 'add' ? 'Add Item' : 'Edit Item')
+const modalSubmitText = computed(() => typeof showFormModal.value === 'object' ? 'Save Changes' : 'Add Item')
+
 function goBack() {
   navigateTo('/shopping-lists')
 }
@@ -129,7 +132,7 @@ function goBack() {
       <neb-content-header
         has-separator
         :title="data?.shoppingList.name || 'Shopping List'"
-        :description="`${data?.shoppingList.items.length || 0} items • ${completionProgress}% complete`"
+        :description="`${data?.shoppingList.items.length || 0} items`"
         icon="material-symbols:shopping-cart-outline-rounded"
       >
         <template #actions>
@@ -138,7 +141,7 @@ function goBack() {
             Back
           </neb-button>
 
-          <neb-button type="primary" @click="showAddItemModal = true">
+          <neb-button type="primary" @click="showFormModal = 'add'">
             <icon name="material-symbols:add-rounded" />
             Add Item
           </neb-button>
@@ -146,20 +149,12 @@ function goBack() {
       </neb-content-header>
     </template>
 
-    <neb-state-content :status :refresh :error-description="error?.message">
-      <div class="shopping-list-detail">
-        <!-- Progress Bar -->
-        <div v-if="Object.keys(groupedItems).length > 0" class="progress-section">
-          <div class="progress-header">
-            <span class="progress-label">Progress</span>
-            <span class="progress-text">{{ completionProgress }}% complete</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: `${completionProgress}%` }" />
-          </div>
-        </div>
+    <div class="page-wrapper">
+      <div v-if="status !== 'success'" class="loading-wrapper">
+        <neb-state-content :status :refresh :error-description="error?.message" />
+      </div>
 
-        <!-- Items by Category -->
+      <div v-if="!!data" class="shopping-list-detail">
         <div v-if="Object.keys(groupedItems).length > 0" class="categories-container">
           <div
             v-for="(items, categoryName) in groupedItems"
@@ -178,9 +173,7 @@ function goBack() {
                 class="item-card"
                 :class="{ 'item-checked': item.checked }"
               >
-                <div class="item-checkbox">
-                  <neb-checkbox v-model="item.checked" @update:model-value="updateListItems()" />
-                </div>
+                <neb-checkbox v-model="item.checked" @update:model-value="updateListItems()" />
 
                 <div class="item-content">
                   <div class="item-main">
@@ -198,7 +191,8 @@ function goBack() {
                 </div>
 
                 <div class="item-actions">
-                  <icon name="material-symbols:delete-outline-rounded" @click="removeItem(item)" />
+                  <icon name="material-symbols:edit-outline-rounded" @click="startEditItem(categoryName, index)" />
+                  <icon name="material-symbols:close-rounded" @click="removeItem(item)" />
                 </div>
               </div>
             </div>
@@ -211,17 +205,17 @@ function goBack() {
           title="No items yet"
           description="Add your first item to start shopping."
         >
-          <neb-button type="primary" @click="showAddItemModal = true">
+          <neb-button type="primary" @click="showFormModal = 'add'">
             Add First Item
           </neb-button>
         </neb-empty-state>
       </div>
-    </neb-state-content>
+    </div>
 
-    <!-- Add Item Modal -->
     <neb-modal
-      v-model="showAddItemModal"
-      title="Add Item"
+      v-model="showFormModal"
+      :closed-value="null"
+      :title="modalTitle"
       header-icon="material-symbols:add-rounded"
       max-width="600px"
       :close-on-background-click="false"
@@ -274,9 +268,9 @@ function goBack() {
           type="primary"
           :disabled="!newItem.ingredient || isLoading"
           :loading="isLoading"
-          @click="handleAddItem()"
+          @click="handleSubmit()"
         >
-          Add Item
+          {{ modalSubmitText }}
         </neb-button>
       </template>
     </neb-modal>
@@ -284,49 +278,24 @@ function goBack() {
 </template>
 
 <style scoped>
+.page-wrapper {
+  position: relative;
+}
+
+.loading-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(var(--neutral-color-component-50), 0.5);
+  z-index: 10;
+}
+
 .shopping-list-detail {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-}
-
-.progress-section {
-  background: #fff;
-  border-radius: var(--radius-large);
-  border: 1px solid var(--neutral-color-200);
-  padding: var(--space-5);
-}
-
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-3);
-}
-
-.progress-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--neutral-color-700);
-}
-
-.progress-text {
-  font-size: var(--text-sm);
-  color: var(--neutral-color-600);
-}
-
-.progress-bar {
-  height: 8px;
-  background: var(--neutral-color-100);
-  border-radius: var(--radius-large);
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--primary-color-500);
-  border-radius: var(--radius-large);
-  transition: width var(--duration-default);
 }
 
 .categories-container {
@@ -381,10 +350,6 @@ function goBack() {
 
 .item-card.item-checked .item-name {
   text-decoration: line-through;
-}
-
-.item-checkbox {
-  margin-top: var(--space-1);
 }
 
 .item-content {
@@ -449,6 +414,44 @@ function goBack() {
 
   .item-card {
     padding: var(--space-3) var(--space-4);
+  }
+}
+
+/* Dark mode support */
+.dark-mode {
+  .category-section {
+    background: var(--neutral-color-900);
+    border-color: var(--neutral-color-800);
+  }
+
+  .category-title {
+    color: var(--neutral-color-100);
+    background: var(--neutral-color-800);
+    border-color: var(--neutral-color-700);
+  }
+
+  .category-count {
+    color: var(--neutral-color-400);
+  }
+
+  .item-card {
+    border-color: var(--neutral-color-800);
+  }
+
+  .item-name {
+    color: var(--neutral-color-100);
+  }
+
+  .item-recipe {
+    color: var(--primary-color-400);
+  }
+
+  .item-actions .icon {
+    color: var(--neutral-color-400);
+  }
+
+  .item-actions .icon:hover {
+    color: var(--neutral-color-200);
   }
 }
 </style>

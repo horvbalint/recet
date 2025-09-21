@@ -102,13 +102,6 @@ function handleSubmit() {
 }
 
 async function removeItem(item: OutShoppingList['items'][number]) {
-  const confirmed = await useNebConfirm({
-    title: 'Are you sure you want to remove this item?',
-    description: 'This action cannot be undone.',
-  })
-  if (!confirmed)
-    return
-
   data.value!.shoppingList.items = data.value!.shoppingList.items.filter(i => i !== item)
   updateListItems()
 }
@@ -228,15 +221,15 @@ function onUnitCreated(unit: OutUnit) {
                   <div class="item-main">
                     <span class="item-name">{{ item.ingredient.name || 'Unknown ingredient' }}</span>
 
-                    <neb-badge v-if="item.amount">
+                    <neb-badge v-if="item.amount" class="item-amount">
                       {{ getItemAmount(item) }}
                     </neb-badge>
                   </div>
 
-                  <div v-if="item.recipe" class="item-recipe">
-                    <icon name="material-symbols:restaurant-rounded" />
-                    From recipe
-                  </div>
+                  <nuxt-link v-if="item.recipe" class="item-recipe" :to="`/recipe/${item.recipe.id.id}`">
+                    <icon name="material-symbols:link-rounded" />
+                    From {{ item.recipe.name }}
+                  </nuxt-link>
                 </div>
 
                 <div class="item-actions">
@@ -434,6 +427,10 @@ function onUnitCreated(unit: OutUnit) {
   text-decoration: line-through;
 }
 
+.item-amount {
+  text-wrap: nowrap;
+}
+
 .item-content {
   flex: 1;
   display: flex;
@@ -459,6 +456,15 @@ function onUnitCreated(unit: OutUnit) {
   gap: var(--space-1);
   font-size: var(--text-xs);
   color: var(--primary-color-600);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  .icon {
+    font-size: 16px !important;
+  }
 }
 
 .item-actions {

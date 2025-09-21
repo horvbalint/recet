@@ -86,7 +86,7 @@ async function deleteList() {
     </div>
 
     <div class="list-actions">
-      <neb-button type="secondary" size="small">
+      <neb-button type="secondary" small>
         View List
       </neb-button>
     </div>

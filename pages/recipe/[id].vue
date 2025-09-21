@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { RecordId } from 'surrealdb'
+
 definePageMeta({
   layout: 'app',
 })
@@ -37,7 +39,7 @@ interface Recipe {
 const route = useRoute()
 const recipeId = route.params.id as string
 
-const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | null>(`recipe-${recipeId}`, async () => {
+const { data: recipe, status, error, refresh } = useAsyncData<Recipe | null>(`recipe-${recipeId}`, async () => {
   const [result] = await db.query<[Recipe]>(surql`
     SELECT
       *,
@@ -56,6 +58,55 @@ const { data: recipe, status, error, refresh } = await useAsyncData<Recipe | nul
 
   return result
 })
+
+const { data: shoppingLists, error: shoppingListError } = useAsyncData('shopping-lists-for-recipe', async () => {
+  if (!currentHousehold.value)
+    return []
+
+  const [lists] = await db.query<[{ id: RecordId<'shopping_list'>, name: string }[]]>(surql`
+    SELECT id, name, updated_at FROM shopping_list 
+    WHERE household = ${currentHousehold.value.id}
+    ORDER BY updated_at DESC
+  `)
+
+  return lists
+}, { watch: [currentHousehold] })
+logOnError(shoppingListError)
+
+const shoppingListMenuItems = computed(() => {
+  if (!shoppingLists.value?.length)
+    return []
+
+  return shoppingLists.value.map(list => ({
+    text: list.name,
+    icon: 'material-symbols:shopping-cart-outline-rounded',
+    callback: () => addToShoppingList(list.id),
+  }))
+})
+
+const isAddingToList = ref(false)
+
+async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
+  try {
+    isAddingToList.value = true
+
+    await db.query(surql`
+      fn::add_recipe_ingredients_to_shopping_list(
+        type::thing('recipe', ${recipeId}),
+        ${shoppingListId}
+      )
+    `)
+
+    useNebToast({ type: 'success', title: 'Ingredients added', description: `Added ${recipe.value!.ingredients!.length} ingredients to the shopping list.` })
+  }
+  catch (err) {
+    console.error('Error adding ingredients to shopping list:', err)
+    useNebToast({ type: 'error', title: 'Failed to add ingredients', description: 'Could not add ingredients to shopping list.' })
+  }
+  finally {
+    isAddingToList.value = false
+  }
+}
 
 watch(currentHousehold, async () => await navigateTo('/'))
 </script>
@@ -146,7 +197,23 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
         <main class="recipe-content">
           <section class="ingredients-section">
-            <h2>Ingredients</h2>
+            <neb-content-header
+              title="Ingredients"
+              type="page"
+              has-separator
+            >
+              <template #actions>
+                <neb-menu v-if="recipe.ingredients?.length && shoppingListMenuItems.length" :menus="shoppingListMenuItems" :floating-options="{ placement: 'bottom-end' }">
+                  <template #trigger="{ toggle }">
+                    <neb-button type="secondary" small :loading="isAddingToList" @click="toggle()">
+                      <icon name="material-symbols:add-shopping-cart-rounded" />
+                      Add to Shopping List
+                    </neb-button>
+                  </template>
+                </neb-menu>
+              </template>
+            </neb-content-header>
+
             <div v-if="recipe.ingredients?.length" class="ingredients-list">
               <div
                 v-for="(ingredient, index) in recipe.ingredients"
@@ -169,26 +236,31 @@ watch(currentHousehold, async () => await navigateTo('/'))
           </section>
 
           <section class="instructions-section">
-            <h2>Instructions</h2>
-            <div v-if="recipe.steps?.length" class="steps-list">
-              <div
-                v-for="(step, index) in recipe.steps"
-                :key="index"
-                class="step-item"
-              >
-                <div class="step-number">
-                  {{ index + 1 }}
-                </div>
-                <div class="step-content">
-                  <p class="step-description">
-                    {{ step }}
-                  </p>
+            <neb-content-header
+              title="Instructions"
+              type="page"
+              has-separator
+            >
+              <div v-if="recipe.steps?.length" class="steps-list">
+                <div
+                  v-for="(step, index) in recipe.steps"
+                  :key="index"
+                  class="step-item"
+                >
+                  <div class="step-number">
+                    {{ index + 1 }}
+                  </div>
+                  <div class="step-content">
+                    <p class="step-description">
+                      {{ step }}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <p v-else class="empty-message">
-              No instructions provided for this recipe.
-            </p>
+              <p v-else class="empty-message">
+                No instructions provided for this recipe.
+              </p>
+            </neb-content-header>
           </section>
         </main>
       </div>
@@ -287,38 +359,8 @@ watch(currentHousehold, async () => await navigateTo('/'))
   color: var(--neutral-color-500);
 }
 
-.time-breakdown {
-  display: flex;
-  gap: var(--space-6);
-  padding: var(--space-4);
-  background: var(--neutral-color-50);
-  border-radius: var(--radius-default);
-  border: 1px solid var(--neutral-color-200);
-}
-
-.time-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.time-label {
-  font-size: var(--text-sm);
-  color: var(--neutral-color-600);
-  font-weight: 500;
-}
-
-.time-value {
-  font-size: var(--text-lg);
-  color: var(--neutral-color-900);
-  font-weight: 600;
-}
-
 .recipe-author {
-  padding: var(--space-4);
-  background: var(--neutral-color-50);
-  border-radius: var(--radius-default);
-  border: 1px solid var(--neutral-color-200);
+  margin-top: var(--space-2);
 }
 
 .recipe-tags {
@@ -342,20 +384,13 @@ watch(currentHousehold, async () => await navigateTo('/'))
 .ingredients-section,
 .instructions-section {
   background: #fff;
+  border: 1px solid var(--neutral-color-200);
   border-radius: var(--radius-large);
   padding: var(--space-6);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--neutral-color-100);
-}
-
-.ingredients-section h2,
-.instructions-section h2 {
-  font-size: var(--title-sm);
-  font-weight: 600;
-  color: var(--neutral-color-900);
-  margin: 0 0 var(--space-5) 0;
-  padding-bottom: var(--space-3);
-  border-bottom: 2px solid var(--neutral-color-100);
+  margin-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
 .ingredients-list {
@@ -417,9 +452,10 @@ watch(currentHousehold, async () => await navigateTo('/'))
 }
 
 .step-number {
-  min-width: 40px;
+  flex-shrink: 0;
+  width: 40px;
   height: 40px;
-  background: var(--primary-color);
+  background: var(--primary-color-500);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -427,14 +463,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   justify-content: center;
   font-weight: 600;
   font-size: var(--text-lg);
-  flex-shrink: 0;
-}
-
-.step-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
 }
 
 .step-description {
@@ -452,36 +480,17 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
 /* Responsive Design */
 @media (--tablet-viewport) {
-  .recipe-container {
-    padding: var(--space-4);
-  }
-
-  .recipe-hero {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
-  }
-
-  .recipe-image {
-    height: 300px;
-  }
-
   .recipe-content {
     grid-template-columns: 1fr;
     gap: var(--space-6);
   }
 
-  .ingredients-section,
-  .instructions-section {
-    padding: var(--space-4);
-  }
-}
-
-@media (--mobile-lg-viewport) {
   .recipe-container {
     padding: 0;
   }
 
   .recipe-hero {
+    grid-template-columns: 1fr;
     gap: var(--space-4);
   }
 
@@ -499,11 +508,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
   .meta-item {
     font-size: var(--text-sm);
-  }
-
-  .time-breakdown {
-    flex-direction: column;
-    gap: var(--space-3);
   }
 
   .ingredients-section,
@@ -543,20 +547,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
   .meta-item {
     color: var(--neutral-color-300);
-  }
-
-  .time-breakdown,
-  .recipe-author {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
-  }
-
-  .time-label {
-    color: var(--neutral-color-400);
-  }
-
-  .time-value {
-    color: var(--neutral-color-200);
   }
 
   .ingredients-section,

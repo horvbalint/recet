@@ -76,11 +76,6 @@ async function handleSubmit() {
   }
 }
 
-async function handleCancel() {
-  await navigateTo('/')
-}
-
-// Handlers for creating new master data
 function handleCreateCuisine(searchTerm: string) {
   dynamicCreateSearchTerm.value = searchTerm
   dynamicCreateTable.value = 'cuisine'
@@ -109,7 +104,6 @@ function handleCreateUnit(searchTerm: string, index: number) {
   dynamicCreateTable.value = 'unit'
 }
 
-// Handlers for when new items are created
 function onCuisineCreated(cuisine: OutCuisine) {
   formData.value.cuisine = cuisine
   refresh()

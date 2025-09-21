@@ -336,6 +336,10 @@ const isMobileMenuOpen = ref(false)
   box-shadow: none;
 }
 
+.dark-mode .sidebar-header {
+  border-bottom: 1px solid var(--neutral-color-800);
+}
+
 .dark-mode .brand-text {
   color: white;
   border-bottom-color: var(--neutral-color-800);

@@ -16,7 +16,7 @@ importers:
         version: 1.11.18
       nebula:
         specifier: github:horvbalint/nebula
-        version: https://codeload.github.com/horvbalint/nebula/tar.gz/8f431abc6d4840ff4701b31d8824e591b4e5a2f9(@floating-ui/dom@1.7.4)(@tiptap/core@3.5.0(@tiptap/pm@3.0.7))(@vue/compiler-dom@3.5.21)(@vue/compiler-sfc@3.5.21)(db0@0.3.2)(ioredis@5.8.0)(jiti@2.6.0)(magicast@0.3.5)(nuxt@4.1.2(@parcel/watcher@2.5.1)(@vue/compiler-sfc@3.5.21)(db0@0.3.2)(eslint@9.36.0(jiti@2.6.0))(ioredis@5.8.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.2)(terser@5.44.0)(typescript@5.8.3)(vite@7.1.7(jiti@2.6.0)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.0.4(typescript@5.8.3))(yaml@2.8.1))(prettier@3.6.2)(rollup@4.52.2)(vite@7.1.7(jiti@2.6.0)(terser@5.44.0)(yaml@2.8.1))
+        version: https://codeload.github.com/horvbalint/nebula/tar.gz/c9da944ffa2dc80c4834fddbaaa4a5d1da662f63(@floating-ui/dom@1.7.4)(@tiptap/core@3.5.0(@tiptap/pm@3.0.7))(@vue/compiler-dom@3.5.21)(@vue/compiler-sfc@3.5.21)(db0@0.3.2)(ioredis@5.8.0)(jiti@2.6.0)(magicast@0.3.5)(nuxt@4.1.2(@parcel/watcher@2.5.1)(@vue/compiler-sfc@3.5.21)(db0@0.3.2)(eslint@9.36.0(jiti@2.6.0))(ioredis@5.8.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.2)(terser@5.44.0)(typescript@5.8.3)(vite@7.1.7(jiti@2.6.0)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.0.4(typescript@5.8.3))(yaml@2.8.1))(prettier@3.6.2)(rollup@4.52.2)(vite@7.1.7(jiti@2.6.0)(terser@5.44.0)(yaml@2.8.1))
       nuxt:
         specifier: ^4.0.3
         version: 4.1.2(@parcel/watcher@2.5.1)(@vue/compiler-sfc@3.5.21)(db0@0.3.2)(eslint@9.36.0(jiti@2.6.0))(ioredis@5.8.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.2)(terser@5.44.0)(typescript@5.8.3)(vite@7.1.7(jiti@2.6.0)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.0.4(typescript@5.8.3))(yaml@2.8.1)
@@ -3871,8 +3871,8 @@ packages:
     resolution: {integrity: sha512-kKHJhxwpR/Okycz4HhQKKlhWe4ASEfPgkSWNmKFHd7+ezuQlxkA5cM3+XkBPvm1gmHen3w53qsYAv+8GwRrBlg==}
     engines: {node: '>=18'}
 
-  nebula@https://codeload.github.com/horvbalint/nebula/tar.gz/8f431abc6d4840ff4701b31d8824e591b4e5a2f9:
-    resolution: {tarball: https://codeload.github.com/horvbalint/nebula/tar.gz/8f431abc6d4840ff4701b31d8824e591b4e5a2f9}
+  nebula@https://codeload.github.com/horvbalint/nebula/tar.gz/c9da944ffa2dc80c4834fddbaaa4a5d1da662f63:
+    resolution: {tarball: https://codeload.github.com/horvbalint/nebula/tar.gz/c9da944ffa2dc80c4834fddbaaa4a5d1da662f63}
     version: 0.0.1
 
   nitropack@2.12.6:
@@ -9991,7 +9991,7 @@ snapshots:
 
   natural-orderby@5.0.0: {}
 
-  nebula@https://codeload.github.com/horvbalint/nebula/tar.gz/8f431abc6d4840ff4701b31d8824e591b4e5a2f9(@floating-ui/dom@1.7.4)(@tiptap/core@3.5.0(@tiptap/pm@3.0.7))(@vue/compiler-dom@3.5.21)(@vue/compiler-sfc@3.5.21)(db0@0.3.2)(ioredis@5.8.0)(jiti@2.6.0)(magicast@0.3.5)(nuxt@4.1.2(@parcel/watcher@2.5.1)(@vue/compiler-sfc@3.5.21)(db0@0.3.2)(eslint@9.36.0(jiti@2.6.0))(ioredis@5.8.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.2)(terser@5.44.0)(typescript@5.8.3)(vite@7.1.7(jiti@2.6.0)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.0.4(typescript@5.8.3))(yaml@2.8.1))(prettier@3.6.2)(rollup@4.52.2)(vite@7.1.7(jiti@2.6.0)(terser@5.44.0)(yaml@2.8.1)):
+  nebula@https://codeload.github.com/horvbalint/nebula/tar.gz/c9da944ffa2dc80c4834fddbaaa4a5d1da662f63(@floating-ui/dom@1.7.4)(@tiptap/core@3.5.0(@tiptap/pm@3.0.7))(@vue/compiler-dom@3.5.21)(@vue/compiler-sfc@3.5.21)(db0@0.3.2)(ioredis@5.8.0)(jiti@2.6.0)(magicast@0.3.5)(nuxt@4.1.2(@parcel/watcher@2.5.1)(@vue/compiler-sfc@3.5.21)(db0@0.3.2)(eslint@9.36.0(jiti@2.6.0))(ioredis@5.8.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.52.2)(terser@5.44.0)(typescript@5.8.3)(vite@7.1.7(jiti@2.6.0)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.0.4(typescript@5.8.3))(yaml@2.8.1))(prettier@3.6.2)(rollup@4.52.2)(vite@7.1.7(jiti@2.6.0)(terser@5.44.0)(yaml@2.8.1)):
     dependencies:
       '@antfu/eslint-config': 5.0.0(@vue/compiler-sfc@3.5.21)(eslint-plugin-format@1.0.1(eslint@9.32.0(jiti@2.6.0)))(eslint@9.32.0(jiti@2.6.0))(typescript@5.8.3)
       '@csstools/postcss-global-data': 3.0.0(postcss@8.5.6)

@@ -1,75 +1,21 @@
-# Nuxt Minimal Starter
+# Recet
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+## What is this?
+Recet is an open source, work in progress recipe manager application built using Nuxt and SurrealDB. It is motivated from personal needs and the curiosity to see how much functionality can be squeezed out from using SurrealDB as the backend.
 
-## Setup
+## Functionality
+I plan to create the following modules:
+- Authentication 👷‍♀️
+- Households 👷
+- Master data managment 👷‍♀️
+- Recipes 👷
+- Shopping lists 👷‍♀️
+- Meal planner 👷
+- Recipe import from (social) websites ❌
+- Recipe AI ❌
 
-Make sure to install dependencies:
+👷‍♀️ - Work in progress
+❌ - Coming later
 
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Is it ready?
+No, well not yet. Development started only a few weeks ago, and though it is usable as it is, not all of the modules are ready yet and it needs quite a bit of testing. My plan is to create it fast, and then iterate over it, since I tend to get stuck on details on my projects.

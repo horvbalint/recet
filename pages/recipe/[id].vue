@@ -93,9 +93,11 @@ async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
   try {
     isAddingToList.value = true
 
-    const ingredientIndexesToAdd = checkedIngredients.value.length
+    const checkedIngredientIndexes = checkedIngredients.value.length
       ? checkedIngredients.value
       : recipe.value!.ingredients!.map((_, index) => index)
+
+    const ingredientIndexesToAdd = checkedIngredientIndexes.filter(index => !recipe.value!.ingredients[index]!.skip_from_shopping_list)
 
     await db.query(surql`
       fn::add_recipe_ingredients_to_shopping_list(
@@ -235,7 +237,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
                 @click="($refs.ingredientCheckbox as any)[index].handleClick()"
               >
                 <div class="ingredient-checkbox">
-                  <neb-checkbox ref="ingredientCheckbox" v-model="checkedIngredients" :value="index" />
+                  <neb-checkbox ref="ingredientCheckbox" v-model="checkedIngredients" :value="index" @click.stop />
                 </div>
 
                 <div class="ingredient-details">

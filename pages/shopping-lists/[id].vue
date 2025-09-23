@@ -35,8 +35,9 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
         recipe: $i.recipe.*,
         category: $i.category.{id, name},
         checked: $i.checked,
-      })
-    FROM ONLY type::thing(shopping_list, ${listId}) FETCH shop, shop.categories, items.ingredient, items.unit, items.recipe, items.ingredient.category, items.category;
+      }),
+      shop.{id, name, categories.{id, name}}
+    FROM ONLY type::thing(shopping_list, ${listId});
     SELECT * FROM ingredient FETCH category;
     SELECT * FROM unit;
     SELECT * FROM ingredient_category ORDER BY name ASC;

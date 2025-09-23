@@ -13,6 +13,7 @@ interface Recipe {
     ingredient: string
     amount: string
     unit?: string
+    skip_from_shopping_list: boolean
   }>
   steps: string[]
   author: {
@@ -48,9 +49,10 @@ const { data: recipe, status, error, refresh } = useAsyncData<Recipe | null>(`re
       tags.{name, color, icon},
       meal.{name, color},
       ingredients.map(|$i| {
-          amount: $i.amount,
-          ingredient: $i.ingredient.name,
-          unit: $i.unit.name
+        amount: $i.amount,
+        ingredient: $i.ingredient.name,
+        unit: $i.unit.name,
+        skip_from_shopping_list: $i.ingredient.skip_from_shopping_list
       })
     FROM ONLY
       type::thing('recipe', ${recipeId})
@@ -86,18 +88,26 @@ const shoppingListMenuItems = computed(() => {
 
 const isAddingToList = ref(false)
 
+const checkedIngredients = ref<number[]>([])
 async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
   try {
     isAddingToList.value = true
 
+    const ingredientIndexesToAdd = checkedIngredients.value.length
+      ? checkedIngredients.value
+      : recipe.value!.ingredients!.map((_, index) => index)
+
     await db.query(surql`
       fn::add_recipe_ingredients_to_shopping_list(
-        type::thing('recipe', ${recipeId}),
-        ${shoppingListId}
+        ${recipe.value!.id},
+        ${ingredientIndexesToAdd},
+        ${shoppingListId},
       )
     `)
 
-    useNebToast({ type: 'success', title: 'Ingredients added', description: `Added ${recipe.value!.ingredients!.length} ingredients to the shopping list.` })
+    checkedIngredients.value = []
+
+    useNebToast({ type: 'success', title: 'Ingredients added', description: `Added ${ingredientIndexesToAdd.length} ingredients to the shopping list.` })
   }
   catch (err) {
     console.error('Error adding ingredients to shopping list:', err)
@@ -208,6 +218,9 @@ watch(currentHousehold, async () => await navigateTo('/'))
                     <neb-button type="secondary" small :loading="isAddingToList" @click="toggle()">
                       <icon name="material-symbols:add-shopping-cart-rounded" />
                       Add to Shopping List
+                      <template v-if="checkedIngredients.length">
+                        ({{ checkedIngredients.length }})
+                      </template>
                     </neb-button>
                   </template>
                 </neb-menu>
@@ -219,17 +232,27 @@ watch(currentHousehold, async () => await navigateTo('/'))
                 v-for="(ingredient, index) in recipe.ingredients"
                 :key="index"
                 class="ingredient-item"
+                @click="($refs.ingredientCheckbox as any)[index].handleClick()"
               >
                 <div class="ingredient-checkbox">
-                  <neb-checkbox />
+                  <neb-checkbox ref="ingredientCheckbox" v-model="checkedIngredients" :value="index" />
                 </div>
+
                 <div class="ingredient-details">
                   <span class="ingredient-amount">{{ ingredient.amount }}</span>
                   <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
                   <span class="ingredient-name">{{ ingredient.ingredient }}</span>
                 </div>
+
+                <neb-tooltip
+                  v-if="ingredient.skip_from_shopping_list"
+                  title="This ingredient will be skipped from being added to shopping lists"
+                >
+                  <icon name="material-symbols:receipt-long-off-outline-rounded" />
+                </neb-tooltip>
               </div>
             </div>
+
             <p v-else class="empty-message">
               No ingredients listed for this recipe.
             </p>
@@ -240,27 +263,28 @@ watch(currentHousehold, async () => await navigateTo('/'))
               title="Instructions"
               type="page"
               has-separator
-            >
-              <div v-if="recipe.steps?.length" class="steps-list">
-                <div
-                  v-for="(step, index) in recipe.steps"
-                  :key="index"
-                  class="step-item"
-                >
-                  <div class="step-number">
-                    {{ index + 1 }}
-                  </div>
-                  <div class="step-content">
-                    <p class="step-description">
-                      {{ step }}
-                    </p>
-                  </div>
+            />
+            <div v-if="recipe.steps?.length" class="steps-list">
+              <div
+                v-for="(step, index) in recipe.steps"
+                :key="index"
+                class="step-item"
+              >
+                <div class="step-number">
+                  {{ index + 1 }}
+                </div>
+
+                <div class="step-content">
+                  <p class="step-description">
+                    {{ step }}
+                  </p>
                 </div>
               </div>
-              <p v-else class="empty-message">
-                No instructions provided for this recipe.
-              </p>
-            </neb-content-header>
+            </div>
+
+            <p v-else class="empty-message">
+              No instructions provided for this recipe.
+            </p>
           </section>
         </main>
       </div>
@@ -294,8 +318,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
 .recipe-image {
   position: relative;
   height: 400px;
-  border-radius: var(--radius-large);
-  overflow: hidden;
 }
 
 .image-placeholder {
@@ -305,6 +327,8 @@ watch(currentHousehold, async () => await navigateTo('/'))
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: var(--radius-large);
+  border: 1px solid var(--neutral-color-200);
 }
 
 .image-placeholder .icon {
@@ -407,6 +431,15 @@ watch(currentHousehold, async () => await navigateTo('/'))
   border: 1px solid var(--neutral-color-100);
   border-radius: var(--radius-default);
   transition: all var(--duration-default);
+
+  .icon {
+    font-size: 20px !important;
+    color: var(--neutral-color-400);
+
+    &:hover {
+      color: var(--neutral-color-600);
+    }
+  }
 }
 
 .ingredient-item:hover {
@@ -440,7 +473,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 .steps-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-3);
 }
 
 .step-item {
@@ -455,7 +488,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
   flex-shrink: 0;
   width: 40px;
   height: 40px;
-  background: var(--primary-color-500);
+  background: linear-gradient(135deg, var(--primary-color-500), var(--primary-color-400));
   color: white;
   border-radius: 50%;
   display: flex;
@@ -525,7 +558,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
   }
 
   .step-number {
-    min-width: 32px;
+    width: 32px;
     height: 32px;
     font-size: var(--text-md);
   }
@@ -591,7 +624,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
   }
 
   .image-placeholder {
-    background: linear-gradient(135deg, var(--neutral-color-800), var(--neutral-color-900));
+    background: linear-gradient(135deg, var(--neutral-color-700), var(--neutral-color-900));
   }
 }
 </style>

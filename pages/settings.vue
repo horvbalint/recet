@@ -87,9 +87,12 @@ async function handleSaveHousehold() {
 
 <style scoped>
 .settings-page {
+  border-radius: var(--radius-large);
+  border: 1px solid var(--neutral-color-100);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
 }
 
 .settings-section {

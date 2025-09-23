@@ -1,12 +1,42 @@
 <script setup lang="ts">
-import type { OutIngredient, OutIngredientCategory, OutShop, OutShoppingList, OutUnit } from '~/db'
+import type { RecordId } from 'surrealdb'
+import type { OutIngredient, OutIngredientCategory, OutRecipe, OutShop, OutShoppingList, OutUnit } from '~/db'
 
 const route = useRoute()
 const listId = route.params.id as string
 
+interface ShoppingList extends Omit<OutShoppingList, 'items'> {
+  items: {
+    ingredient: {
+      id: RecordId<'ingredient'>
+      name: string
+      category?: Pick<OutIngredientCategory, 'id' | 'name'>
+    }
+    amount?: number
+    unit?: Pick<OutUnit, 'id' | 'name'>
+    checked: boolean
+    recipe?: OutRecipe
+    category?: Pick<OutIngredientCategory, 'id' | 'name'>
+  }[]
+}
+
 const { status, data, refresh, error } = useAsyncData('shopping-list', async () => {
-  const [shoppingList, ingredients, units, categories, shops] = await db.query<[OutShoppingList, OutIngredient[], OutUnit[], OutIngredientCategory[], OutShop[]]>(surql`
-    SELECT * FROM ONLY type::thing(shopping_list, ${listId}) FETCH shop, items.ingredient, items.unit, items.recipe, items.ingredient.category, items.category;
+  const [shoppingList, ingredients, units, categories, shops] = await db.query<[ShoppingList, OutIngredient[], OutUnit[], OutIngredientCategory[], OutShop[]]>(surql`
+    SELECT
+      *,
+      items.map(|$i| {
+        ingredient: {
+          id: $i.ingredient.id,
+          name: $i.ingredient.name,
+          category: $i.ingredient.category.{id, name},
+        },
+        amount: $i.amount,
+        unit: $i.unit.{id, name},
+        recipe: $i.recipe.*,
+        category: $i.category.{id, name},
+        checked: $i.checked,
+      })
+    FROM ONLY type::thing(shopping_list, ${listId}) FETCH shop, shop.categories, items.ingredient, items.unit, items.recipe, items.ingredient.category, items.category;
     SELECT * FROM ingredient FETCH category;
     SELECT * FROM unit;
     SELECT * FROM ingredient_category ORDER BY name ASC;
@@ -17,12 +47,12 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
 
 const isLoading = ref(false)
 const showFormModal = ref<'add' | { type: 'edit', categoryName: string, index: number } | null>(null)
-const newItem = ref({
-  ingredient: null as OutIngredient | null,
-  amount: '',
-  unit: null as OutUnit | null,
-  category: undefined as OutIngredientCategory | undefined,
-})
+const newItem = ref<{
+  ingredient?: ShoppingList['items'][number]['ingredient']
+  amount?: number
+  unit?: ShoppingList['items'][number]['unit']
+  category?: ShoppingList['items'][number]['category']
+}>({})
 
 type Table = 'ingredient' | 'unit'
 const dynamicCreateTable = ref<Table | null>(null)
@@ -36,7 +66,7 @@ const groupedItems = computed(() => {
     return {}
 
   const categoryList = shop.value?.categories || data.value.categories
-  const groups: Record<string, OutShoppingList['items'][number][]> = Object.fromEntries(categoryList.map(c => [c.name, []]))
+  const groups: Record<string, ShoppingList['items'][number][]> = Object.fromEntries(categoryList.map(c => [c.name, []]))
 
   for (const item of data.value.shoppingList.items) {
     const categoryName = item.category?.name || item.ingredient.category?.name || 'Other'
@@ -90,9 +120,9 @@ function handleSubmit() {
   }
   else {
     data.value!.shoppingList.items.push({
-      ingredient: newItem.value.ingredient,
+      ingredient: newItem.value.ingredient!,
       amount: newItem.value.amount ? Number(newItem.value.amount) : undefined,
-      unit: newItem.value.unit,
+      unit: newItem.value.unit || undefined,
       category: newItem.value.category,
       checked: false,
     })
@@ -101,21 +131,17 @@ function handleSubmit() {
   updateListItems(closeModal)
 }
 
-async function removeItem(item: OutShoppingList['items'][number]) {
+async function removeItem(item: ShoppingList['items'][number]) {
   data.value!.shoppingList.items = data.value!.shoppingList.items.filter(i => i !== item)
   updateListItems()
 }
 
 function closeModal() {
   showFormModal.value = null
-  newItem.value = {
-    ingredient: null,
-    amount: '',
-    unit: null,
-  }
+  newItem.value = {}
 }
 
-function getItemAmount(item: OutShoppingList['items'][number]) {
+function getItemAmount(item: ShoppingList['items'][number]) {
   const parts = [item.amount!.toString()]
 
   if (item.unit)
@@ -125,7 +151,7 @@ function getItemAmount(item: OutShoppingList['items'][number]) {
 }
 
 function startEditItem(categoryName: string, index: number) {
-  newItem.value = { ...groupedItems.value[categoryName]![index] }
+  newItem.value = { ...groupedItems.value[categoryName]![index] as Required<ShoppingList['items'][number]> }
   showFormModal.value = { type: 'edit', categoryName, index }
 }
 

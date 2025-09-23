@@ -160,119 +160,121 @@ function onUnitCreated(unit: OutUnit) {
     </template>
 
     <neb-state-content :status :refresh :error-description="error">
-      <neb-validator v-model="isFormValid" class="form-container">
-        <div class="form-section">
-          <neb-content-header
-            title="Basic Information"
-            type="section"
-          />
-
-          <div class="basic-info-fields">
-            <neb-input
-              v-model="formData.name"
-              label="Recipe Name"
-              placeholder="Enter recipe name"
-              required
+      <neb-validator v-model="isFormValid">
+        <div class="form-container">
+          <div class="form-section">
+            <neb-content-header
+              title="Basic Information"
+              type="section"
             />
 
-            <div class="selects-row">
-              <neb-select
-                v-model="formData.cuisine"
-                :options="data!.cuisines"
-                label="Cuisine"
-                placeholder="Select cuisine"
-                track-by-key="name"
-                label-key="name"
-                @new="handleCreateCuisine"
+            <div class="basic-info-fields">
+              <neb-input
+                v-model="formData.name"
+                label="Recipe Name"
+                placeholder="Enter recipe name"
+                required
               />
 
-              <neb-select
-                v-model="formData.meal"
-                :options="data!.meals"
-                label="Meals"
-                placeholder="Select meals"
-                track-by-key="name"
-                label-key="name"
-                multiple
-                @new="handleCreateMeal"
-              />
+              <div class="selects-row">
+                <neb-select
+                  v-model="formData.cuisine"
+                  :options="data!.cuisines"
+                  label="Cuisine"
+                  placeholder="Select cuisine"
+                  track-by-key="name"
+                  label-key="name"
+                  @new="handleCreateCuisine"
+                />
 
-              <neb-select
-                v-model="formData.tags"
-                :options="data!.recipeTags"
-                label="Tags"
-                placeholder="Select tags"
-                track-by-key="name"
-                label-key="name"
-                multiple
-                @new="handleCreateTag"
-              />
+                <neb-select
+                  v-model="formData.meal"
+                  :options="data!.meals"
+                  label="Meals"
+                  placeholder="Select meals"
+                  track-by-key="name"
+                  label-key="name"
+                  multiple
+                  @new="handleCreateMeal"
+                />
+
+                <neb-select
+                  v-model="formData.tags"
+                  :options="data!.recipeTags"
+                  label="Tags"
+                  placeholder="Select tags"
+                  track-by-key="name"
+                  label-key="name"
+                  multiple
+                  @new="handleCreateTag"
+                />
+              </div>
             </div>
           </div>
+
+          <neb-form-list
+            v-model="formData.ingredients"
+            label="Ingredients"
+            class="form-section"
+            with-initial-item
+          >
+            <template #default="{ item: ingredient, index }">
+              <div class="ingredient-fields">
+                <neb-select
+                  v-model="ingredient.ingredient"
+                  label="Ingredient"
+                  :options="data!.ingredients!"
+                  label-key="name"
+                  track-by-key="name"
+                  placeholder="Select ingredient"
+                  required
+                  @new="handleCreateIngredient($event, index)"
+                />
+
+                <neb-input
+                  v-model="ingredient.amount"
+                  label="Amount"
+                  type="number"
+                  placeholder="0"
+                />
+
+                <neb-select
+                  v-model="ingredient.unit"
+                  label="Unit"
+                  :options="data!.units!"
+                  label-key="name"
+                  track-by-key="name"
+                  placeholder="Select unit"
+                  allow-empty
+                  @new="handleCreateUnit($event, index)"
+                />
+
+                <neb-input
+                  v-model="ingredient.description"
+                  label="Description"
+                  placeholder="e.g., diced, chopped"
+                />
+              </div>
+            </template>
+          </neb-form-list>
+
+          <neb-form-list
+            v-model="formData.steps"
+            label="Instructions"
+            class="form-section"
+            :factory="() => ''"
+            with-initial-item
+          >
+            <template #default="{ index }">
+              <neb-textarea
+                v-model="formData.steps![index]"
+                :required="true"
+                :label="`Step ${index + 1}`"
+                placeholder="Describe this step..."
+              />
+            </template>
+          </neb-form-list>
         </div>
-
-        <neb-form-list
-          v-model="formData.ingredients"
-          label="Ingredients"
-          class="form-section"
-          with-initial-item
-        >
-          <template #default="{ item: ingredient, index }">
-            <div class="ingredient-fields">
-              <neb-select
-                v-model="ingredient.ingredient"
-                label="Ingredient"
-                :options="data!.ingredients!"
-                label-key="name"
-                track-by-key="name"
-                placeholder="Select ingredient"
-                required
-                @new="handleCreateIngredient($event, index)"
-              />
-
-              <neb-input
-                v-model="ingredient.amount"
-                label="Amount"
-                type="number"
-                placeholder="0"
-              />
-
-              <neb-select
-                v-model="ingredient.unit"
-                label="Unit"
-                :options="data!.units!"
-                label-key="name"
-                track-by-key="name"
-                placeholder="Select unit"
-                allow-empty
-                @new="handleCreateUnit($event, index)"
-              />
-
-              <neb-input
-                v-model="ingredient.description"
-                label="Description"
-                placeholder="e.g., diced, chopped"
-              />
-            </div>
-          </template>
-        </neb-form-list>
-
-        <neb-form-list
-          v-model="formData.steps"
-          label="Instructions"
-          class="form-section"
-          :factory="() => ''"
-          with-initial-item
-        >
-          <template #default="{ index }">
-            <neb-textarea
-              v-model="formData.steps![index]"
-              :required="true"
-              :label="`Step ${index + 1}`"
-              placeholder="Describe this step..."
-            />
-          </template>
-        </neb-form-list>
       </neb-validator>
     </neb-state-content>
 

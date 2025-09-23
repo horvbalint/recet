@@ -290,8 +290,8 @@ DEFINE FUNCTION OVERWRITE fn::add_member_to_household($household: record<househo
 	RELATE ONLY ($user.id) -> member -> $household SET role = $role;
 };
 
-DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id: record<recipe>, $shopping_list_id: record<shopping_list>) {
-	LET $recipe = SELECT ingredients FROM ONLY $recipe_id;
+DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id: record<recipe>, $ingredient_indexes: array<number>, $shopping_list_id: record<shopping_list>) {
+	LET $recipe = SELECT id, ingredients FROM ONLY $recipe_id FETCH ingredients.ingredient;
 	LET $shopping_list = SELECT items FROM ONLY $shopping_list_id;
 	
 	IF ($recipe == NONE) {
@@ -302,29 +302,31 @@ DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id
 		THROW "Shopping list not found.";
 	};
 	
-	LET $items = function($recipe_id, $shopping_list.items, $recipe.ingredients) {
-    const [recipeId, items, ingredients] = arguments;
+	LET $items = function($recipe, $ingredient_indexes, $shopping_list.items) {
+    const [recipe, ingredientIndexes, listItems] = arguments;
 
-    for(const ingredient of ingredients) {
-			const existing_item = items.find(item => item.ingredient.id === ingredient.ingredient.id);
+		const ingredientsToAdd = ingredientIndexes.map(index => recipe.ingredients[index]).filter(ing => !ing.ingredient.skip_from_shopping_list);
+
+    for(const ingredient of ingredientsToAdd) {
+			const existing_item = listItems.find(item => item.ingredient.id === ingredient.ingredient.id.id);
 
 			if(existing_item?.unit.id === ingredient.unit?.id) {
 				existing_item.amount = (existing_item.amount || 0) + (ingredient.amount || 0);
 				existing_item.checked = false;
 			}
 			else {
-				items.push({
-						ingredient: ingredient.ingredient,
-						amount: ingredient.amount,
-						unit: ingredient.unit,
-						category: ingredient.ingredient.category,
-						checked: false,
-						recipe: recipeId
+				listItems.push({
+					ingredient: ingredient.ingredient.id,
+					amount: ingredient.amount,
+					unit: ingredient.unit,
+					category: ingredient.ingredient.category,
+					checked: false,
+					recipe: recipe.id
 				});
 			}
 		}
 
-    return items
+    return listItems
 	};
 	
 	UPDATE ONLY $shopping_list_id SET items = $items;

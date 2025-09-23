@@ -71,6 +71,8 @@ function onCategoryCreated() {
         allow-empty
         @new="handleCreateCategory($event)"
       />
+
+      <neb-checkbox v-model="data.skip_from_shopping_list" label="Skip from shopping list" />
     </template>
   </master-data-modal>
 

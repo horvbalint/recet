@@ -27,8 +27,10 @@ interface Recipe {
   updated_at: string
 }
 
-const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('recipes', async () => {
-  const [result] = await db.query<[Recipe[]]>(surql`
+const searchTerm = ref('')
+
+function constructQuery() {
+  const baseQuery = surql`
     SELECT
       id,
       name,
@@ -39,18 +41,46 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
       tags.{name, color, icon},
       meal.{name, color},
       created_at
-    FROM
-      recipe
-    WHERE
-      household = type::thing(${currentHousehold.value!.id})
-    ORDER BY
-      created_at DESC
-    FETCH
-      author, cuisine, tags, meal
-  `)
+  `
+
+  if (searchTerm.value)
+    baseQuery.append`,search::score(0) as score FROM recipe`
+  else
+    baseQuery.append`FROM recipe`
+
+  if (searchTerm.value) {
+    if (currentHousehold.value!.language === 'hu')
+      baseQuery.append` WITH INDEX hungarian_search_name`
+    else
+      baseQuery.append` WITH INDEX english_search_name`
+  }
+
+  if (searchTerm.value) {
+    return baseQuery.append`
+      WHERE
+        household = type::thing(${currentHousehold.value!.id}) && name @@ ${searchTerm.value}
+      ORDER BY
+        score, created_at DESC
+    `
+  }
+  else {
+    return baseQuery.append`
+      WHERE
+        household = type::thing(${currentHousehold.value!.id})
+      ORDER BY
+        created_at DESC
+    `
+  }
+}
+
+const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('recipes', async () => {
+  const query = constructQuery()
+  const decoder = new TextDecoder()
+  console.log(decoder.decode(query.query.encoded))
+  const [result] = await db.query<[Recipe[]]>(query)
 
   return result
-}, { watch: [currentHousehold] })
+}, { watch: [currentHousehold, searchTerm] })
 </script>
 
 <template>
@@ -71,31 +101,49 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
       </neb-content-header>
     </template>
 
-    <neb-state-content :status :refresh error-title="Failed to load recipes" :error-description="error?.message">
-      <neb-empty-state
-        v-if="!recipes?.length"
-        icon="material-symbols:menu-book-2-outline-rounded"
-        title="No recipes yet"
-        description="Start building your recipe collection by adding your first recipe"
-      >
-        <neb-button type="primary" @click="$router.push('/recipe/create')">
-          <icon name="material-symbols:add-rounded" />
-          Add Your First Recipe
-        </neb-button>
-      </neb-empty-state>
+    <div class="page-wrapper">
+      <neb-search-input v-model="searchTerm" lazy />
 
-      <div v-else class="recipe-grid">
-        <recipe-card
-          v-for="recipe in recipes"
-          :key="recipe.id.id.toString()"
-          :recipe="recipe"
-        />
-      </div>
-    </neb-state-content>
+      <neb-state-content :status :refresh error-title="Failed to load recipes" :error-description="error?.message">
+        <template v-if="!recipes?.length">
+          <neb-empty-state
+            v-if="searchTerm"
+            title="No recipes found"
+            description="Try adjusting your search terms to find what you're looking for"
+          />
+
+          <neb-empty-state
+            v-else
+            icon="material-symbols:menu-book-2-outline-rounded"
+            title="No recipes yet"
+            description="Start building your recipe collection by adding your first recipe"
+          >
+            <neb-button type="primary" @click="$router.push('/recipe/create')">
+              <icon name="material-symbols:add-rounded" />
+              Add Your First Recipe
+            </neb-button>
+          </neb-empty-state>
+        </template>
+
+        <div v-else class="recipe-grid">
+          <recipe-card
+            v-for="recipe in recipes"
+            :key="recipe.id.id.toString()"
+            :recipe="recipe"
+          />
+        </div>
+      </neb-state-content>
+    </div>
   </nuxt-layout>
 </template>
 
 <style scoped>
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
 .recipe-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));

@@ -1,5 +1,13 @@
 BEGIN TRANSACTION;
 
+DEFINE ANALYZER OVERWRITE hungarian_analyzer
+  TOKENIZERS class
+  FILTERS snowball(hungarian), lowercase, ascii;
+
+DEFINE ANALYZER OVERWRITE english_analyzer
+  TOKENIZERS class
+  FILTERS snowball(english), lowercase, ascii;
+
 // TABLE: user
 DEFINE TABLE OVERWRITE user SCHEMAFULL PERMISSIONS
 	FOR select FULL
@@ -59,6 +67,9 @@ DEFINE FIELD OVERWRITE cuisine ON recipe TYPE option<record<cuisine>> ASSERT hou
 DEFINE FIELD OVERWRITE meal ON recipe TYPE array<record<meal>> DEFAULT [] ASSERT $value.all(|$v| household = $v.household);
 DEFINE FIELD OVERWRITE created_at ON recipe TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON recipe TYPE datetime VALUE time::now();
+
+DEFINE INDEX OVERWRITE hungarian_search_name ON recipe FIELDS name SEARCH ANALYZER hungarian_analyzer;
+DEFINE INDEX OVERWRITE english_search_name ON recipe FIELDS name SEARCH ANALYZER english_analyzer;
 
 // TABLE: meal
 DEFINE TABLE OVERWRITE meal SCHEMAFULL PERMISSIONS 
@@ -139,6 +150,7 @@ DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
 	for select WHERE fn::can_read_household(id)
 	for delete, update WHERE fn::is_household_owner(id);
 DEFINE FIELD OVERWRITE name ON household TYPE string;
+DEFINE FIELD OVERWRITE language ON household TYPE 'en' | 'hu' DEFAULT 'en';
 DEFINE FIELD OVERWRITE created_at ON household TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON household TYPE datetime VALUE time::now();
 

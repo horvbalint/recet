@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import type { OutHousehold } from '~/db'
+import type { InHousehold, OutHousehold } from '~/db'
 
 watch(isCurrHouseholdOwner, () => {
   if (!isCurrHouseholdOwner.value)
     navigateTo('/')
 }, { immediate: true })
 
-const householdForm = ref({
-  name: currentHousehold.value!.name,
-})
+const householdForm = ref<Omit<InHousehold, 'updated_at'>>({ ...currentHousehold.value! })
 
 const isFormValid = ref(false)
 const isLoading = ref(false)
@@ -17,19 +15,24 @@ async function handleSaveHousehold() {
   isLoading.value = true
 
   try {
-    const [result] = await db.query<[OutHousehold]>(surql`UPDATE ONLY ${currentHousehold.value!.id} SET name = ${householdForm.value.name} RETURN AFTER`)
+    const [result] = await db.query<[OutHousehold]>(surql`UPDATE ONLY ${currentHousehold.value!.id} MERGE ${householdForm.value} RETURN AFTER`)
     currentHousehold.value = result
 
-    useNebToast({ type: 'success', title: 'Household updated!', description: 'The household name has been successfully updated.' })
+    useNebToast({ type: 'success', title: 'Household updated!', description: 'The household has been successfully updated.' })
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Update failed!', description: 'Could not update the household name. Please try again.' })
+    useNebToast({ type: 'error', title: 'Update failed!', description: 'Could not update the household. Please try again.' })
   }
   finally {
     isLoading.value = false
   }
 }
+
+const availableLanguages = [
+  { code: 'en', name: 'English' },
+  { code: 'hu', name: 'Magyar' },
+]
 </script>
 
 <template>
@@ -44,42 +47,41 @@ async function handleSaveHousehold() {
     </template>
 
     <div class="settings-page">
-      <div class="settings-section">
-        <neb-content-header title="General settings" type="section" />
+      <neb-content-header title="General settings" type="section" />
 
-        <neb-validator v-model="isFormValid">
-          <div class="form-content">
+      <neb-validator v-model="isFormValid">
+        <div class="form-content">
+          <div class="flex-wrapper">
             <neb-input
               v-model="householdForm.name"
               label="Household Name"
               placeholder="Enter household name"
               required
-              :disabled="isLoading"
+            />
+
+            <neb-select
+              v-model="householdForm.language"
+              :options="availableLanguages"
+              label-key="name"
+              track-by-key="code"
+              use-only-tracked-key
+              label="Language"
+              required
+              :allow-empty="false"
             />
           </div>
-        </neb-validator>
-
-        <div class="form-actions">
-          <neb-button
-            type="primary"
-            :disabled="!isFormValid || isLoading"
-            :loading="isLoading"
-            @click="handleSaveHousehold()"
-          >
-            Save Changes
-          </neb-button>
         </div>
-      </div>
+      </neb-validator>
 
-      <!-- Placeholder for future settings -->
-      <div class="settings-section">
-        <neb-content-header title="More settings" type="section" />
-
-        <div class="placeholder-content">
-          <p class="placeholder-text">
-            Additional household settings will be added here in future updates.
-          </p>
-        </div>
+      <div class="form-actions">
+        <neb-button
+          type="primary"
+          :disabled="!isFormValid || isLoading"
+          :loading="isLoading"
+          @click="handleSaveHousehold()"
+        >
+          Save Changes
+        </neb-button>
       </div>
     </div>
   </nuxt-layout>
@@ -87,22 +89,12 @@ async function handleSaveHousehold() {
 
 <style scoped>
 .settings-page {
-  border-radius: var(--radius-large);
-  border: 1px solid var(--neutral-color-100);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.settings-section {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
   padding: var(--space-6);
-  background-color: var(--color-neutral-25);
   border-radius: var(--radius-large);
-  border: 1px solid var(--color-neutral-200);
+  border: 1px solid var(--neutral-color-200);
 }
 
 .form-content {
@@ -111,25 +103,20 @@ async function handleSaveHousehold() {
   gap: var(--space-4);
 }
 
+.flex-wrapper {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+
+  & > * {
+    flex: 1;
+  }
+}
+
 .form-actions {
   display: flex;
   gap: var(--space-3);
   justify-content: flex-end;
   padding-top: var(--space-4);
-  border-top: 1px solid var(--color-neutral-200);
-}
-
-.placeholder-content {
-  padding: var(--space-6);
-  text-align: center;
-  background-color: var(--color-neutral-50);
-  border-radius: var(--radius-default);
-  border: 1px dashed var(--color-neutral-300);
-}
-
-.placeholder-text {
-  color: var(--color-neutral-600);
-  font-style: italic;
-  margin: 0;
 }
 </style>

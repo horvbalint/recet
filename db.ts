@@ -20,6 +20,7 @@ export type OutCuisine = {
 export type InHousehold = {
   id?: RecordId<"household">,
   created_at?: Date | string,
+  language?: 'en' | 'hu',
   name: string,
   updated_at: Date | string,
 }
@@ -27,6 +28,7 @@ export type InHousehold = {
 export type OutHousehold = {
   id: RecordId<"household">,
   created_at: string,
+  language: 'en' | 'hu',
   name: string,
   updated_at: string,
 }
@@ -520,6 +522,17 @@ export const tables = {
       "created_at": {
         "type": {
           "name": "date"
+        },
+        "hasDefault": true
+      },
+      "language": {
+        "type": {
+          "name": "union",
+          "enum": "string",
+          "variants": [
+            "en",
+            "hu"
+          ]
         },
         "hasDefault": true
       },

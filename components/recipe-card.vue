@@ -1,32 +1,6 @@
 <script setup lang="ts">
-import type { RecordId } from 'surrealdb'
+import type { Recipe } from '~/pages/index.vue'
 import dayjs from 'dayjs'
-
-interface Recipe {
-  id: RecordId
-  name: string
-  ingredients: number
-  steps: number
-  author: {
-    username: string
-  }
-  cuisine?: {
-    name: string
-    color: string
-    flag?: string
-  }
-  tags?: {
-    name: string
-    color: string
-    icon?: string
-  }[]
-  meal?: {
-    name: string
-    color: string
-  }[]
-  created_at: string
-  updated_at: string
-}
 
 const props = defineProps<{
   recipe: Recipe
@@ -49,15 +23,7 @@ function handleCardClick() {
 
 <template>
   <div class="recipe-card" @click="handleCardClick()">
-    <div class="recipe-image">
-      <div class="image-placeholder">
-        <icon name="material-symbols:restaurant-rounded" />
-      </div>
-
-      <div v-if="recipe.cuisine" class="cuisine-badge">
-        <badge-cuisine :cuisine="recipe.cuisine" />
-      </div>
-    </div>
+    <recipe-image :recipe="recipe" :width-px="400" :height-px="200" />
 
     <div class="recipe-content">
       <div class="recipe-header">

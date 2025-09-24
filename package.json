@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@formkit/drag-and-drop": "^0.5.3",
+    "blurhash": "^2.0.5",
+    "browser-image-resizer": "^2.4.1",
     "dayjs": "^1.11.18",
     "nebula": "github:horvbalint/nebula",
     "nuxt": "^4.0.3",

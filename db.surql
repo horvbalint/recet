@@ -65,6 +65,8 @@ DEFINE FIELD OVERWRITE household ON recipe TYPE record<household>;
 DEFINE FIELD OVERWRITE tags ON recipe TYPE array<record<recipe_tag>> DEFAULT [] ASSERT $value.all(|$v| household = $v.household);
 DEFINE FIELD OVERWRITE cuisine ON recipe TYPE option<record<cuisine>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE meal ON recipe TYPE array<record<meal>> DEFAULT [] ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE image_blur_hash ON recipe TYPE option<string> ASSERT image != NONE;
+DEFINE FIELD OVERWRITE image ON recipe TYPE option<bytes> ASSERT image_blur_hash != NONE && bytes::len($value) < 1 * 1024 * 1024; // max 1MB
 DEFINE FIELD OVERWRITE created_at ON recipe TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON recipe TYPE datetime VALUE time::now();
 

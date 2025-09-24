@@ -10,6 +10,8 @@ const formData = ref<Partial<InRecipe>>({
   cuisine: undefined,
 })
 
+const selectedImage = ref<File | null>(null)
+
 const isFormValid = ref(false)
 
 // Modal states
@@ -43,8 +45,12 @@ const { data, status, refresh, error } = await useAsyncData(async () => {
   watch: [currentHousehold],
 })
 
+const submitting = ref(false)
 async function handleSubmit() {
   try {
+    submitting.value = true
+    const { blurhash, imageBuffer } = await processRecipeImage(selectedImage.value)
+
     const [result] = await db.query<[OutIngredient[]]>('INSERT INTO recipe $data RETURN id', { data: {
       ...formData.value,
       household: currentHousehold.value!.id,
@@ -54,6 +60,8 @@ async function handleSubmit() {
       tags: formData.value.tags?.map(tag => tag.id),
       meal: formData.value.meal?.map(meal => meal.id),
       cuisine: formData.value.cuisine?.id,
+      image_blur_hash: blurhash,
+      image: imageBuffer,
     } })
 
     if (result?.[0]?.id) {
@@ -73,6 +81,9 @@ async function handleSubmit() {
       title: 'Creation failed!',
       description: 'Could not save the recipe. Please try again.',
     })
+  }
+  finally {
+    submitting.value = false
   }
 }
 
@@ -149,7 +160,8 @@ function onUnitCreated(unit: OutUnit) {
           <neb-button
             type="primary"
             small
-            :disabled="!isFormValid"
+            :disabled="!isFormValid || submitting"
+            :loading="submitting"
             @click="handleSubmit()"
           >
             <icon name="material-symbols:save-outline-rounded" />
@@ -159,7 +171,7 @@ function onUnitCreated(unit: OutUnit) {
       </neb-content-header>
     </template>
 
-    <neb-state-content :status :refresh :error-description="error">
+    <neb-state-content :status :refresh :error-description="error?.message">
       <neb-validator v-model="isFormValid">
         <div class="form-container">
           <div class="form-section">
@@ -174,6 +186,13 @@ function onUnitCreated(unit: OutUnit) {
                 label="Recipe Name"
                 placeholder="Enter recipe name"
                 required
+              />
+
+              <neb-single-file-picker
+                v-model="selectedImage"
+                label="Recipe Image"
+                accept="image/*"
+                placeholder="Upload an image for the recipe"
               />
 
               <div class="selects-row">

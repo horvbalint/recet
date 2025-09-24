@@ -6,7 +6,7 @@ definePageMeta({
 })
 
 interface Recipe {
-  id: string
+  id: RecordId<'recipe'>
   name: string
   description?: string
   ingredients: Array<{
@@ -141,15 +141,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
       <div v-else class="recipe-container">
         <header class="recipe-header">
           <div class="recipe-hero">
-            <div class="recipe-image">
-              <div class="image-placeholder">
-                <icon name="material-symbols:restaurant-rounded" />
-              </div>
-
-              <div v-if="recipe.cuisine" class="cuisine-badge">
-                <badge-cuisine :cuisine="recipe.cuisine" />
-              </div>
-            </div>
+            <recipe-image class="recipe-image" :recipe :width-px="600" :height-px="400" />
 
             <div class="recipe-info">
               <h1 class="recipe-title">
@@ -282,6 +274,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 .recipe-detail {
   min-height: 100vh;
   background: var(--neutral-color-25);
+  border-radius: var(--radius-large);
 }
 
 .recipe-container {
@@ -302,30 +295,8 @@ watch(currentHousehold, async () => await navigateTo('/'))
 }
 
 .recipe-image {
-  position: relative;
-  height: 400px;
-}
-
-.image-placeholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, var(--neutral-color-100), var(--neutral-color-50));
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border-radius: var(--radius-large);
   border: 1px solid var(--neutral-color-200);
-}
-
-.image-placeholder .icon {
-  font-size: 64px !important;
-  color: var(--neutral-color-400);
-}
-
-.cuisine-badge {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
 }
 
 .recipe-info {
@@ -613,9 +584,8 @@ watch(currentHousehold, async () => await navigateTo('/'))
     color: var(--neutral-color-300);
   }
 
-  .image-placeholder {
-    background: linear-gradient(135deg, var(--neutral-color-800), var(--neutral-color-900));
-    border: 1px solid var(--neutral-color-800);
+  .recipe-image {
+    border: 1px solid var(--neutral-color-700);
   }
 }
 </style>

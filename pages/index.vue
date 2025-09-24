@@ -4,11 +4,12 @@ import type { OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
 
 // useColorMode().preference = 'system'
 
-interface Recipe {
-  id: RecordId
+export interface Recipe {
+  id: RecordId<'recipe'>
   name: string
   ingredients: number
   steps: number
+  image_blur_hash?: string
   author: {
     username: string
   }
@@ -55,6 +56,7 @@ function constructQuery() {
     SELECT
       id,
       name,
+      image_blur_hash,
       ingredients.len(),
       steps.len(),
       author.{username},

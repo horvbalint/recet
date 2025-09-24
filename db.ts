@@ -95,6 +95,8 @@ export type InRecipe = {
   created_at?: Date | string,
   cuisine?: Required<InCuisine>['id'] | undefined,
   household: Required<InHousehold>['id'],
+  image?: ArrayBuffer | undefined,
+  image_blur_hash?: string | undefined,
   ingredients?: Array<{
     amount?: number | undefined,
     description?: string | undefined,
@@ -114,6 +116,8 @@ export type OutRecipe = {
   created_at: string,
   cuisine?: OutCuisine | undefined,
   household: OutHousehold,
+  image?: ArrayBuffer | undefined,
+  image_blur_hash?: string | undefined,
   ingredients: Array<{
     amount?: number | undefined,
     description?: string | undefined,
@@ -685,6 +689,22 @@ export const tables = {
           "tables": [
             "household"
           ]
+        }
+      },
+      "image": {
+        "type": {
+          "name": "option",
+          "inner": {
+            "name": "bytes"
+          }
+        }
+      },
+      "image_blur_hash": {
+        "type": {
+          "name": "option",
+          "inner": {
+            "name": "string"
+          }
         }
       },
       "ingredients": {

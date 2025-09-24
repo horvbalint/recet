@@ -147,10 +147,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
               </div>
 
               <div v-if="recipe.cuisine" class="cuisine-badge">
-                <neb-badge :style="{ background: `${recipe.cuisine.color}20`, color: recipe.cuisine.color }">
-                  <span v-if="recipe.cuisine.flag">{{ recipe.cuisine.flag }}</span>
-                  {{ recipe.cuisine.name }}
-                </neb-badge>
+                <badge-cuisine :cuisine="recipe.cuisine" />
               </div>
             </div>
 
@@ -165,7 +162,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
               <div class="recipe-meta">
                 <div class="meta-item">
-                  <icon name="material-symbols:inventory-2-outline-rounded" />
+                  <icon name="material-symbols:grocery" />
                   <span>{{ recipe.ingredients?.length || 0 }} ingredients</span>
                 </div>
 
@@ -184,24 +181,11 @@ watch(currentHousehold, async () => await navigateTo('/'))
               </div>
 
               <div v-if="recipe.tags?.length" class="recipe-tags">
-                <neb-tag
-                  v-for="tag in recipe.tags"
-                  :key="tag.name"
-                  :style="{ background: `${tag.color}20`, color: tag.color }"
-                >
-                  {{ tag.icon }}
-                  {{ tag.name }}
-                </neb-tag>
+                <badge-tag v-for="tag in recipe.tags" :key="tag.name" :tag />
               </div>
 
               <div v-if="recipe.meal?.length" class="meal-types">
-                <neb-badge
-                  v-for="meal in recipe.meal"
-                  :key="meal.name"
-                  :style="{ background: `${meal.color}20`, color: meal.color }"
-                >
-                  {{ meal.name }}
-                </neb-badge>
+                <badge-meal v-for="meal in recipe.meal" :key="meal.name" :meal />
               </div>
             </div>
           </div>
@@ -621,12 +605,17 @@ watch(currentHousehold, async () => await navigateTo('/'))
     border-color: var(--neutral-color-800);
   }
 
+  .step-number {
+    background: linear-gradient(135deg, var(--primary-color-600), var(--primary-color-700));
+  }
+
   .step-description {
     color: var(--neutral-color-300);
   }
 
   .image-placeholder {
-    background: linear-gradient(135deg, var(--neutral-color-700), var(--neutral-color-900));
+    background: linear-gradient(135deg, var(--neutral-color-800), var(--neutral-color-900));
+    border: 1px solid var(--neutral-color-800);
   }
 }
 </style>

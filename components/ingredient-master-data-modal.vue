@@ -52,7 +52,7 @@ function onCategoryCreated() {
     v-model="modelValue"
     table="ingredient"
     name="ingredient"
-    icon="material-symbols:inventory-2-outline-rounded"
+    icon="material-symbols:grocery"
     :initial-data
     :transform-before-create
     :transform-before-edit

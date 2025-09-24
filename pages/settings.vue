@@ -119,4 +119,10 @@ const availableLanguages = [
   justify-content: flex-end;
   padding-top: var(--space-4);
 }
+
+.dark-mode {
+  .settings-page {
+    border: 1px solid var(--neutral-color-800);
+  }
+}
 </style>

@@ -55,10 +55,7 @@ function handleCardClick() {
       </div>
 
       <div v-if="recipe.cuisine" class="cuisine-badge">
-        <neb-badge :style="{ background: `${recipe.cuisine.color}20`, color: recipe.cuisine.color }">
-          <span v-if="recipe.cuisine.flag">{{ recipe.cuisine.flag }}</span>
-          {{ recipe.cuisine.name }}
-        </neb-badge>
+        <badge-cuisine :cuisine="recipe.cuisine" />
       </div>
     </div>
 
@@ -77,7 +74,7 @@ function handleCardClick() {
 
       <div class="recipe-meta">
         <div class="meta-item">
-          <icon name="material-symbols:inventory-2-outline-rounded" />
+          <icon name="material-symbols:grocery" />
           <span>{{ recipe.ingredients }} ingredients</span>
         </div>
 
@@ -93,25 +90,11 @@ function handleCardClick() {
       </div>
 
       <div v-if="recipe.tags?.length" class="recipe-tags">
-        <neb-tag
-          v-for="tag in recipe.tags"
-          :key="tag.name"
-          :style="{ background: `${tag.color}20`, color: tag.color }"
-        >
-          {{ tag.icon }}
-          {{ tag.name }}
-        </neb-tag>
+        <badge-tag v-for="tag in recipe.tags" :key="tag.name" :tag />
       </div>
 
       <div v-if="recipe.meal" class="meal-types">
-        <neb-badge
-          v-for="meal in recipe.meal"
-          :key="meal.name"
-          small
-          :style="{ background: `${meal.color}20`, color: meal.color }"
-        >
-          {{ meal.name }}
-        </neb-badge>
+        <badge-meal v-for="meal in recipe.meal" :key="meal.name" small :meal />
       </div>
     </div>
   </div>

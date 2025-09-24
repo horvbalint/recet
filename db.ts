@@ -131,7 +131,7 @@ export type InRecipeTag = {
   id?: RecordId<"recipe_tag">,
   color: string,
   household: Required<InHousehold>['id'],
-  icon: string,
+  icon?: string | undefined,
   name: string,
 }
 
@@ -139,7 +139,7 @@ export type OutRecipeTag = {
   id: RecordId<"recipe_tag">,
   color: string,
   household: OutHousehold,
-  icon: string,
+  icon?: string | undefined,
   name: string,
 }
 
@@ -795,7 +795,10 @@ export const tables = {
       },
       "icon": {
         "type": {
-          "name": "string"
+          "name": "option",
+          "inner": {
+            "name": "string"
+          }
         }
       },
       "name": {

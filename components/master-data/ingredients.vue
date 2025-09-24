@@ -14,7 +14,7 @@ const columns: Columns<OutIngredient> = {
   <master-data-layout
     table="ingredient"
     name="ingredient"
-    icon="material-symbols:inventory-2-outline-rounded"
+    icon="material-symbols:grocery"
     :get-query
     :columns="columns"
   >

@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { RecordId } from 'surrealdb'
+import type { OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
+
+// useColorMode().preference = 'system'
 
 interface Recipe {
   id: RecordId
@@ -28,9 +31,27 @@ interface Recipe {
 }
 
 const searchTerm = ref('')
+const selectedCuisines = ref<OutCuisine[]>([])
+const selectedTags = ref<OutRecipeTag[]>([])
+const selectedMeals = ref<OutMeal[]>([])
+const selectedIngredients = ref<OutIngredient[]>([])
+
+const showFilter = ref(false)
+const conditionCount = computed(() => selectedCuisines.value.length + selectedTags.value.length + selectedMeals.value.length + selectedIngredients.value.length)
+
+const { data: filterData, status: filterDataStatus, refresh: filterDataRefresh } = useAsyncData(async () => {
+  const [cuisenes, tags, meals, ingredients] = await db.query<[OutCuisine[], OutRecipeTag[], OutMeal[], OutIngredient[]]>(surql`
+    SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
+    SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
+    SELECT id, name, color FROM meal ORDER BY name ASC;
+    SELECT id, name FROM ingredient ORDER BY name ASC;
+  `)
+
+  return { cuisenes, tags, meals, ingredients }
+})
 
 function constructQuery() {
-  const baseQuery = surql`
+  const query = surql`
     SELECT
       id,
       name,
@@ -44,43 +65,45 @@ function constructQuery() {
   `
 
   if (searchTerm.value)
-    baseQuery.append`,search::score(0) as score FROM recipe`
+    query.append`,search::score(0) as score FROM recipe`
   else
-    baseQuery.append`FROM recipe`
+    query.append`FROM recipe`
 
   if (searchTerm.value) {
     if (currentHousehold.value!.language === 'hu')
-      baseQuery.append` WITH INDEX hungarian_search_name`
+      query.append` WITH INDEX hungarian_search_name`
     else
-      baseQuery.append` WITH INDEX english_search_name`
+      query.append` WITH INDEX english_search_name`
   }
 
-  if (searchTerm.value) {
-    return baseQuery.append`
-      WHERE
-        household = type::thing(${currentHousehold.value!.id}) && name @@ ${searchTerm.value}
-      ORDER BY
-        score, created_at DESC
-    `
-  }
-  else {
-    return baseQuery.append`
-      WHERE
-        household = type::thing(${currentHousehold.value!.id})
-      ORDER BY
-        created_at DESC
-    `
-  }
+  if (searchTerm.value)
+    query.append` WHERE household = type::thing(${currentHousehold.value!.id}) && name @@ ${searchTerm.value}`
+  else
+    query.append` WHERE household = type::thing(${currentHousehold.value!.id})`
+
+  if (selectedCuisines.value.length)
+    query.append` && cuisine IN ${selectedCuisines.value.map(c => c.id)}`
+  if (selectedTags.value.length)
+    query.append` && tags.intersect(${selectedTags.value.map(t => t.id)}).len() > 0`
+  if (selectedMeals.value.length)
+    query.append` && meal.intersect(${selectedMeals.value.map(m => m.id)}).len() > 0`
+  if (selectedIngredients.value.length)
+    query.append` && ingredients.ingredient.intersect(${selectedIngredients.value.map(i => i.id)}).len() > 0`
+
+  if (searchTerm.value)
+    query.append` ORDER BY score, created_at DESC`
+  else
+    query.append` ORDER BY created_at DESC`
+
+  return query
 }
 
 const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('recipes', async () => {
   const query = constructQuery()
-  const decoder = new TextDecoder()
-  console.log(decoder.decode(query.query.encoded))
   const [result] = await db.query<[Recipe[]]>(query)
 
   return result
-}, { watch: [currentHousehold, searchTerm] })
+}, { watch: [currentHousehold, searchTerm, selectedCuisines, selectedIngredients, selectedMeals, selectedTags] })
 </script>
 
 <template>
@@ -102,7 +125,91 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
     </template>
 
     <div class="page-wrapper">
-      <neb-search-input v-model="searchTerm" lazy />
+      <div class="search-filter-row">
+        <div class="search-row">
+          <neb-search-input v-model="searchTerm" lazy />
+
+          <neb-button :type="conditionCount ? 'secondary' : 'secondary-neutral'" small @click="showFilter = !showFilter">
+            <icon name="material-symbols:filter-list-rounded" />
+            Filters
+            <template v-if="conditionCount">
+              ({{ conditionCount }})
+            </template>
+          </neb-button>
+        </div>
+
+        <neb-state-content :status="filterDataStatus" :refresh="filterDataRefresh">
+          <div v-neb-expand="showFilter" class="filter-row">
+            <neb-select
+              v-model="selectedCuisines"
+              placeholder="Filter by Cuisine"
+              :options="filterData!.cuisenes"
+              label-key="name"
+              track-by-key="name"
+              multiple
+              no-search
+              leading-icon="material-symbols:public"
+            >
+              <template #option="{ option }">
+                <badge-cuisine :cuisine="option" />
+              </template>
+
+              <template #selection="{ selected }">
+                <badge-cuisine v-for="cuisine in selected" :key="cuisine.trackValue" small :cuisine="cuisine.option" />
+              </template>
+            </neb-select>
+
+            <neb-select
+              v-model="selectedTags"
+              placeholder="Filter by Tags"
+              :options="filterData!.tags"
+              label-key="name"
+              track-by-key="name"
+              multiple
+              no-search
+              leading-icon="material-symbols:tag-rounded"
+            >
+              <template #option="{ option }">
+                <badge-tag :tag="option" />
+              </template>
+
+              <template #selection="{ selected }">
+                <badge-tag v-for="tag in selected" :key="tag.trackValue" small :tag="tag.option" />
+              </template>
+            </neb-select>
+
+            <neb-select
+              v-model="selectedMeals"
+              placeholder="Filter by Meal"
+              :options="filterData!.meals"
+              label-key="name"
+              track-by-key="name"
+              multiple
+              no-search
+              leading-icon="material-symbols:restaurant-rounded"
+            >
+              <template #option="{ option }">
+                <badge-meal :meal="option" />
+              </template>
+
+              <template #selection="{ selected }">
+                <badge-meal v-for="meal in selected" :key="meal.trackValue" small :meal="meal.option" />
+              </template>
+            </neb-select>
+
+            <neb-select
+              v-model="selectedIngredients"
+              placeholder="Filter by Ingredient"
+              :options="filterData!.ingredients"
+              label-key="name"
+              track-by-key="name"
+              multiple
+              no-search
+              leading-icon="material-symbols:grocery"
+            />
+          </div>
+        </neb-state-content>
+      </div>
 
       <neb-state-content :status :refresh error-title="Failed to load recipes" :error-description="error?.message">
         <template v-if="!recipes?.length">
@@ -142,6 +249,28 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+
+.search-filter-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.search-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.filter-row {
+  width: 100%;
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+
+  & > * {
+    flex: 1;
+  }
 }
 
 .recipe-grid {

@@ -1,0 +1,27 @@
+.row-action {
+  font-size: 20px !important;
+  color: var(--neutral-color-600);
+  cursor: pointer;
+  transition: all var(--duration-default);
+
+  &:hover {
+    color: var(--neutral-color-900);
+  }
+
+  &.delete-action:hover {
+    color: var(--error-color-600);
+  }
+}
+
+.dark-mode {
+  .row-action {
+    color: var(--neutral-color-400);
+
+    &:hover {
+      color: var(--neutral-color-100);
+    }
+    &.delete-action:hover {
+      color: var(--error-color-400);
+    }
+  }
+}

@@ -7,7 +7,7 @@ const tabs = {
   recipe_tag: { text: 'Tags', icon: 'material-symbols:tag-rounded' },
   ingredient_category: { text: 'Categories', icon: 'material-symbols:category-outline-rounded' },
   shop: { text: 'Shops', icon: 'material-symbols:store-outline' },
-  ingredient: { text: 'Ingredients', icon: 'material-symbols:inventory-2-outline-rounded' },
+  ingredient: { text: 'Ingredients', icon: 'material-symbols:grocery' },
 }
 </script>
 

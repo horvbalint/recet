@@ -62,12 +62,12 @@ async function handleDeleteClick(item: T) {
       <template #row-actions="{ data: { original } }">
         <Icon
           name="material-symbols:edit-outline-rounded"
-          class="action-icon"
+          class="row-action"
           @click="handleEditClick(original)"
         />
         <Icon
           name="material-symbols:delete-outline-rounded"
-          class="action-icon delete-icon"
+          class="row-action delete-action"
           @click="handleDeleteClick(original)"
         />
       </template>
@@ -84,20 +84,5 @@ async function handleDeleteClick(item: T) {
 <style scoped>
 .master-data-layout {
   width: 100%;
-}
-
-.action-icon {
-  font-size: 20px !important;
-  color: var(--neutral-color-600);
-  cursor: pointer;
-  transition: all var(--duration-default);
-}
-
-.action-icon:hover {
-  color: var(--neutral-color-900);
-}
-
-.delete-icon:hover {
-  color: var(--error-color-600);
 }
 </style>

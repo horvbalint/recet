@@ -104,12 +104,12 @@ async function handleHouseholdCreated(household: OutHousehold) {
 
 .dark-mode {
   .household-dropdown {
-    background: var(--neutral-color-800);
-    border-color: var(--neutral-color-700);
+    background: var(--neutral-color-900);
+    border-color: var(--neutral-color-800);
   }
 
   .household-footer {
-    border-color: var(--neutral-color-700);
+    border-color: var(--neutral-color-800);
   }
 }
 </style>

@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2025-07-15',
   extends: ['nebula'],
+  modules: ['@nuxtjs/color-mode'],
 
   runtimeConfig: {
     public: {
@@ -33,8 +34,14 @@ export default defineNuxtConfig({
     },
   },
 
+  css: ['@/assets/main.css'],
+
   nebula: {
     primaryColor: '#BE2577',
+  },
+
+  colorMode: {
+    preference: 'system',
   },
 
   i18n: {
@@ -43,5 +50,4 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true },
-  modules: ['@nuxtjs/color-mode'],
 })

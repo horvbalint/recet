@@ -56,4 +56,14 @@ const columns: Columns<OutMeal> = {
   font-size: var(--text-sm);
   color: var(--neutral-color-600);
 }
+
+.dark-mode {
+  .color-indicator {
+    border: 1px solid var(--neutral-color-700);
+  }
+
+  .color-value {
+    color: var(--neutral-color-300);
+  }
+}
 </style>

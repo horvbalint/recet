@@ -98,7 +98,7 @@ DEFINE TABLE OVERWRITE recipe_tag SCHEMAFULL PERMISSIONS
 	
 DEFINE FIELD OVERWRITE name ON recipe_tag TYPE string;  
 DEFINE FIELD OVERWRITE color ON recipe_tag TYPE string;
-DEFINE FIELD OVERWRITE icon ON recipe_tag TYPE string;
+DEFINE FIELD OVERWRITE icon ON recipe_tag TYPE option<string>;
 DEFINE FIELD OVERWRITE household ON recipe_tag TYPE record<household>;
 
 // TABLE: ingredient

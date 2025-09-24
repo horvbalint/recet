@@ -18,9 +18,9 @@ const showEditModal = ref(false)
 
 const menuItems = [
   {
-    text: 'Rename',
+    text: 'Edit',
     icon: 'material-symbols:edit-outline-rounded',
-    callback: () => startRename(),
+    callback: () => showEditModal.value = true,
   },
   {
     text: 'Delete',
@@ -29,10 +29,6 @@ const menuItems = [
     callback: () => deleteList(),
   },
 ]
-
-function startRename() {
-  showEditModal.value = true
-}
 
 async function handleListChange() {
   showEditModal.value = false

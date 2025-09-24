@@ -78,13 +78,13 @@ function constructQuery() {
     query.append` WHERE household = type::thing(${currentHousehold.value!.id})`
 
   if (selectedCuisines.value.length)
-    query.append` && cuisine IN ${selectedCuisines.value.map(c => c.id)}`
+    query.append` && cuisine IN ${selectedCuisines.value}`
   if (selectedTags.value.length)
-    query.append` && tags.intersect(${selectedTags.value.map(t => t.id)}).len() > 0`
+    query.append` && tags.intersect(${selectedTags.value}).len() > 0`
   if (selectedMeals.value.length)
-    query.append` && meal.intersect(${selectedMeals.value.map(m => m.id)}).len() > 0`
+    query.append` && meal.intersect(${selectedMeals.value}).len() > 0`
   if (selectedIngredients.value.length)
-    query.append` && ingredients.ingredient.intersect(${selectedIngredients.value.map(i => i.id)}).len() > 0`
+    query.append` && ingredients.ingredient.intersect(${selectedIngredients.value}).len() > 0`
 
   if (searchTerm.value)
     query.append` ORDER BY score, created_at DESC`
@@ -100,6 +100,8 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
 
   return result
 }, { watch: [currentHousehold, searchTerm, selectedCuisines, selectedIngredients, selectedMeals, selectedTags] })
+
+const test = ref<number[]>([])
 </script>
 
 <template>
@@ -139,7 +141,9 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
               placeholder="Filter by Cuisine"
               :options="filterData!.cuisenes"
               label-key="name"
-              track-by-key="name"
+              track-by-key="id"
+              :compare-fun="compareIds"
+              use-only-tracked-key
               multiple
               no-search
               leading-icon="material-symbols:public"
@@ -149,7 +153,7 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
               </template>
 
               <template #selection="{ selected }">
-                <badge-cuisine v-for="cuisine in selected" :key="cuisine.trackValue" small :cuisine="cuisine.option" />
+                <badge-cuisine v-for="cuisine in selected" :key="cuisine.trackValue.toString()" small :cuisine="cuisine.option" />
               </template>
             </neb-select>
 
@@ -158,7 +162,9 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
               placeholder="Filter by Tags"
               :options="filterData!.tags"
               label-key="name"
-              track-by-key="name"
+              track-by-key="id"
+              :compare-fun="compareIds"
+              use-only-tracked-key
               multiple
               no-search
               leading-icon="material-symbols:tag-rounded"
@@ -168,7 +174,7 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
               </template>
 
               <template #selection="{ selected }">
-                <badge-tag v-for="tag in selected" :key="tag.trackValue" small :tag="tag.option" />
+                <badge-tag v-for="tag in selected" :key="tag.trackValue.toString()" small :tag="tag.option" />
               </template>
             </neb-select>
 
@@ -177,7 +183,9 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
               placeholder="Filter by Meal"
               :options="filterData!.meals"
               label-key="name"
-              track-by-key="name"
+              track-by-key="id"
+              :compare-fun="compareIds"
+              use-only-tracked-key
               multiple
               no-search
               leading-icon="material-symbols:restaurant-rounded"
@@ -187,7 +195,7 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
               </template>
 
               <template #selection="{ selected }">
-                <badge-meal v-for="meal in selected" :key="meal.trackValue" small :meal="meal.option" />
+                <badge-meal v-for="meal in selected" :key="meal.trackValue.toString()" small :meal="meal.option" />
               </template>
             </neb-select>
 
@@ -196,7 +204,9 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
               placeholder="Filter by Ingredient"
               :options="filterData!.ingredients"
               label-key="name"
-              track-by-key="name"
+              track-by-key="id"
+              :compare-fun="compareIds"
+              use-only-tracked-key
               multiple
               no-search
               leading-icon="material-symbols:grocery"

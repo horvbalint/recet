@@ -53,13 +53,9 @@ async function handleSubmit() {
 
     const [result] = await db.query<[OutIngredient[]]>('INSERT INTO recipe $data RETURN id', { data: {
       ...formData.value,
-      household: currentHousehold.value!.id,
       author: authUser.value!.id,
-      ingredients: formData.value.ingredients?.map(ing => ({ ...ing, unit: ing.unit?.id, ingredient: ing.ingredient.id })),
+      household: currentHousehold.value!.id,
       steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
-      tags: formData.value.tags?.map(tag => tag.id),
-      meal: formData.value.meal?.map(meal => meal.id),
-      cuisine: formData.value.cuisine?.id,
       image_blur_hash: blurhash,
       image: imageBuffer,
     } })
@@ -116,14 +112,14 @@ function handleCreateUnit(searchTerm: string, index: number) {
 }
 
 function onCuisineCreated(cuisine: OutCuisine) {
-  formData.value.cuisine = cuisine
+  formData.value.cuisine = cuisine.id
   refresh()
 }
 
 function onMealCreated(meal: OutMeal) {
   if (!formData.value.meal)
     formData.value.meal = []
-  formData.value.meal.push(meal)
+  formData.value.meal.push(meal.id)
 
   refresh()
 }
@@ -131,18 +127,18 @@ function onMealCreated(meal: OutMeal) {
 function onTagCreated(tag: OutRecipeTag) {
   if (!formData.value.tags)
     formData.value.tags = []
-  formData.value.tags.push(tag)
+  formData.value.tags.push(tag.id)
 
   refresh()
 }
 
 function onIngredientCreated(ingredient: OutIngredient) {
-  formData.value.ingredients![ingridientIndex.value!]!.ingredient = ingredient
+  formData.value.ingredients![ingridientIndex.value!]!.ingredient = ingredient.id
   refresh()
 }
 
 function onUnitCreated(unit: OutUnit) {
-  formData.value.ingredients![ingridientIndex.value!]!.unit = unit
+  formData.value.ingredients![ingridientIndex.value!]!.unit = unit.id
   refresh()
 }
 </script>
@@ -201,8 +197,10 @@ function onUnitCreated(unit: OutUnit) {
                   :options="data!.cuisines"
                   label="Cuisine"
                   placeholder="Select cuisine"
-                  track-by-key="name"
+                  track-by-key="id"
                   label-key="name"
+                  :compare-fun="compareIds"
+                  use-only-tracked-key
                   @new="handleCreateCuisine"
                 />
 
@@ -211,8 +209,10 @@ function onUnitCreated(unit: OutUnit) {
                   :options="data!.meals"
                   label="Meals"
                   placeholder="Select meals"
-                  track-by-key="name"
+                  track-by-key="id"
                   label-key="name"
+                  :compare-fun="compareIds"
+                  use-only-tracked-key
                   multiple
                   @new="handleCreateMeal"
                 />
@@ -222,8 +222,10 @@ function onUnitCreated(unit: OutUnit) {
                   :options="data!.recipeTags"
                   label="Tags"
                   placeholder="Select tags"
-                  track-by-key="name"
+                  track-by-key="id"
                   label-key="name"
+                  :compare-fun="compareIds"
+                  use-only-tracked-key
                   multiple
                   @new="handleCreateTag"
                 />
@@ -244,8 +246,10 @@ function onUnitCreated(unit: OutUnit) {
                   label="Ingredient"
                   :options="data!.ingredients!"
                   label-key="name"
-                  track-by-key="name"
+                  track-by-key="id"
                   placeholder="Select ingredient"
+                  :compare-fun="compareIds"
+                  use-only-tracked-key
                   required
                   @new="handleCreateIngredient($event, index)"
                 />
@@ -262,8 +266,10 @@ function onUnitCreated(unit: OutUnit) {
                   label="Unit"
                   :options="data!.units!"
                   label-key="name"
-                  track-by-key="name"
+                  track-by-key="id"
                   placeholder="Select unit"
+                  :compare-fun="compareIds"
+                  use-only-tracked-key
                   allow-empty
                   @new="handleCreateUnit($event, index)"
                 />

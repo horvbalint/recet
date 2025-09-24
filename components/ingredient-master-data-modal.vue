@@ -19,20 +19,6 @@ const { data: categories, refresh: refreshCategories } = await useAsyncData(asyn
   return result || []
 })
 
-function transformBeforeCreate(data: any) {
-  return {
-    ...data,
-    category: data.category?.id,
-  }
-}
-
-function transformBeforeEdit(data: any) {
-  return {
-    ...data,
-    category: data.category?.id,
-  }
-}
-
 function handleSave(item: OutIngredient) {
   emit('saved', item)
 }
@@ -54,8 +40,6 @@ function onCategoryCreated() {
     name="ingredient"
     icon="material-symbols:grocery"
     :initial-data
-    :transform-before-create
-    :transform-before-edit
     @saved="handleSave"
   >
     <template #form="{ data }">
@@ -66,7 +50,9 @@ function onCategoryCreated() {
         label="Category"
         :options="categories || []"
         label-key="name"
-        track-by-key="name"
+        track-by-key="id"
+        :compare-fun="compareIds"
+        use-only-tracked-key
         placeholder="Select a category"
         allow-empty
         @new="handleCreateCategory($event)"

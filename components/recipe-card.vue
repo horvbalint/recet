@@ -76,12 +76,6 @@ function handleCardClick() {
   border-color: var(--neutral-color-200);
 }
 
-.recipe-image {
-  position: relative;
-  height: 200px;
-  overflow: hidden;
-}
-
 .image-placeholder {
   width: 100%;
   height: 100%;
@@ -159,10 +153,6 @@ function handleCardClick() {
 @media (--tablet-viewport) {
   .recipe-card {
     border-radius: var(--radius-default);
-  }
-
-  .recipe-image {
-    height: 160px;
   }
 }
 

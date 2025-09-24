@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { OutShop, OutShoppingList } from '~/db'
+import type { InShoppingList, OutShop, OutShoppingList } from '~/db'
 
 const props = defineProps<{
-  initialData?: OutShoppingList | null
+  initialData?: InShoppingList | null
 }>()
 
 const emit = defineEmits<{
@@ -16,7 +16,7 @@ const { data: shops } = await useAsyncData('shops', async () => {
   return result || []
 })
 
-const formData = ref<OutShoppingList>(props.initialData || {
+const formData = ref<Partial<InShoppingList>>(props.initialData || {
   name: '',
 })
 
@@ -32,9 +32,7 @@ async function handleSubmit() {
   try {
     if (formData.value.id) {
       await db.query<[OutShoppingList]>(surql`UPDATE ONLY ${formData.value.id} MERGE ${{
-        name: formData.value.name,
-        items: formData.value.items,
-        shop: formData.value.shop?.id,
+        ...formData.value,
         household: currentHousehold.value!.id,
       }}`)
       useNebToast({ type: 'success', title: 'List updated', description: `"${formData.value.name}" has been updated.` })
@@ -42,9 +40,8 @@ async function handleSubmit() {
     else {
       await db.query<[OutShoppingList]>(
         surql`CREATE shopping_list CONTENT ${{
-          name: formData.value.name,
+          ...formData.value,
           items: [],
-          shop: formData.value.shop?.id,
           household: currentHousehold.value!.id,
         }}`,
       )
@@ -87,7 +84,9 @@ async function handleSubmit() {
           label="Shop"
           :options="shops!"
           label-key="name"
-          track-by-key="name"
+          track-by-key="id"
+          :compare-fun="compareIds"
+          use-only-tracked-key
           placeholder="Select a shop"
           allow-empty
           @keydown.enter="handleSubmit()"

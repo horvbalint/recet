@@ -202,8 +202,9 @@ function onUnitCreated(unit: OutUnit) {
               v-if="data"
               v-model="shop"
               :options="data!.shops"
-              track-by-key="name"
+              track-by-key="id"
               label-key="name"
+              :compare-fun="compareIds"
               placeholder="Shop"
               no-search
               allow-empty
@@ -296,8 +297,9 @@ function onUnitCreated(unit: OutUnit) {
             :options="data!.ingredients"
             label="Ingredient"
             placeholder="Select an ingredient"
-            track-by-key="name"
+            track-by-key="id"
             label-key="name"
+            :compare-fun="compareIds"
             required
             :disabled="isLoading"
             @new="handleCreateIngredient($event)"
@@ -319,8 +321,9 @@ function onUnitCreated(unit: OutUnit) {
               :options="data!.units"
               label="Unit"
               placeholder="Select unit"
-              track-by-key="name"
+              track-by-key="id"
               label-key="name"
+              :compare-fun="compareIds"
               :disabled="isLoading"
               allow-empty
               @new="handleCreateUnit($event)"
@@ -332,8 +335,9 @@ function onUnitCreated(unit: OutUnit) {
             :options="data!.categories"
             label="Category"
             placeholder="Select a category"
-            track-by-key="name"
+            track-by-key="id"
             label-key="name"
+            :compare-fun="compareIds"
             :disabled="isLoading"
             allow-empty
           />

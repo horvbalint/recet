@@ -2,17 +2,12 @@
 import type { RecordId } from 'surrealdb'
 import type { OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
 
-// useColorMode().preference = 'system'
-
 export interface Recipe {
   id: RecordId<'recipe'>
   name: string
   ingredients: number
   steps: number
   image_blur_hash?: string
-  author: {
-    username: string
-  }
   cuisine?: {
     name: string
     color: string
@@ -59,7 +54,6 @@ function constructQuery() {
       image_blur_hash,
       ingredients.len(),
       steps.len(),
-      author.{username},
       cuisine.{name, color, flag},
       tags.{name, color, icon},
       meal.{name, color},

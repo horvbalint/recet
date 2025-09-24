@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Recipe } from '~/pages/index.vue'
-import dayjs from 'dayjs'
 
 const props = defineProps<{
   recipe: Recipe
@@ -30,12 +29,6 @@ function handleCardClick() {
         <h3 class="recipe-title">
           {{ recipe.name }}
         </h3>
-        <neb-avatar-card
-          v-if="recipe.author"
-          :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '32px' }"
-          :title="recipe.author?.username || 'Unknown'"
-          :text="dayjs(recipe.created_at).format('YYYY-MM-DD')"
-        />
       </div>
 
       <div class="recipe-meta">
@@ -59,7 +52,7 @@ function handleCardClick() {
         <badge-tag v-for="tag in recipe.tags" :key="tag.name" :tag />
       </div>
 
-      <div v-if="recipe.meal" class="meal-types">
+      <div v-if="recipe.meal?.length" class="meal-types">
         <badge-meal v-for="meal in recipe.meal" :key="meal.name" small :meal />
       </div>
     </div>

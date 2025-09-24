@@ -131,10 +131,8 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
 
           <neb-button :type="conditionCount ? 'secondary' : 'secondary-neutral'" small @click="showFilter = !showFilter">
             <icon name="material-symbols:filter-list-rounded" />
-            Filters
-            <template v-if="conditionCount">
-              ({{ conditionCount }})
-            </template>
+            <span class="filter-span">Filters</span>
+            <span v-if="conditionCount">({{ conditionCount }})</span>
           </neb-button>
         </div>
 
@@ -280,6 +278,15 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
 }
 
 @media (--tablet-viewport) {
+  .filter-span {
+    display: none;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
   .recipe-grid {
     grid-template-columns: 1fr;
     gap: var(--space-4);

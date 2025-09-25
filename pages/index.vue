@@ -27,10 +27,10 @@ export interface Recipe {
 }
 
 const searchTerm = ref('')
-const selectedCuisines = ref<OutCuisine[]>([])
-const selectedTags = ref<OutRecipeTag[]>([])
-const selectedMeals = ref<OutMeal[]>([])
-const selectedIngredients = ref<OutIngredient[]>([])
+const selectedCuisines = ref<OutCuisine['id'][]>([])
+const selectedTags = ref<OutRecipeTag['id'][]>([])
+const selectedMeals = ref<OutMeal['id'][]>([])
+const selectedIngredients = ref<OutIngredient['id'][]>([])
 
 const showFilter = ref(false)
 const conditionCount = computed(() => selectedCuisines.value.length + selectedTags.value.length + selectedMeals.value.length + selectedIngredients.value.length)
@@ -100,8 +100,6 @@ const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('
 
   return result
 }, { watch: [currentHousehold, searchTerm, selectedCuisines, selectedIngredients, selectedMeals, selectedTags] })
-
-const test = ref<number[]>([])
 </script>
 
 <template>
@@ -142,7 +140,7 @@ const test = ref<number[]>([])
               :options="filterData!.cuisenes"
               label-key="name"
               track-by-key="id"
-              :compare-fun="compareIds"
+              :transform-fun="transformId"
               use-only-tracked-key
               multiple
               no-search
@@ -163,7 +161,7 @@ const test = ref<number[]>([])
               :options="filterData!.tags"
               label-key="name"
               track-by-key="id"
-              :compare-fun="compareIds"
+              :transform-fun="transformId"
               use-only-tracked-key
               multiple
               no-search
@@ -184,7 +182,7 @@ const test = ref<number[]>([])
               :options="filterData!.meals"
               label-key="name"
               track-by-key="id"
-              :compare-fun="compareIds"
+              :transform-fun="transformId"
               use-only-tracked-key
               multiple
               no-search
@@ -205,10 +203,9 @@ const test = ref<number[]>([])
               :options="filterData!.ingredients"
               label-key="name"
               track-by-key="id"
-              :compare-fun="compareIds"
+              :transform-fun="transformId"
               use-only-tracked-key
               multiple
-              no-search
               leading-icon="material-symbols:grocery"
             />
           </div>

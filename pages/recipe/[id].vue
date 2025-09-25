@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Menu } from '@nebula/components/overlays/neb-menu.vue'
 import type { RecordId } from 'surrealdb'
 
 definePageMeta({
@@ -8,7 +9,6 @@ definePageMeta({
 interface Recipe {
   id: RecordId<'recipe'>
   name: string
-  description?: string
   ingredients: Array<{
     ingredient: string
     amount: string
@@ -120,6 +120,43 @@ async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
   }
 }
 
+const inProgress = ref(false)
+async function deleteRecipe() {
+  try {
+    const confirmed = await useNebConfirm({ title: 'Confirm action!', description: 'Are you sure you want to delete this recipe? This action cannot be undone.' })
+    if (!confirmed)
+      return
+
+    inProgress.value = true
+
+    await db.query(surql`DELETE type::thing('recipe', ${recipeId})`)
+    useNebToast({ type: 'success', title: 'Recipe deleted!', description: 'The recipe has been deleted successfully.' })
+    await navigateTo('/')
+  }
+  catch (err) {
+    console.error('Error deleting recipe:', err)
+    useNebToast({ type: 'error', title: 'Failed to delete recipe!', description: 'Could not delete the recipe. Please try again.' })
+  }
+  finally {
+    inProgress.value = false
+  }
+}
+
+const reipceMenus: Menu[] = [
+  {
+    text: 'Edit Recipe',
+    icon: 'material-symbols:edit-outline-rounded',
+    callback: async () => await navigateTo(`/recipe/create/${recipeId}`),
+  },
+  {
+    text: 'Delete Recipe',
+    icon: 'material-symbols:delete-outline-rounded',
+    segment: true,
+    desctructive: true,
+    callback: () => deleteRecipe(),
+  },
+]
+
 watch(currentHousehold, async () => await navigateTo('/'))
 </script>
 
@@ -139,46 +176,53 @@ watch(currentHousehold, async () => await navigateTo('/'))
       </neb-empty-state>
 
       <div v-else class="recipe-container">
-        <header class="recipe-header">
+        <header>
           <div class="recipe-hero">
             <recipe-image class="recipe-image" :recipe :width-px="600" :height-px="400" />
 
-            <div class="recipe-info">
-              <h1 class="recipe-title">
-                {{ recipe.name }}
-              </h1>
+            <div class="recipe-header-right">
+              <div class="recipe-info">
+                <h1 class="recipe-title">
+                  {{ recipe.name }}
+                </h1>
 
-              <p v-if="recipe.description" class="recipe-description">
-                {{ recipe.description }}
-              </p>
+                <div class="recipe-meta">
+                  <div class="meta-item">
+                    <icon name="material-symbols:grocery" />
+                    <span>{{ recipe.ingredients?.length || 0 }} ingredients</span>
+                  </div>
 
-              <div class="recipe-meta">
-                <div class="meta-item">
-                  <icon name="material-symbols:grocery" />
-                  <span>{{ recipe.ingredients?.length || 0 }} ingredients</span>
+                  <div class="meta-item">
+                    <icon name="material-symbols:format-list-numbered-rounded" />
+                    <span>{{ recipe.steps?.length || 0 }} steps</span>
+                  </div>
                 </div>
 
-                <div class="meta-item">
-                  <icon name="material-symbols:format-list-numbered-rounded" />
-                  <span>{{ recipe.steps?.length || 0 }} steps</span>
+                <div class="recipe-author">
+                  <neb-avatar-card
+                    :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '40px' }"
+                    :title="`By ${recipe.author?.username || 'Unknown'}`"
+                    :text="`Created on ${new Date(recipe.created_at).toLocaleDateString()}`"
+                  />
+                </div>
+
+                <div v-if="recipe.tags?.length" class="recipe-tags">
+                  <badge-tag v-for="tag in recipe.tags" :key="tag.name" :tag />
+                </div>
+
+                <div v-if="recipe.meal?.length" class="meal-types">
+                  <badge-meal v-for="meal in recipe.meal" :key="meal.name" :meal />
                 </div>
               </div>
 
-              <div class="recipe-author">
-                <neb-avatar-card
-                  :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '40px' }"
-                  :title="`By ${recipe.author?.username || 'Unknown'}`"
-                  :text="`Created on ${new Date(recipe.created_at).toLocaleDateString()}`"
-                />
-              </div>
-
-              <div v-if="recipe.tags?.length" class="recipe-tags">
-                <badge-tag v-for="tag in recipe.tags" :key="tag.name" :tag />
-              </div>
-
-              <div v-if="recipe.meal?.length" class="meal-types">
-                <badge-meal v-for="meal in recipe.meal" :key="meal.name" :meal />
-              </div>
+              <neb-menu :menus="reipceMenus" :floating-options="{ placement: 'top-end' }">
+                <template #trigger="{ toggle }">
+                  <neb-button type="secondary" small :disabled="inProgress" :loading="inProgress" @click="toggle()">
+                    <icon name="material-symbols:menu-rounded" />
+                    Actions
+                  </neb-button>
+                </template>
+              </neb-menu>
             </div>
           </div>
         </header>
@@ -299,7 +343,15 @@ watch(currentHousehold, async () => await navigateTo('/'))
   border: 1px solid var(--neutral-color-200);
 }
 
+.recipe-header-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
 .recipe-info {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -311,13 +363,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   color: var(--neutral-color-900);
   margin: 0;
   line-height: 1.2;
-}
-
-.recipe-description {
-  font-size: var(--text-lg);
-  color: var(--neutral-color-600);
-  line-height: 1.5;
-  margin: 0;
 }
 
 .recipe-meta {
@@ -529,10 +574,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
   .recipe-title {
     color: var(--neutral-color-100);
-  }
-
-  .recipe-description {
-    color: var(--neutral-color-400);
   }
 
   .meta-item {

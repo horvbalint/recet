@@ -51,7 +51,7 @@ function onCategoryCreated() {
         :options="categories || []"
         label-key="name"
         track-by-key="id"
-        :compare-fun="compareIds"
+        :transform-fun="transformId"
         use-only-tracked-key
         placeholder="Select a category"
         allow-empty

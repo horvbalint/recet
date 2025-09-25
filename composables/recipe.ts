@@ -15,7 +15,7 @@ export async function getRecipeImageUrl(recipeId: RecordId<'recipe'>) {
 
 export async function processRecipeImage(file: File | null) {
   if (!file)
-    return { blurhash: null, imageBuffer: null }
+    return { blurhash: undefined, imageBuffer: undefined }
 
   const resizedImage = await readAndCompressImage(file, {
     quality: 0.8,

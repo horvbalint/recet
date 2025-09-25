@@ -204,7 +204,7 @@ function onUnitCreated(unit: OutUnit) {
               :options="data!.shops"
               track-by-key="id"
               label-key="name"
-              :compare-fun="compareIds"
+              :transform-fun="transformId"
               placeholder="Shop"
               no-search
               allow-empty
@@ -299,7 +299,7 @@ function onUnitCreated(unit: OutUnit) {
             placeholder="Select an ingredient"
             track-by-key="id"
             label-key="name"
-            :compare-fun="compareIds"
+            :transform-fun="transformId"
             required
             :disabled="isLoading"
             @new="handleCreateIngredient($event)"
@@ -323,7 +323,7 @@ function onUnitCreated(unit: OutUnit) {
               placeholder="Select unit"
               track-by-key="id"
               label-key="name"
-              :compare-fun="compareIds"
+              :transform-fun="transformId"
               :disabled="isLoading"
               allow-empty
               @new="handleCreateUnit($event)"
@@ -337,7 +337,7 @@ function onUnitCreated(unit: OutUnit) {
             placeholder="Select a category"
             track-by-key="id"
             label-key="name"
-            :compare-fun="compareIds"
+            :transform-fun="transformId"
             :disabled="isLoading"
             allow-empty
           />

@@ -10,6 +10,6 @@ export function logOnError(error: Ref<any>) {
   })
 }
 
-export function compareIds<T extends string>(a: RecordId<T>, b: RecordId<T>) {
-  return a.id === b.id
+export function transformId<T extends string>(id: RecordId<T>) {
+  return id.toString()
 }

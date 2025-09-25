@@ -9,17 +9,35 @@ const formData = ref<Partial<InRecipe>>({
   meal: [],
   cuisine: undefined,
 })
-
 const selectedImage = ref<File | null>(null)
 
-const isFormValid = ref(false)
+const recipeId = useRoute().params.id
+const isEdit = !!recipeId
+const headerTitle = isEdit ? 'Edit Recipe' : 'Create Recipe'
+const headerDescription = isEdit ? 'Edit the details of the recipe' : 'Add a new recipe to your collection'
 
-// Modal states
-type Table = 'ingredient' | 'unit' | 'cuisine' | 'meal' | 'recipe_tag'
-const dynamicCreateTable = ref<Table | null>(null)
-const dynamicCreateSearchTerm = ref<string>('')
+const { data: recipeToEdit, status: recipeStatus, refresh: recipeRefresh, error: recipeError } = useAsyncData(async () => {
+  if (!recipeId)
+    return null
 
-const { data, status, refresh, error } = await useAsyncData(async () => {
+  const [recipe] = await db.query<[InRecipe]>(surql`
+    SELECT * FROM ONLY type::thing('recipe', ${recipeId})
+  `)
+
+  return recipe
+})
+
+let originalImage: null | File = null
+watchOnce(recipeToEdit, () => {
+  if (!recipeToEdit.value)
+    return
+
+  formData.value = recipeToEdit.value
+  selectedImage.value = recipeToEdit.value.image ? new File([recipeToEdit.value.image], 'recipe-image.jpg', { type: 'image/jpeg' }) : null
+  originalImage = selectedImage.value
+})
+
+const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, error: masterDataError } = useAsyncData(async () => {
   const [ingredients, units, cuisines, meals, recipeTags] = await db.query<[
     OutIngredient[],
     OutUnit[],
@@ -45,8 +63,23 @@ const { data, status, refresh, error } = await useAsyncData(async () => {
   watch: [currentHousehold],
 })
 
+const status = nebCombineStatuses(recipeStatus, masterDataStatus)
+async function refresh() {
+  await Promise.all([
+    recipeRefresh(),
+    masterDataRefresh(),
+  ])
+}
+
 const submitting = ref(false)
 async function handleSubmit() {
+  if (isEdit)
+    await updateRecipe()
+  else
+    await createRecipe()
+}
+
+async function createRecipe() {
   try {
     submitting.value = true
     const { blurhash, imageBuffer } = await processRecipeImage(selectedImage.value)
@@ -60,28 +93,50 @@ async function handleSubmit() {
       image: imageBuffer,
     } })
 
-    if (result?.[0]?.id) {
-      useNebToast({
-        type: 'success',
-        title: 'Recipe created!',
-        description: 'Your recipe has been saved successfully.',
-      })
-
-      await navigateTo(`/recipe/${result[0].id.id}`)
-    }
+    useNebToast({ type: 'success', title: 'Recipe created!', description: 'Your recipe has been saved successfully.' })
+    await navigateTo(`/recipe/${result[0]!.id.id}`)
   }
   catch (error) {
     console.error(error)
-    useNebToast({
-      type: 'error',
-      title: 'Creation failed!',
-      description: 'Could not save the recipe. Please try again.',
-    })
+    useNebToast({ type: 'error', title: 'Creation failed!', description: 'Could not save the recipe. Please try again.' })
   }
   finally {
     submitting.value = false
   }
 }
+
+async function updateRecipe() {
+  try {
+    submitting.value = true
+
+    const update: Partial<InRecipe> = {
+      ...formData.value,
+      steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
+    }
+
+    if (selectedImage.value !== originalImage) {
+      const { blurhash, imageBuffer } = await processRecipeImage(selectedImage.value)
+      update.image_blur_hash = blurhash
+      update.image = imageBuffer
+    }
+
+    await db.query<[OutIngredient[]]>(surql`UPDATE ONLY ${recipeToEdit.value!.id} MERGE ${update}`)
+
+    useNebToast({ type: 'success', title: 'Recipe updated!', description: 'Your recipe has been saved successfully.' })
+    await navigateTo(`/recipe/${recipeId}`)
+  }
+  catch (error) {
+    console.error(error)
+    useNebToast({ type: 'error', title: 'Update failed!', description: 'Could not save the recipe. Please try again.' })
+  }
+  finally {
+    submitting.value = false
+  }
+}
+
+type Table = 'ingredient' | 'unit' | 'cuisine' | 'meal' | 'recipe_tag'
+const dynamicCreateTable = ref<Table | null>(null)
+const dynamicCreateSearchTerm = ref<string>('')
 
 function handleCreateCuisine(searchTerm: string) {
   dynamicCreateSearchTerm.value = searchTerm
@@ -141,14 +196,16 @@ function onUnitCreated(unit: OutUnit) {
   formData.value.ingredients![ingridientIndex.value!]!.unit = unit.id
   refresh()
 }
+
+const isFormValid = ref(false)
 </script>
 
 <template>
   <nuxt-layout name="app">
     <template #content-header>
       <neb-content-header
-        title="Create Recipe"
-        description="Add a new recipe to your collection"
+        :title="headerTitle"
+        :description="headerDescription"
         :type="pageHeaderType"
         has-separator
       >
@@ -167,7 +224,7 @@ function onUnitCreated(unit: OutUnit) {
       </neb-content-header>
     </template>
 
-    <neb-state-content :status :refresh :error-description="error?.message">
+    <neb-state-content :status :refresh :error-description="recipeError?.message || masterDataError?.message">
       <neb-validator v-model="isFormValid">
         <div class="form-container">
           <div class="form-section">
@@ -194,24 +251,24 @@ function onUnitCreated(unit: OutUnit) {
               <div class="selects-row">
                 <neb-select
                   v-model="formData.cuisine"
-                  :options="data!.cuisines"
+                  :options="masterData!.cuisines"
                   label="Cuisine"
                   placeholder="Select cuisine"
                   track-by-key="id"
                   label-key="name"
-                  :compare-fun="compareIds"
+                  :transform-fun="transformId"
                   use-only-tracked-key
                   @new="handleCreateCuisine"
                 />
 
                 <neb-select
                   v-model="formData.meal"
-                  :options="data!.meals"
+                  :options="masterData!.meals"
                   label="Meals"
                   placeholder="Select meals"
                   track-by-key="id"
                   label-key="name"
-                  :compare-fun="compareIds"
+                  :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
                   @new="handleCreateMeal"
@@ -219,12 +276,12 @@ function onUnitCreated(unit: OutUnit) {
 
                 <neb-select
                   v-model="formData.tags"
-                  :options="data!.recipeTags"
+                  :options="masterData!.recipeTags"
                   label="Tags"
                   placeholder="Select tags"
                   track-by-key="id"
                   label-key="name"
-                  :compare-fun="compareIds"
+                  :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
                   @new="handleCreateTag"
@@ -244,11 +301,11 @@ function onUnitCreated(unit: OutUnit) {
                 <neb-select
                   v-model="ingredient.ingredient"
                   label="Ingredient"
-                  :options="data!.ingredients!"
+                  :options="masterData!.ingredients!"
                   label-key="name"
                   track-by-key="id"
                   placeholder="Select ingredient"
-                  :compare-fun="compareIds"
+                  :transform-fun="transformId"
                   use-only-tracked-key
                   required
                   @new="handleCreateIngredient($event, index)"
@@ -264,11 +321,11 @@ function onUnitCreated(unit: OutUnit) {
                 <neb-select
                   v-model="ingredient.unit"
                   label="Unit"
-                  :options="data!.units!"
+                  :options="masterData!.units!"
                   label-key="name"
                   track-by-key="id"
                   placeholder="Select unit"
-                  :compare-fun="compareIds"
+                  :transform-fun="transformId"
                   use-only-tracked-key
                   allow-empty
                   @new="handleCreateUnit($event, index)"

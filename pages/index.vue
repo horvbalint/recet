@@ -94,7 +94,7 @@ function constructQuery() {
   return query
 }
 
-const { data: recipes, status, error, refresh } = await useAsyncData<Recipe[]>('recipes', async () => {
+const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipes', async () => {
   const query = constructQuery()
   const [result] = await db.query<[Recipe[]]>(query)
 

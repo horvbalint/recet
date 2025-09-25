@@ -41,7 +41,7 @@ const getQuery = surql`
   ORDER username ASC
 `
 
-const { data: members, status, refresh } = await useAsyncData(async () => {
+const { data: members, status, refresh } = useAsyncData(async () => {
   const [result] = await db.query<[Member[]]>(getQuery, [householdGap.fill(currentHousehold.value!.id)])
   return result || []
 }, { watch: [currentHousehold] })

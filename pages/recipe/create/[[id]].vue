@@ -45,11 +45,11 @@ const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, 
     OutMeal[],
     OutRecipeTag[],
   ]>(surql`
-    SELECT id, name FROM ingredient ORDER BY name ASC;
-    SELECT id, name FROM unit ORDER BY name ASC;
-    SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
-    SELECT id, name, color FROM meal ORDER BY name ASC;
-    SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
+    SELECT id, name FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+    SELECT id, name FROM unit WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+    SELECT id, name, color, flag FROM cuisine WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+    SELECT id, name, color FROM meal WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+    SELECT id, name, color, icon FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
   `)
 
   return {

@@ -11,7 +11,7 @@ const emit = defineEmits<{
 
 const modelValue = defineModel<boolean>({ required: true })
 
-const { data: shops } = await useAsyncData('shops', async () => {
+const { data: shops } = useAsyncData('shops', async () => {
   const [result] = await db.query<[OutShop[]]>(surql`SELECT * FROM shop ORDER BY name ASC`)
   return result || []
 })

@@ -15,8 +15,28 @@ const props = defineProps<{
   heightPx: number
 }>()
 
-const { data: imageUrl } = useAsyncData(`recipe-image-${props.recipe.id.id}`, () => {
+const { data: imageUrl, refresh } = useAsyncData(`recipe-image-${props.recipe.id.id}`, () => {
   return getRecipeImageUrl(props.recipe.id)
+}, {
+  immediate: false,
+})
+
+const imageWrapper = useTemplateRef('image-wrapper')
+onMounted(() => {
+  if (!props.recipe.image_blur_hash)
+    return
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry!.isIntersecting) {
+        refresh()
+        observer.unobserve(entry!.target)
+      }
+    },
+    { rootMargin: '100px' },
+  )
+
+  observer.observe(imageWrapper.value!)
 })
 
 const canvas = useTemplateRef('canvas')
@@ -36,10 +56,10 @@ const heightString = computed(() => `${props.heightPx}px`)
 </script>
 
 <template>
-  <div class="recipe-image">
+  <div ref="image-wrapper" class="recipe-image">
     <template v-if="recipe.image_blur_hash">
       <canvas v-if="!imageUrl" ref="canvas" :width="props.widthPx" :height="props.heightPx" />
-      <img v-else :src="imageUrl" alt="Recipe Image">
+      <img v-show="imageUrl" :src="imageUrl!" alt="Recipe Image">
     </template>
 
     <div v-else class="image-placeholder">
@@ -49,6 +69,8 @@ const heightString = computed(() => `${props.heightPx}px`)
     <div v-if="recipe.cuisine" class="cuisine-badge">
       <badge-cuisine :cuisine="recipe.cuisine" />
     </div>
+
+    <slot />
   </div>
 </template>
 

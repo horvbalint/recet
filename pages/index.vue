@@ -142,11 +142,11 @@ const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipe
           </neb-button>
         </div>
 
-        <div v-neb-expand="showFilter" class="filter-row">
+        <div v-if="filterData" v-neb-expand="showFilter" class="filter-row">
           <neb-select
             v-model="selectedCuisines"
             placeholder="Filter by Cuisine"
-            :options="filterData!.cuisenes"
+            :options="filterData.cuisenes"
             label-key="name"
             track-by-key="id"
             :transform-fun="transformId"
@@ -167,7 +167,7 @@ const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipe
           <neb-select
             v-model="selectedTags"
             placeholder="Filter by Tags"
-            :options="filterData!.tags"
+            :options="filterData.tags"
             label-key="name"
             track-by-key="id"
             :transform-fun="transformId"
@@ -188,7 +188,7 @@ const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipe
           <neb-select
             v-model="selectedMeals"
             placeholder="Filter by Meal"
-            :options="filterData!.meals"
+            :options="filterData.meals"
             label-key="name"
             track-by-key="id"
             :transform-fun="transformId"
@@ -209,7 +209,7 @@ const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipe
           <neb-select
             v-model="selectedIngredients"
             placeholder="Filter by Ingredient"
-            :options="filterData!.ingredients"
+            :options="filterData.ingredients"
             label-key="name"
             track-by-key="id"
             :transform-fun="transformId"

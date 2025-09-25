@@ -79,13 +79,8 @@ export default defineNuxtConfig({
         },
       ],
     },
-    pwaAssets: {
-      disabled: false,
-      overrideManifestIcons: true,
-      image: 'public/favicon.svg',
-    },
-    devOptions: {
-      enabled: true,
+    workbox: {
+      skipWaiting: true,
     },
   },
 

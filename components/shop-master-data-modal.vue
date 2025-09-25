@@ -124,8 +124,7 @@ function handleSave(item: OutShop) {
   font-weight: 500;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
+.dark-mode {
   .drag-item:hover {
     background: var(--neutral-color-800);
   }
@@ -136,6 +135,10 @@ function handleSave(item: OutShop) {
 
   .drag-item:hover .drag-handle {
     color: var(--neutral-color-300);
+  }
+
+  .category-name {
+    color: var(--neutral-color-400);
   }
 
   .category-badge {

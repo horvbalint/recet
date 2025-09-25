@@ -159,7 +159,6 @@ function update() {
   background: var(--neutral-color-25);
 }
 
-/* Sidebar Styles */
 .sidebar {
   width: 280px;
   background: white;
@@ -172,7 +171,7 @@ function update() {
   left: 0;
   top: 0;
   z-index: 100;
-  transition: transform 0.3s ease;
+  transition: transform var(--duration-default) ease;
   box-shadow: var(--shadow-lg);
 }
 

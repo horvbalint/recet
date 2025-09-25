@@ -140,6 +140,9 @@ function update() {
             @click="isMobileMenuOpen = true"
           >
             <icon name="material-symbols:menu-rounded" />
+            <neb-badge v-if="$pwa.needRefresh || $pwa.showInstallPrompt" color="warning" small>
+              1
+            </neb-badge>
           </neb-button>
         </header>
 

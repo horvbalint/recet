@@ -2,6 +2,10 @@
 import type { RecordId } from 'surrealdb'
 import type { OutShoppingList } from '~/db'
 
+definePageMeta({
+  layout: 'app',
+})
+
 const router = useRouter()
 
 const { data: shoppingLists, status: shoppingListsStatus, refresh: refreshShoppingLists } = useAsyncData('shopping-lists', async () => {
@@ -39,7 +43,7 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
 </script>
 
 <template>
-  <nuxt-layout name="app">
+  <page-layout>
     <template #content-header>
       <neb-content-header
         title="Shopping Lists"
@@ -85,7 +89,7 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
       v-model="showCreateModal"
       @change="handleListChange()"
     />
-  </nuxt-layout>
+  </page-layout>
 </template>
 
 <style scoped>

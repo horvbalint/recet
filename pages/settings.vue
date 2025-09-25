@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { InHousehold, OutHousehold } from '~/db'
 
+definePageMeta({
+  layout: 'app',
+})
+
 watch(isCurrHouseholdOwner, () => {
   if (!isCurrHouseholdOwner.value)
     navigateTo('/')
@@ -36,7 +40,7 @@ const availableLanguages = [
 </script>
 
 <template>
-  <nuxt-layout name="app">
+  <page-layout>
     <template #content-header>
       <neb-content-header
         title="Household Settings"
@@ -84,7 +88,7 @@ const availableLanguages = [
         </neb-button>
       </div>
     </div>
-  </nuxt-layout>
+  </page-layout>
 </template>
 
 <style scoped>

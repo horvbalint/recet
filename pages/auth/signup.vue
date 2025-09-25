@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: 'empty',
+})
+
 const router = useRouter()
 
 const formData = ref({

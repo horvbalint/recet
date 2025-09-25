@@ -1,14 +1,11 @@
 <script setup lang="ts">
-// Navigation structure based on wireframe
 const navigationGroups = computed(() => {
   const householdItems = [
     { id: 'members', name: 'Members', path: '/members', icon: 'material-symbols:group-outline-rounded' },
   ]
 
-  // Only show settings to household owners
-  if (isCurrHouseholdOwner.value) {
+  if (isCurrHouseholdOwner.value)
     householdItems.push({ id: 'settings', name: 'Settings', path: '/settings', icon: 'material-symbols:settings-outline-rounded' })
-  }
 
   return [
     {
@@ -43,9 +40,25 @@ function isActive(path: string): boolean {
 }
 
 const isMobileMenuOpen = ref(false)
+
+const installing = ref(false)
+function install() {
+  console.log(useNuxtApp().$pwa)
+  installing.value = true
+  useNuxtApp().$pwa?.install().finally(() => installing.value = false)
+}
+
+function update() {
+  console.log(useNuxtApp().$pwa)
+
+  installing.value = true
+  useNuxtApp().$pwa?.updateServiceWorker().finally(() => installing.value = false)
+}
 </script>
 
 <template>
+  <nuxt-pwa-assets />
+
   <nuxt-layout name="default">
     <div class="app-layout">
       <div
@@ -94,6 +107,28 @@ const isMobileMenuOpen = ref(false)
             </div>
           </div>
         </nav>
+
+        <neb-tooltip
+          v-if="$pwa.needRefresh"
+          class="pwa-button"
+          title="There is a new version available."
+          text="To update, click this button and wait for the page to reload."
+        >
+          <neb-button type="link" full-width :disabled="installing" :loading="installing" @click="update()">
+            ✨ New version available ✨
+          </neb-button>
+        </neb-tooltip>
+
+        <neb-tooltip
+          v-else-if="$pwa.showInstallPrompt"
+          class="pwa-button"
+          title="Install Recet as an app!"
+          text="Click this button to install Recet on your device in an instant."
+        >
+          <neb-button type="link" full-width :disabled="installing" :loading="installing" @click="install()">
+            ✨ Install with one click ✨
+          </neb-button>
+        </neb-tooltip>
       </aside>
 
       <div class="main-area">
@@ -108,15 +143,7 @@ const isMobileMenuOpen = ref(false)
           </neb-button>
         </header>
 
-        <main class="main-area-content">
-          <div class="content-header-area">
-            <slot name="content-header" />
-          </div>
-
-          <div class="main-content">
-            <slot />
-          </div>
-        </main>
+        <slot />
       </div>
     </div>
   </nuxt-layout>
@@ -264,27 +291,10 @@ const isMobileMenuOpen = ref(false)
   display: none;
 }
 
-.main-area-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-6) 0 0;
-  max-width: 100vw;
+.pwa-button {
+  margin: var(--space-4);
 }
 
-.content-header-area {
-  width: 100%;
-  padding: 0 var(--space-6) var(--space-6);
-}
-
-.main-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--space-6) var(--space-6);
-  width: 100%;
-}
-
-/* Mobile Styles */
 @media (--tablet-viewport) {
   .top-bar {
     display: flex;
@@ -302,18 +312,6 @@ const isMobileMenuOpen = ref(false)
     margin-left: 0;
   }
 
-  .main-area-content {
-    padding-top: var(--space-4);
-  }
-
-  .content-header-area {
-    padding: 0 var(--space-4) var(--space-4);
-  }
-
-  .main-content {
-    padding: 0 var(--space-4) var(--space-4);
-  }
-
   .mobile-menu-button {
     display: flex;
   }
@@ -329,42 +327,43 @@ const isMobileMenuOpen = ref(false)
   }
 }
 
-/* Dark mode support */
-.dark-mode .sidebar {
-  background: var(--neutral-color-950);
-  border-color: var(--neutral-color-800);
-  box-shadow: none;
-}
+.dark-mode {
+  .sidebar {
+    background: var(--neutral-color-950);
+    border-color: var(--neutral-color-800);
+    box-shadow: none;
+  }
 
-.dark-mode .sidebar-header {
-  border-bottom: 1px solid var(--neutral-color-800);
-}
+  .sidebar-header {
+    border-bottom: 1px solid var(--neutral-color-800);
+  }
 
-.dark-mode .brand-text {
-  color: white;
-  border-bottom-color: var(--neutral-color-800);
-}
+  .brand-text {
+    color: white;
+    border-bottom-color: var(--neutral-color-800);
+  }
 
-.dark-mode .nav-group-title {
-  color: var(--neutral-color-400);
-}
+  .nav-group-title {
+    color: var(--neutral-color-400);
+  }
 
-.dark-mode .nav-item {
-  color: var(--neutral-color-300);
-}
+  .nav-item {
+    color: var(--neutral-color-300);
 
-.dark-mode .nav-item:hover {
-  background: var(--neutral-color-800);
-  color: white;
-}
+    &:hover {
+      background: var(--neutral-color-800);
+      color: white;
+    }
 
-.dark-mode .nav-item.active {
-  background: var(--primary-color-600);
-  color: white;
-}
+    &.active {
+      background: var(--primary-color-600);
+      color: white;
+    }
+  }
 
-.dark-mode .top-bar {
-  background: var(--neutral-color-900);
-  border-color: var(--neutral-color-800);
+  .top-bar {
+    background: var(--neutral-color-900);
+    border-color: var(--neutral-color-800);
+  }
 }
 </style>

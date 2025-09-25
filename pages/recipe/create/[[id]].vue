@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { InRecipe, OutCuisine, OutIngredient, OutMeal, OutRecipeTag, OutUnit } from '~/db'
 
+definePageMeta({
+  layout: 'app',
+})
+
 const formData = ref<Partial<InRecipe>>({
   name: '',
   ingredients: [],
@@ -201,7 +205,7 @@ const isFormValid = ref(false)
 </script>
 
 <template>
-  <nuxt-layout name="app">
+  <page-layout>
     <template #content-header>
       <neb-content-header
         :title="headerTitle"
@@ -400,7 +404,7 @@ const isFormValid = ref(false)
       @update:model-value="dynamicCreateTable = null"
       @saved="onUnitCreated"
     />
-  </nuxt-layout>
+  </page-layout>
 </template>
 
 <style scoped>

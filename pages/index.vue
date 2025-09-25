@@ -2,6 +2,10 @@
 import type { RecordId } from 'surrealdb'
 import type { OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
 
+definePageMeta({
+  layout: 'app',
+})
+
 export interface Recipe {
   id: RecordId<'recipe'>
   name: string
@@ -103,7 +107,7 @@ const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipe
 </script>
 
 <template>
-  <nuxt-layout name="app">
+  <page-layout>
     <template #content-header>
       <neb-content-header
         title="Recipes"
@@ -242,7 +246,7 @@ const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipe
         </div>
       </neb-state-content>
     </div>
-  </nuxt-layout>
+  </page-layout>
 </template>
 
 <style scoped>

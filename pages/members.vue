@@ -3,6 +3,10 @@ import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
 import type { RecordId } from 'surrealdb'
 import type { OutMember } from '~/db'
 
+definePageMeta({
+  layout: 'app',
+})
+
 export interface Member {
   member: RecordId
   user: RecordId
@@ -150,7 +154,7 @@ function mapRoleToColor(role: OutMember['role']) {
 </script>
 
 <template>
-  <nuxt-layout name="app">
+  <page-layout>
     <template #content-header>
       <neb-content-header
         title="Household Members"
@@ -274,7 +278,7 @@ function mapRoleToColor(role: OutMember['role']) {
         </neb-button>
       </template>
     </neb-modal>
-  </nuxt-layout>
+  </page-layout>
 </template>
 
 <style scoped>

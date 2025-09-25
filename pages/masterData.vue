@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: 'app',
+})
+
 const activeTable = ref <'unit' | 'meal' | 'cuisine' | 'recipe_tag' | 'ingredient' | 'ingredient_category' | 'shop'> ('unit')
 const tabs = {
   unit: { text: 'Units', icon: 'material-symbols:straighten-outline' },
@@ -12,7 +16,7 @@ const tabs = {
 </script>
 
 <template>
-  <nuxt-layout name="app">
+  <page-layout>
     <template #content-header>
       <neb-content-header
         title="Master Data Management"
@@ -33,7 +37,7 @@ const tabs = {
       <master-data-shops v-if="activeTable === 'shop'" />
       <master-data-ingredients v-if="activeTable === 'ingredient'" />
     </div>
-  </nuxt-layout>
+  </page-layout>
 </template>
 
 <style scoped>

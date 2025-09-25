@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2025-07-15',
   extends: ['nebula'],
-  modules: ['@nuxtjs/color-mode'],
+  modules: ['@nuxtjs/color-mode', '@vite-pwa/nuxt'],
 
   runtimeConfig: {
     public: {
@@ -47,6 +47,46 @@ export default defineNuxtConfig({
   i18n: {
     defaultLocale: 'en',
     detectBrowserLanguage: false,
+  },
+
+  pwa: {
+    manifest: {
+      name: 'Recet',
+      short_name: 'Recet',
+      description: 'A recipe manager for your household',
+      theme_color: '#BE2577',
+      icons: [
+        {
+          src: 'pwa-64x64.png',
+          sizes: '64x64',
+          type: 'image/png',
+        },
+        {
+          src: 'pwa-192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
+        },
+        {
+          src: 'pwa-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+        },
+        {
+          src: 'maskable-icon-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable',
+        },
+      ],
+    },
+    pwaAssets: {
+      disabled: false,
+      overrideManifestIcons: true,
+      image: 'public/favicon.svg',
+    },
+    devOptions: {
+      enabled: true,
+    },
   },
 
   devtools: { enabled: true },

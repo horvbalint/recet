@@ -2,6 +2,10 @@
 import type { RecordId } from 'surrealdb'
 import type { OutIngredient, OutIngredientCategory, OutRecipe, OutShop, OutShoppingList, OutUnit } from '~/db'
 
+definePageMeta({
+  layout: 'app',
+})
+
 const route = useRoute()
 const listId = route.params.id as string
 
@@ -187,7 +191,7 @@ function onUnitCreated(unit: OutUnit) {
 </script>
 
 <template>
-  <nuxt-layout name="app">
+  <page-layout>
     <template #content-header>
       <neb-content-header
         has-separator
@@ -376,7 +380,7 @@ function onUnitCreated(unit: OutUnit) {
       @update:model-value="dynamicCreateTable = null"
       @saved="onUnitCreated"
     />
-  </nuxt-layout>
+  </page-layout>
 </template>
 
 <style scoped>

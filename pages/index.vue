@@ -39,7 +39,7 @@ const selectedIngredients = ref<OutIngredient['id'][]>([])
 const showFilter = ref(false)
 const conditionCount = computed(() => selectedCuisines.value.length + selectedTags.value.length + selectedMeals.value.length + selectedIngredients.value.length)
 
-const { data: filterData, status: filterDataStatus, refresh: filterDataRefresh } = useAsyncData(async () => {
+const { data: filterData, status: filterDataStatus } = useAsyncData(async () => {
   const [cuisenes, tags, meals, ingredients] = await db.query<[OutCuisine[], OutRecipeTag[], OutMeal[], OutIngredient[]]>(surql`
     SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
     SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
@@ -129,91 +129,95 @@ const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipe
         <div class="search-row">
           <neb-search-input v-model="searchTerm" lazy />
 
-          <neb-button :type="conditionCount ? 'secondary' : 'secondary-neutral'" small @click="showFilter = !showFilter">
+          <neb-button
+            :type="conditionCount ? 'secondary' : 'secondary-neutral'"
+            :disabled="filterDataStatus !== 'success'"
+            :loading="filterDataStatus !== 'success'"
+            small
+            @click="showFilter = !showFilter"
+          >
             <icon name="material-symbols:filter-list-rounded" />
             <span class="filter-span">Filters</span>
             <span v-if="conditionCount">({{ conditionCount }})</span>
           </neb-button>
         </div>
 
-        <neb-state-content :status="filterDataStatus" :refresh="filterDataRefresh">
-          <div v-neb-expand="showFilter" class="filter-row">
-            <neb-select
-              v-model="selectedCuisines"
-              placeholder="Filter by Cuisine"
-              :options="filterData!.cuisenes"
-              label-key="name"
-              track-by-key="id"
-              :transform-fun="transformId"
-              use-only-tracked-key
-              multiple
-              no-search
-              leading-icon="material-symbols:public"
-            >
-              <template #option="{ option }">
-                <badge-cuisine :cuisine="option" />
-              </template>
+        <div v-neb-expand="showFilter" class="filter-row">
+          <neb-select
+            v-model="selectedCuisines"
+            placeholder="Filter by Cuisine"
+            :options="filterData!.cuisenes"
+            label-key="name"
+            track-by-key="id"
+            :transform-fun="transformId"
+            use-only-tracked-key
+            multiple
+            no-search
+            leading-icon="material-symbols:public"
+          >
+            <template #option="{ option }">
+              <badge-cuisine :cuisine="option" />
+            </template>
 
-              <template #selection="{ selected }">
-                <badge-cuisine v-for="cuisine in selected" :key="cuisine.trackValue.toString()" small :cuisine="cuisine.option" />
-              </template>
-            </neb-select>
+            <template #selection="{ selected }">
+              <badge-cuisine v-for="cuisine in selected" :key="cuisine.trackValue.toString()" small :cuisine="cuisine.option" />
+            </template>
+          </neb-select>
 
-            <neb-select
-              v-model="selectedTags"
-              placeholder="Filter by Tags"
-              :options="filterData!.tags"
-              label-key="name"
-              track-by-key="id"
-              :transform-fun="transformId"
-              use-only-tracked-key
-              multiple
-              no-search
-              leading-icon="material-symbols:tag-rounded"
-            >
-              <template #option="{ option }">
-                <badge-tag :tag="option" />
-              </template>
+          <neb-select
+            v-model="selectedTags"
+            placeholder="Filter by Tags"
+            :options="filterData!.tags"
+            label-key="name"
+            track-by-key="id"
+            :transform-fun="transformId"
+            use-only-tracked-key
+            multiple
+            no-search
+            leading-icon="material-symbols:tag-rounded"
+          >
+            <template #option="{ option }">
+              <badge-tag :tag="option" />
+            </template>
 
-              <template #selection="{ selected }">
-                <badge-tag v-for="tag in selected" :key="tag.trackValue.toString()" small :tag="tag.option" />
-              </template>
-            </neb-select>
+            <template #selection="{ selected }">
+              <badge-tag v-for="tag in selected" :key="tag.trackValue.toString()" small :tag="tag.option" />
+            </template>
+          </neb-select>
 
-            <neb-select
-              v-model="selectedMeals"
-              placeholder="Filter by Meal"
-              :options="filterData!.meals"
-              label-key="name"
-              track-by-key="id"
-              :transform-fun="transformId"
-              use-only-tracked-key
-              multiple
-              no-search
-              leading-icon="material-symbols:restaurant-rounded"
-            >
-              <template #option="{ option }">
-                <badge-meal :meal="option" />
-              </template>
+          <neb-select
+            v-model="selectedMeals"
+            placeholder="Filter by Meal"
+            :options="filterData!.meals"
+            label-key="name"
+            track-by-key="id"
+            :transform-fun="transformId"
+            use-only-tracked-key
+            multiple
+            no-search
+            leading-icon="material-symbols:restaurant-rounded"
+          >
+            <template #option="{ option }">
+              <badge-meal :meal="option" />
+            </template>
 
-              <template #selection="{ selected }">
-                <badge-meal v-for="meal in selected" :key="meal.trackValue.toString()" small :meal="meal.option" />
-              </template>
-            </neb-select>
+            <template #selection="{ selected }">
+              <badge-meal v-for="meal in selected" :key="meal.trackValue.toString()" small :meal="meal.option" />
+            </template>
+          </neb-select>
 
-            <neb-select
-              v-model="selectedIngredients"
-              placeholder="Filter by Ingredient"
-              :options="filterData!.ingredients"
-              label-key="name"
-              track-by-key="id"
-              :transform-fun="transformId"
-              use-only-tracked-key
-              multiple
-              leading-icon="material-symbols:grocery"
-            />
-          </div>
-        </neb-state-content>
+          <neb-select
+            v-model="selectedIngredients"
+            placeholder="Filter by Ingredient"
+            :options="filterData!.ingredients"
+            label-key="name"
+            track-by-key="id"
+            :transform-fun="transformId"
+            use-only-tracked-key
+            multiple
+            leading-icon="material-symbols:grocery"
+          />
+        </div>
       </div>
 
       <neb-state-content :status :refresh error-title="Failed to load recipes" :error-description="error?.message">

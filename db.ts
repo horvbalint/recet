@@ -75,6 +75,38 @@ export type OutMeal = {
   name: string,
 }
 
+export type InMealPlan = {
+  id?: RecordId<"meal_plan">,
+  household: Required<InHousehold>['id'],
+  recipes: Array<Required<InRecipe>['id']>,
+  rules: Array<Required<InRecipeTag>['id']>,
+}
+
+export type OutMealPlan = {
+  id: RecordId<"meal_plan">,
+  household: OutHousehold,
+  recipes: Array<OutRecipe>,
+  rules: Array<OutRecipeTag>,
+}
+
+export type InMealPlanDay = {
+  id?: RecordId<"meal_plan_day">,
+  breakfast: Required<InMealPlan>['id'],
+  dinner: Required<InMealPlan>['id'],
+  household: Required<InHousehold>['id'],
+  lunch: Required<InMealPlan>['id'],
+  other: Required<InMealPlan>['id'],
+}
+
+export type OutMealPlanDay = {
+  id: RecordId<"meal_plan_day">,
+  breakfast: OutMealPlan,
+  dinner: OutMealPlan,
+  household: OutHousehold,
+  lunch: OutMealPlan,
+  other: OutMealPlan,
+}
+
 export type InMember = {
   id?: RecordId<"member">,
   in: Required<InUser>['id'],
@@ -227,266 +259,28 @@ export type OutUser = {
 
 export type InWeeklyPlan = {
   id?: RecordId<"weekly_plan">,
-  friday: {
-    breakfast: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    dinner: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    lunch: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    other: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-  },
+  friday: Required<InMealPlanDay>['id'],
   household: Required<InHousehold>['id'],
-  monday: {
-    breakfast: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    dinner: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    lunch: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    other: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-  },
+  monday: Required<InMealPlanDay>['id'],
   name: string,
-  saturday: {
-    breakfast: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    dinner: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    lunch: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    other: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-  },
-  sunday: {
-    breakfast: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    dinner: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    lunch: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    other: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-  },
-  thursday: {
-    breakfast: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    dinner: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    lunch: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    other: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-  },
-  tuesday: {
-    breakfast: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    dinner: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    lunch: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    other: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-  },
-  wednesday: {
-    breakfast: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    dinner: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    lunch: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-    other: {
-      recipes: Array<Required<InRecipe>['id']>,
-      rules: Array<Required<InRecipeTag>['id']>,
-    },
-  },
+  saturday: Required<InMealPlanDay>['id'],
+  sunday: Required<InMealPlanDay>['id'],
+  thursday: Required<InMealPlanDay>['id'],
+  tuesday: Required<InMealPlanDay>['id'],
+  wednesday: Required<InMealPlanDay>['id'],
 }
 
 export type OutWeeklyPlan = {
   id: RecordId<"weekly_plan">,
-  friday: {
-    breakfast: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    dinner: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    lunch: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    other: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-  },
+  friday: OutMealPlanDay,
   household: OutHousehold,
-  monday: {
-    breakfast: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    dinner: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    lunch: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    other: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-  },
+  monday: OutMealPlanDay,
   name: string,
-  saturday: {
-    breakfast: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    dinner: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    lunch: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    other: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-  },
-  sunday: {
-    breakfast: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    dinner: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    lunch: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    other: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-  },
-  thursday: {
-    breakfast: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    dinner: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    lunch: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    other: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-  },
-  tuesday: {
-    breakfast: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    dinner: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    lunch: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    other: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-  },
-  wednesday: {
-    breakfast: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    dinner: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    lunch: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-    other: {
-      recipes: Array<OutRecipe>,
-      rules: Array<OutRecipeTag>,
-    },
-  },
+  saturday: OutMealPlanDay,
+  sunday: OutMealPlanDay,
+  thursday: OutMealPlanDay,
+  tuesday: OutMealPlanDay,
+  wednesday: OutMealPlanDay,
 }
 
 // ---------- TABLE META STRUCTURE ----------
@@ -621,6 +415,84 @@ export const tables = {
       "name": {
         "type": {
           "name": "string"
+        }
+      }
+    }
+  },
+  "meal_plan": {
+    "fields": {
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
+        }
+      },
+      "recipes": {
+        "type": {
+          "name": "array",
+          "item": {
+            "name": "record",
+            "tables": [
+              "recipe"
+            ]
+          }
+        }
+      },
+      "rules": {
+        "type": {
+          "name": "array",
+          "item": {
+            "name": "record",
+            "tables": [
+              "recipe_tag"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "meal_plan_day": {
+    "fields": {
+      "breakfast": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "meal_plan"
+          ]
+        }
+      },
+      "dinner": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "meal_plan"
+          ]
+        }
+      },
+      "household": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "household"
+          ]
+        }
+      },
+      "lunch": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "meal_plan"
+          ]
+        }
+      },
+      "other": {
+        "type": {
+          "name": "record",
+          "tables": [
+            "meal_plan"
+          ]
         }
       }
     }
@@ -1012,125 +884,10 @@ export const tables = {
     "fields": {
       "friday": {
         "type": {
-          "name": "object",
-          "fields": {
-            "breakfast": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "dinner": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "lunch": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "other": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "name": "record",
+          "tables": [
+            "meal_plan_day"
+          ]
         }
       },
       "household": {
@@ -1143,125 +900,10 @@ export const tables = {
       },
       "monday": {
         "type": {
-          "name": "object",
-          "fields": {
-            "breakfast": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "dinner": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "lunch": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "other": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "name": "record",
+          "tables": [
+            "meal_plan_day"
+          ]
         }
       },
       "name": {
@@ -1271,617 +913,42 @@ export const tables = {
       },
       "saturday": {
         "type": {
-          "name": "object",
-          "fields": {
-            "breakfast": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "dinner": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "lunch": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "other": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "name": "record",
+          "tables": [
+            "meal_plan_day"
+          ]
         }
       },
       "sunday": {
         "type": {
-          "name": "object",
-          "fields": {
-            "breakfast": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "dinner": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "lunch": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "other": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "name": "record",
+          "tables": [
+            "meal_plan_day"
+          ]
         }
       },
       "thursday": {
         "type": {
-          "name": "object",
-          "fields": {
-            "breakfast": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "dinner": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "lunch": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "other": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "name": "record",
+          "tables": [
+            "meal_plan_day"
+          ]
         }
       },
       "tuesday": {
         "type": {
-          "name": "object",
-          "fields": {
-            "breakfast": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "dinner": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "lunch": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "other": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "name": "record",
+          "tables": [
+            "meal_plan_day"
+          ]
         }
       },
       "wednesday": {
         "type": {
-          "name": "object",
-          "fields": {
-            "breakfast": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "dinner": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "lunch": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "other": {
-              "type": {
-                "name": "object",
-                "fields": {
-                  "recipes": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe"
-                        ]
-                      }
-                    }
-                  },
-                  "rules": {
-                    "type": {
-                      "name": "array",
-                      "item": {
-                        "name": "record",
-                        "tables": [
-                          "recipe_tag"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "name": "record",
+          "tables": [
+            "meal_plan_day"
+          ]
         }
       }
     }

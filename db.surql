@@ -185,6 +185,26 @@ DEFINE FIELD OVERWRITE items.*.recipe ON shopping_list TYPE option<record<recipe
 DEFINE FIELD OVERWRITE items.*.checked ON shopping_list TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE updated_at ON shopping_list TYPE datetime VALUE time::now();
 
+// TABLE: meal_plan
+DEFINE TABLE OVERWRITE meal_plan SCHEMAFULL PERMISSIONS 
+	for select WHERE fn::can_read_household(household)
+	for create, delete, update WHERE fn::can_write_household(household);
+
+DEFINE FIELD OVERWRITE household ON meal_plan TYPE record<household>;
+DEFINE FIELD OVERWRITE recipes ON meal_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE rules ON meal_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
+
+// TABLE: meal_plan_day
+DEFINE TABLE OVERWRITE meal_plan_day SCHEMAFULL PERMISSIONS 
+	for select WHERE fn::can_read_household(household)
+	for create, delete, update WHERE fn::can_write_household(household);
+
+DEFINE FIELD OVERWRITE household ON meal_plan_day TYPE record<household>;
+DEFINE FIELD OVERWRITE breakfast ON meal_plan_day TYPE record<meal_plan> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE lunch ON meal_plan_day TYPE record<meal_plan> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE dinner ON meal_plan_day TYPE record<meal_plan> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE other ON meal_plan_day TYPE record<meal_plan> ASSERT household = $value.household;
+
 // TABLE: weekly_plan
 DEFINE TABLE OVERWRITE weekly_plan SCHEMAFULL PERMISSIONS 
 	for select WHERE fn::can_read_household(household)
@@ -192,104 +212,13 @@ DEFINE TABLE OVERWRITE weekly_plan SCHEMAFULL PERMISSIONS
 	
 DEFINE FIELD OVERWRITE name ON weekly_plan TYPE string;
 DEFINE FIELD OVERWRITE household ON weekly_plan TYPE record<household>;
-
-DEFINE FIELD OVERWRITE monday ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE monday.breakfast ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE monday.breakfast.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE monday.breakfast.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE monday.lunch ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE monday.lunch.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE monday.lunch.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE monday.dinner ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE monday.dinner.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE monday.dinner.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE monday.other ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE monday.other.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE monday.other.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-
-DEFINE FIELD OVERWRITE tuesday ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE tuesday.breakfast ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE tuesday.breakfast.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE tuesday.breakfast.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE tuesday.lunch ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE tuesday.lunch.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE tuesday.lunch.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE tuesday.dinner ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE tuesday.dinner.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE tuesday.dinner.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE tuesday.other ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE tuesday.other.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE tuesday.other.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-
-DEFINE FIELD OVERWRITE wednesday ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE wednesday.breakfast ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE wednesday.breakfast.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE wednesday.breakfast.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE wednesday.lunch ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE wednesday.lunch.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE wednesday.lunch.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE wednesday.dinner ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE wednesday.dinner.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE wednesday.dinner.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE wednesday.other ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE wednesday.other.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE wednesday.other.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-
-DEFINE FIELD OVERWRITE thursday ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE thursday.breakfast ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE thursday.breakfast.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE thursday.breakfast.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE thursday.lunch ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE thursday.lunch.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE thursday.lunch.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE thursday.dinner ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE thursday.dinner.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE thursday.dinner.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE thursday.other ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE thursday.other.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE thursday.other.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-
-DEFINE FIELD OVERWRITE friday ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE friday.breakfast ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE friday.breakfast.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE friday.breakfast.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE friday.lunch ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE friday.lunch.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE friday.lunch.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE friday.dinner ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE friday.dinner.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE friday.dinner.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE friday.other ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE friday.other.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE friday.other.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-
-DEFINE FIELD OVERWRITE saturday ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE saturday.breakfast ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE saturday.breakfast.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE saturday.breakfast.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE saturday.lunch ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE saturday.lunch.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE saturday.lunch.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE saturday.dinner ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE saturday.dinner.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE saturday.dinner.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE saturday.other ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE saturday.other.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE saturday.other.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-
-DEFINE FIELD OVERWRITE sunday ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE sunday.breakfast ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE sunday.breakfast.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE sunday.breakfast.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE sunday.lunch ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE sunday.lunch.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE sunday.lunch.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE sunday.dinner ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE sunday.dinner.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE sunday.dinner.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE sunday.other ON weekly_plan TYPE object;
-DEFINE FIELD OVERWRITE sunday.other.recipes ON weekly_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE sunday.other.rules ON weekly_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE monday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE tuesday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE wednesday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE thursday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE friday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE saturday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE sunday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
 
 DEFINE FUNCTION OVERWRITE fn::add_member_to_household($household: record<household>, $username: string, $role: "owner" | "writer" | "guest") {
 	LET $user = (SELECT id FROM ONLY user WHERE username = $username);

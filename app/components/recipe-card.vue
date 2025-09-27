@@ -15,9 +15,9 @@ function getEstimatedTime(stepCount: number) {
   return '60+ min'
 }
 
-async function handleCardClick() {
+function handleCardClick() {
   setCachedRecipe(props.recipe)
-  await navigateTo(`/recipe/${props.recipe.id.id}`)
+  navigateTo(`/recipe/${props.recipe.id.id}`)
 }
 
 const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)

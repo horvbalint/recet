@@ -15,9 +15,12 @@ function getEstimatedTime(stepCount: number) {
   return '60+ min'
 }
 
-function handleCardClick() {
-  navigateTo(`/recipe/${props.recipe.id.id}`)
+async function handleCardClick() {
+  setCachedRecipe(props.recipe)
+  await navigateTo(`/recipe/${props.recipe.id.id}`)
 }
+
+const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
 </script>
 
 <template>
@@ -68,6 +71,7 @@ function handleCardClick() {
   transition: all var(--duration-default);
   cursor: pointer;
   border: 1px solid var(--neutral-color-100);
+  view-transition-name: v-bind('viewTransitions.container');
 }
 
 .recipe-card:hover {
@@ -115,12 +119,14 @@ function handleCardClick() {
   color: var(--neutral-color-900);
   margin: 0;
   line-height: 1.3;
+  view-transition-name: v-bind('viewTransitions.name');
 }
 
 .recipe-meta {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
+  view-transition-name: v-bind('viewTransitions.meta');
 }
 
 .meta-item {
@@ -142,12 +148,14 @@ function handleCardClick() {
   flex-wrap: wrap;
   gap: var(--space-2);
   align-items: center;
+  view-transition-name: v-bind('viewTransitions.tags');
 }
 
 .meal-types {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+  view-transition-name: v-bind('viewTransitions.mealTypes');
 }
 
 @media (--tablet-viewport) {

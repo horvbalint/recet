@@ -1,16 +1,41 @@
 import type { RecordId } from 'surrealdb'
+import type { Recipe } from '~/pages/index.vue'
 import { encode as encodeBlurhash } from 'blurhash'
 import { readAndCompressImage } from 'browser-image-resizer'
 
+let cachedRecipe: Recipe | null = null
+export function setCachedRecipe(recipe: Recipe) {
+  cachedRecipe = recipe
+}
+export function getCachedRecipe() {
+  const current = cachedRecipe
+  cachedRecipe = null
+  return current
+}
+
+export function getRecipeViewTransitionNames(recipeId: RecordId<'recipe'>['id']) {
+  return {
+    container: `recipe-container-${recipeId}`,
+    name: `recipe-name-${recipeId}`,
+    meta: `recipe-meta-${recipeId}`,
+    tags: `recipe-tags-${recipeId}`,
+    mealTypes: `recipe-meal-types-${recipeId}`,
+    image: `recipe-image-${recipeId}`,
+  }
+}
+
+const cachedRecipeImages = new Map<RecordId<'recipe'>['id'], string | null>()
 export async function getRecipeImageUrl(recipeId: RecordId<'recipe'>) {
+  if (cachedRecipeImages.has(recipeId.id))
+    return cachedRecipeImages.get(recipeId.id)!
+
   const [buffer] = await db.query<[ArrayBuffer | null]>(surql`
     SELECT VALUE image FROM ONLY type::thing('recipe', ${recipeId})
   `)
 
-  if (!buffer)
-    return null
-  else
-    return URL.createObjectURL(new Blob([buffer], { type: 'image/*' }))
+  const url = buffer ? URL.createObjectURL(new Blob([buffer], { type: 'image/*' })) : null
+  cachedRecipeImages.set(recipeId.id, url)
+  return url
 }
 
 export async function processRecipeImage(file: File | null) {

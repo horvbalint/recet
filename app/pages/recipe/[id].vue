@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { Menu } from '@nebula/components/overlays/neb-menu.vue'
 import type { RecordId } from 'surrealdb'
 
 definePageMeta({
@@ -9,6 +8,7 @@ definePageMeta({
 interface Recipe {
   id: RecordId<'recipe'>
   name: string
+  image_blur_hash?: string
   ingredients: Array<{
     ingredient: string
     amount: string
@@ -34,16 +34,19 @@ interface Recipe {
     color: string
   }>
   created_at: string
-  updated_at: string
 }
 
 const route = useRoute()
 const recipeId = route.params.id as string
 
-const { data: recipe, status, error, refresh } = useAsyncData<Recipe | null>(`recipe-${recipeId}`, async () => {
+const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncData<Recipe | null>(`recipe-${recipeId}`, async () => {
   const [result] = await db.query<[Recipe]>(surql`
     SELECT
-      *,
+      id,
+      name,
+      steps,
+      created_at,
+      image_blur_hash,
       author.{username},
       cuisine.{name, color, flag},
       tags.{name, color, icon},
@@ -61,6 +64,25 @@ const { data: recipe, status, error, refresh } = useAsyncData<Recipe | null>(`re
   return result
 })
 
+const recipe = computed<Recipe | null | undefined>(() => {
+  const cachedRecipe = getCachedRecipe()
+  if (!cachedRecipe || queriedRecipe.value)
+    return queriedRecipe.value
+
+  return {
+    ...cachedRecipe,
+    ingredients: [],
+    steps: [],
+  }
+})
+
+const status = computed(() => {
+  if (queryStatus.value === 'pending' && recipe.value)
+    return 'success'
+  else
+    return queryStatus.value
+})
+
 const { data: shoppingLists, error: shoppingListError } = useAsyncData('shopping-lists-for-recipe', async () => {
   if (!currentHousehold.value)
     return []
@@ -73,6 +95,7 @@ const { data: shoppingLists, error: shoppingListError } = useAsyncData('shopping
 
   return lists
 }, { watch: [currentHousehold] })
+
 logOnError(shoppingListError)
 
 const shoppingListMenuItems = computed(() => {
@@ -146,6 +169,8 @@ async function editRecipe() {
   await navigateTo(`/recipe/create/${recipeId}`)
 }
 
+const viewTransitions = getRecipeViewTransitionNames(recipeId)
+
 watch(currentHousehold, async () => await navigateTo('/'))
 </script>
 
@@ -216,88 +241,90 @@ watch(currentHousehold, async () => await navigateTo('/'))
             </div>
           </header>
 
-          <main class="recipe-content">
-            <section class="ingredients-section">
-              <neb-content-header
-                title="Ingredients"
-                type="page"
-                has-separator
-              >
-                <template #actions>
-                  <neb-menu v-if="recipe.ingredients?.length && shoppingListMenuItems.length" :menus="shoppingListMenuItems" :floating-options="{ placement: 'bottom-end' }">
-                    <template #trigger="{ toggle }">
-                      <neb-button type="secondary" small :loading="isAddingToList" @click="toggle()">
-                        <icon name="material-symbols:add-shopping-cart-rounded" />
-                        Add to Shopping List
-                        <template v-if="checkedIngredients.length">
-                          ({{ checkedIngredients.length }})
-                        </template>
-                      </neb-button>
-                    </template>
-                  </neb-menu>
-                </template>
-              </neb-content-header>
-
-              <div v-if="recipe.ingredients?.length" class="ingredients-list">
-                <div
-                  v-for="(ingredient, index) in recipe.ingredients"
-                  :key="index"
-                  class="ingredient-item"
-                  @click="($refs.ingredientCheckbox as any)[index].handleClick()"
+          <neb-state-content :status="queryStatus" :refresh :error-description="error?.message">
+            <main class="recipe-content">
+              <section class="ingredients-section">
+                <neb-content-header
+                  title="Ingredients"
+                  type="page"
+                  has-separator
                 >
-                  <div class="ingredient-checkbox">
-                    <neb-checkbox ref="ingredientCheckbox" v-model="checkedIngredients" :value="index" @click.stop />
-                  </div>
+                  <template #actions>
+                    <neb-menu v-if="recipe.ingredients?.length && shoppingListMenuItems.length" :menus="shoppingListMenuItems" :floating-options="{ placement: 'bottom-end' }">
+                      <template #trigger="{ toggle }">
+                        <neb-button type="secondary" small :loading="isAddingToList" @click="toggle()">
+                          <icon name="material-symbols:add-shopping-cart-rounded" />
+                          Add to Shopping List
+                          <template v-if="checkedIngredients.length">
+                            ({{ checkedIngredients.length }})
+                          </template>
+                        </neb-button>
+                      </template>
+                    </neb-menu>
+                  </template>
+                </neb-content-header>
 
-                  <div class="ingredient-details">
-                    <span class="ingredient-amount">{{ ingredient.amount }}</span>
-                    <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
-                    <span class="ingredient-name">{{ ingredient.ingredient }}</span>
-                  </div>
-
-                  <neb-tooltip
-                    v-if="ingredient.skip_from_shopping_list"
-                    title="This ingredient will be skipped from being added to shopping lists"
+                <div v-if="recipe.ingredients?.length" class="ingredients-list">
+                  <div
+                    v-for="(ingredient, index) in recipe.ingredients"
+                    :key="index"
+                    class="ingredient-item"
+                    @click="($refs.ingredientCheckbox as any)[index].handleClick()"
                   >
-                    <icon name="material-symbols:receipt-long-off-outline-rounded" />
-                  </neb-tooltip>
-                </div>
-              </div>
+                    <div class="ingredient-checkbox">
+                      <neb-checkbox ref="ingredientCheckbox" v-model="checkedIngredients" :value="index" @click.stop />
+                    </div>
 
-              <p v-else class="empty-message">
-                No ingredients listed for this recipe.
-              </p>
-            </section>
+                    <div class="ingredient-details">
+                      <span class="ingredient-amount">{{ ingredient.amount }}</span>
+                      <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
+                      <span class="ingredient-name">{{ ingredient.ingredient }}</span>
+                    </div>
 
-            <section class="instructions-section">
-              <neb-content-header
-                title="Instructions"
-                type="page"
-                has-separator
-              />
-              <div v-if="recipe.steps?.length" class="steps-list">
-                <div
-                  v-for="(step, index) in recipe.steps"
-                  :key="index"
-                  class="step-item"
-                >
-                  <div class="step-number">
-                    {{ index + 1 }}
-                  </div>
-
-                  <div class="step-content">
-                    <p class="step-description">
-                      {{ step }}
-                    </p>
+                    <neb-tooltip
+                      v-if="ingredient.skip_from_shopping_list"
+                      title="This ingredient will be skipped from being added to shopping lists"
+                    >
+                      <icon name="material-symbols:receipt-long-off-outline-rounded" />
+                    </neb-tooltip>
                   </div>
                 </div>
-              </div>
 
-              <p v-else class="empty-message">
-                No instructions provided for this recipe.
-              </p>
-            </section>
-          </main>
+                <p v-else class="empty-message">
+                  No ingredients listed for this recipe.
+                </p>
+              </section>
+
+              <section class="instructions-section">
+                <neb-content-header
+                  title="Instructions"
+                  type="page"
+                  has-separator
+                />
+                <div v-if="recipe.steps?.length" class="steps-list">
+                  <div
+                    v-for="(step, index) in recipe.steps"
+                    :key="index"
+                    class="step-item"
+                  >
+                    <div class="step-number">
+                      {{ index + 1 }}
+                    </div>
+
+                    <div class="step-content">
+                      <p class="step-description">
+                        {{ step }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <p v-else class="empty-message">
+                  No instructions provided for this recipe.
+                </p>
+              </section>
+            </main>
+          </neb-state-content>
         </div>
       </neb-state-content>
     </div>
@@ -309,6 +336,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
   min-height: 100vh;
   background: var(--neutral-color-25);
   border-radius: var(--radius-large);
+  view-transition-name: v-bind('viewTransitions.container');
 }
 
 .recipe-container {
@@ -366,12 +394,14 @@ watch(currentHousehold, async () => await navigateTo('/'))
   color: var(--neutral-color-900);
   margin: 0;
   line-height: 1.2;
+  view-transition-name: v-bind('viewTransitions.name');
 }
 
 .recipe-meta {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-6);
+  view-transition-name: v-bind('viewTransitions.meta');
 }
 
 .meta-item {
@@ -396,12 +426,14 @@ watch(currentHousehold, async () => await navigateTo('/'))
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+  view-transition-name: v-bind('viewTransitions.tags');
 }
 
 .meal-types {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+  view-transition-name: v-bind('viewTransitions.mealTypes');
 }
 
 .recipe-content {

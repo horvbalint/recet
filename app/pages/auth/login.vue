@@ -32,51 +32,51 @@ function handleSignupClick() {
 
 <template>
   <div class="auth-page">
-    <div class="auth-container">
-      <div class="auth-card">
-        <neb-content-header
-          title="Welcome Back"
-          description="Sign in to your account to continue"
-          type="section"
-        />
+    <div class="auth-card">
+      <neb-content-header
+        title="Welcome Back"
+        description="Sign in to your account to continue"
+        type="section"
+      />
 
-        <div class="auth-form">
-          <neb-validator v-model="isFormValid">
-            <div class="form-fields">
-              <neb-input
-                v-model="formData.email"
-                label="Email"
-                type="email"
-                placeholder="Enter your email"
-                required
-              />
+      <div class="auth-form">
+        <neb-validator v-model="isFormValid">
+          <div class="form-fields">
+            <neb-input
+              v-model="formData.email"
+              class="email-input"
+              label="Email"
+              type="email"
+              placeholder="Enter your email"
+              required
+            />
 
-              <neb-input
-                v-model="formData.password"
-                label="Password"
-                type="password"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-          </neb-validator>
+            <neb-input
+              v-model="formData.password"
+              class="password-input"
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+        </neb-validator>
 
-          <div class="form-actions">
-            <neb-button
-              type="primary"
-              :disabled="!isFormValid"
-              class="submit-button"
-              @click="handleSubmit()"
-            >
-              Sign In
+        <div class="form-actions">
+          <neb-button
+            type="primary"
+            :disabled="!isFormValid"
+            class="submit-button"
+            @click="handleSubmit()"
+          >
+            Sign In
+          </neb-button>
+
+          <div class="auth-link">
+            <span>Don't have an account?</span>
+            <neb-button type="link" @click="handleSignupClick()">
+              Sign up here
             </neb-button>
-
-            <div class="auth-link">
-              <span>Don't have an account?</span>
-              <neb-button type="link" @click="handleSignupClick()">
-                Sign up here
-              </neb-button>
-            </div>
           </div>
         </div>
       </div>
@@ -94,17 +94,25 @@ function handleSignupClick() {
   padding: var(--space-6);
 }
 
-.auth-container {
+.auth-card {
   width: 100%;
   max-width: 400px;
-}
-
-.auth-card {
   background: #fff;
   border-radius: var(--radius-large);
   border: 1px solid var(--neutral-color-100);
   box-shadow: var(--shadow-sm);
   padding: var(--space-6);
+  view-transition-name: auth-card;
+
+  .neb-content-header {
+    view-transition-name: auth-header;
+  }
+  .email-input {
+    view-transition-name: email-input;
+  }
+  .password-input {
+    view-transition-name: password-input;
+  }
 }
 
 .auth-form {
@@ -122,6 +130,7 @@ function handleSignupClick() {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  view-transition-name: form-actions;
 }
 
 .submit-button {

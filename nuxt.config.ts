@@ -49,6 +49,10 @@ export default defineNuxtConfig({
     detectBrowserLanguage: false,
   },
 
+  experimental: {
+    viewTransition: true,
+  },
+
   pwa: {
     manifest: {
       name: 'Recet',

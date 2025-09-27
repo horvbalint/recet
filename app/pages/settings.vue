@@ -124,6 +124,12 @@ const availableLanguages = [
   padding-top: var(--space-4);
 }
 
+@media (--tablet-viewport) {
+  .flex-wrapper {
+    flex-direction: column;
+  }
+}
+
 .dark-mode {
   .settings-page {
     border: 1px solid var(--neutral-color-800);

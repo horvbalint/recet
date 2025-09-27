@@ -53,6 +53,8 @@ onMounted(() => {
 })
 
 const heightString = computed(() => `${props.heightPx}px`)
+
+const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
 </script>
 
 <template>
@@ -79,6 +81,7 @@ const heightString = computed(() => `${props.heightPx}px`)
   position: relative;
   height: v-bind(heightString);
   overflow: hidden;
+  view-transition-name: v-bind('viewTransitions.image');
 
   img {
     object-fit: cover;

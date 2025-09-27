@@ -12,7 +12,7 @@ const navigationGroups = computed(() => {
       title: 'Planning',
       items: [
         { id: 'recipes', name: 'Recipes', path: '/', icon: 'material-symbols:menu-book-2-outline-rounded' },
-        { id: 'meal-planner', name: 'Meal Planner', path: '/meal-planner', icon: 'material-symbols:calendar-month-outline-rounded' },
+        { id: 'meal-planner', name: 'Meal Planner', path: '#', icon: 'material-symbols:calendar-month-outline-rounded' },
         { id: 'shopping-lists', name: 'Shopping Lists', path: '/shopping-lists', icon: 'material-symbols:shopping-cart-outline-rounded' },
       ],
     },
@@ -43,14 +43,11 @@ const isMobileMenuOpen = ref(false)
 
 const installing = ref(false)
 function install() {
-  console.log(useNuxtApp().$pwa)
   installing.value = true
   useNuxtApp().$pwa?.install().finally(() => installing.value = false)
 }
 
 function update() {
-  console.log(useNuxtApp().$pwa)
-
   installing.value = true
   useNuxtApp().$pwa?.updateServiceWorker().finally(() => installing.value = false)
 }
@@ -103,6 +100,9 @@ function update() {
               >
                 <icon :name="item.icon" class="nav-icon" />
                 <span class="nav-text">{{ item.name }}</span>
+                <neb-badge v-if="item.id === 'meal-planner'" color="warning" small>
+                  Coming soon
+                </neb-badge>
               </nuxt-link>
             </div>
           </div>

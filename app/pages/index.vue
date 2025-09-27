@@ -12,6 +12,9 @@ export interface Recipe {
   ingredients: number
   steps: number
   image_blur_hash?: string
+  author: {
+    username: string
+  }
   cuisine?: {
     name: string
     color: string
@@ -55,13 +58,14 @@ function constructQuery() {
     SELECT
       id,
       name,
+      created_at,
       image_blur_hash,
+      author.{username},
       ingredients.len(),
       steps.len(),
       cuisine.{name, color, flag},
       tags.{name, color, icon},
-      meal.{name, color},
-      created_at
+      meal.{name, color}
   `
 
   if (searchTerm.value)

@@ -224,11 +224,11 @@ function onUnitCreated(unit: OutUnit) {
     </template>
 
     <div class="page-wrapper">
-      <div v-if="status !== 'success'" class="loading-wrapper">
-        <neb-state-content :status :refresh :error-description="error?.message" />
-      </div>
+      <neb-loading-state v-if="status === 'pending'" class="loading-state" />
 
-      <div v-if="!!data" class="shopping-list-detail">
+      <neb-error-state v-if="error" :error-description="error.message" class="error-state" />
+
+      <div v-else-if="!!data" class="shopping-list-detail">
         <div v-if="Object.keys(groupedItems).length > 0" class="categories-container">
           <div
             v-for="(items, categoryName) in groupedItems"
@@ -392,7 +392,7 @@ function onUnitCreated(unit: OutUnit) {
   width: 110px;
 }
 
-.loading-wrapper {
+.loading-state {
   position: absolute;
   top: 0;
   left: 0;
@@ -575,6 +575,10 @@ function onUnitCreated(unit: OutUnit) {
 
   .item-actions .icon:hover {
     color: var(--neutral-color-200);
+  }
+
+  .loading-state {
+    background: rgba(var(--neutral-color-component-950), 0.5);
   }
 }
 </style>

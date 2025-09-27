@@ -41,66 +41,67 @@ function handleLoginClick() {
 
 <template>
   <div class="auth-page">
-    <div class="auth-container">
-      <div class="auth-card">
-        <neb-content-header
-          title="Create Account"
-          description="Sign up to start managing your recipes"
-          type="section"
-        />
+    <div class="auth-card">
+      <neb-content-header
+        title="Create Account"
+        description="Sign up to start managing your recipes"
+        type="section"
+      />
 
-        <div class="auth-form">
-          <neb-validator v-model="isFormValid">
-            <div class="form-fields">
-              <neb-input
-                v-model="formData.username"
-                label="Username"
-                placeholder="Enter your username"
-                required
-              />
+      <div class="auth-form">
+        <neb-validator v-model="isFormValid">
+          <div class="form-fields">
+            <neb-input
+              v-model="formData.username"
+              label="Username"
+              placeholder="Enter your username"
+              required
+            />
 
-              <neb-input
-                v-model="formData.email"
-                label="Email"
-                type="email"
-                placeholder="Enter your email"
-                required
-              />
+            <neb-input
+              v-model="formData.email"
+              label="Email"
+              type="email"
+              placeholder="Enter your email"
+              required
+              class="email-input"
+            />
 
-              <neb-input
-                v-model="formData.password"
-                label="Password"
-                type="password"
-                placeholder="Enter your password"
-                required
-              />
+            <neb-input
+              v-model="formData.password"
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              required
+              class="password-input"
+            />
 
-              <neb-input
-                v-model="formData.confirmPassword"
-                label="Confirm Password"
-                type="password"
-                placeholder="Confirm your password"
-                required
-              />
-            </div>
-          </neb-validator>
+            <neb-input
+              v-model="formData.confirmPassword"
+              label="Confirm Password"
+              type="password"
+              placeholder="Confirm your password"
+              required
+              class="confirm-password-input"
+            />
+          </div>
+        </neb-validator>
 
-          <div class="form-actions">
-            <neb-button
-              type="primary"
-              :disabled="!isFormValid"
-              class="submit-button"
-              @click="handleSubmit()"
-            >
-              Create Account
+        <div class="form-actions">
+          <neb-button
+            type="primary"
+            :disabled="!isFormValid"
+            class="submit-button"
+            @click="handleSubmit()"
+          >
+            Create Account
+          </neb-button>
+
+          <div class="auth-link">
+            <span>Already have an account?</span>
+            <neb-button type="link" @click="handleLoginClick()">
+              Sign in here
             </neb-button>
-
-            <div class="auth-link">
-              <span>Already have an account?</span>
-              <neb-button type="link" @click="handleLoginClick()">
-                Sign in here
-              </neb-button>
-            </div>
           </div>
         </div>
       </div>
@@ -118,17 +119,29 @@ function handleLoginClick() {
   padding: var(--space-6);
 }
 
-.auth-container {
+.auth-card {
   width: 100%;
   max-width: 400px;
-}
-
-.auth-card {
   background: #fff;
   border-radius: var(--radius-large);
   border: 1px solid var(--neutral-color-100);
   box-shadow: var(--shadow-sm);
   padding: var(--space-6);
+  view-transition-name: auth-card;
+
+  .neb-content-header {
+    view-transition-name: auth-header;
+  }
+
+  .email-input {
+    view-transition-name: email-input;
+  }
+  .password-input {
+    view-transition-name: password-input;
+  }
+  .confirm-password-input {
+    view-transition-name: confirm-password-input;
+  }
 }
 
 .auth-form {
@@ -146,6 +159,7 @@ function handleLoginClick() {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  view-transition-name: form-actions;
 }
 
 .submit-button {

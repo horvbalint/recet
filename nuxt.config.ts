@@ -34,7 +34,10 @@ export default defineNuxtConfig({
     },
   },
 
-  css: ['@/assets/main.css'],
+  css: [
+    '@/assets/main.css',
+    '@/assets/view-transitions.css',
+  ],
 
   nebula: {
     primaryColor: '#BE2577',
@@ -47,10 +50,6 @@ export default defineNuxtConfig({
   i18n: {
     defaultLocale: 'en',
     detectBrowserLanguage: false,
-  },
-
-  experimental: {
-    viewTransition: true,
   },
 
   pwa: {

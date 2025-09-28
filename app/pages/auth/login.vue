@@ -3,8 +3,6 @@ definePageMeta({
   layout: 'empty',
 })
 
-const router = useRouter()
-
 const formData = ref({
   email: '',
   password: '',
@@ -16,7 +14,7 @@ async function handleSubmit() {
   try {
     await signIn(formData.value.email, formData.value.password)
 
-    router.push('/')
+    await navigateTo('/')
   }
   catch (err) {
     console.error(err)
@@ -25,8 +23,8 @@ async function handleSubmit() {
   }
 }
 
-function handleSignupClick() {
-  router.push('/auth/signup')
+function goToSignup() {
+  document.startViewTransition(() => navigateTo('/auth/signup'))
 }
 </script>
 
@@ -74,7 +72,7 @@ function handleSignupClick() {
 
           <div class="auth-link">
             <span>Don't have an account?</span>
-            <neb-button type="link" @click="handleSignupClick()">
+            <neb-button type="link" @click="goToSignup()">
               Sign up here
             </neb-button>
           </div>

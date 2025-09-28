@@ -15,9 +15,13 @@ function getEstimatedTime(stepCount: number) {
   return '60+ min'
 }
 
-function handleCardClick() {
+async function handleCardClick() {
   setCachedRecipe(props.recipe)
-  navigateTo(`/recipe/${props.recipe.id.id}`)
+
+  document.startViewTransition(async () => {
+    await nextTick()
+    await navigateTo(`/recipe/${props.recipe.id.id}`)
+  })
 }
 
 const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
@@ -126,6 +130,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
+  width: fit-content;
   view-transition-name: v-bind('viewTransitions.meta');
 }
 
@@ -148,6 +153,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   flex-wrap: wrap;
   gap: var(--space-2);
   align-items: center;
+  width: fit-content;
   view-transition-name: v-bind('viewTransitions.tags');
 }
 
@@ -155,6 +161,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+  width: fit-content;
   view-transition-name: v-bind('viewTransitions.mealTypes');
 }
 

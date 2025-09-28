@@ -65,7 +65,7 @@ const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncDat
 })
 
 const recipe = computed<Recipe | null | undefined>(() => {
-  const cachedRecipe = getCachedRecipe()
+  const cachedRecipe = getCachedRecipe(recipeId)
   if (!cachedRecipe || queriedRecipe.value)
     return queriedRecipe.value
 
@@ -401,6 +401,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-6);
+  width: fit-content;
   view-transition-name: v-bind('viewTransitions.meta');
 }
 
@@ -427,12 +428,14 @@ watch(currentHousehold, async () => await navigateTo('/'))
   flex-wrap: wrap;
   gap: var(--space-2);
   view-transition-name: v-bind('viewTransitions.tags');
+  width: fit-content;
 }
 
 .meal-types {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+  width: fit-content;
   view-transition-name: v-bind('viewTransitions.mealTypes');
 }
 

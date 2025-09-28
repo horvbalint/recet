@@ -3,8 +3,6 @@ definePageMeta({
   layout: 'empty',
 })
 
-const router = useRouter()
-
 const formData = ref({
   username: '',
   email: '',
@@ -25,7 +23,7 @@ async function handleSubmit() {
 
     useNebToast({ type: 'success', title: 'Account created!', description: 'Your account has been created successfully. Please sign in.' })
 
-    router.push('/auth/login')
+    goToLogin()
   }
   catch (error) {
     console.error('Signup error:', error)
@@ -34,8 +32,8 @@ async function handleSubmit() {
   }
 }
 
-function handleLoginClick() {
-  router.push('/auth/login')
+function goToLogin() {
+  document.startViewTransition(() => navigateTo('/auth/login'))
 }
 </script>
 
@@ -82,7 +80,6 @@ function handleLoginClick() {
               type="password"
               placeholder="Confirm your password"
               required
-              class="confirm-password-input"
             />
           </div>
         </neb-validator>
@@ -99,7 +96,7 @@ function handleLoginClick() {
 
           <div class="auth-link">
             <span>Already have an account?</span>
-            <neb-button type="link" @click="handleLoginClick()">
+            <neb-button type="link" @click="goToLogin()">
               Sign in here
             </neb-button>
           </div>
@@ -138,9 +135,6 @@ function handleLoginClick() {
   }
   .password-input {
     view-transition-name: password-input;
-  }
-  .confirm-password-input {
-    view-transition-name: confirm-password-input;
   }
 }
 

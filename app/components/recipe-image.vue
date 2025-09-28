@@ -61,7 +61,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   <div ref="image-wrapper" class="recipe-image">
     <template v-if="recipe.image_blur_hash">
       <canvas v-if="!imageUrl" ref="canvas" :width="props.widthPx" :height="props.heightPx" />
-      <img v-show="imageUrl" :src="imageUrl!" alt="Recipe Image">
+      <img v-else :src="imageUrl!" alt="Recipe Image">
     </template>
 
     <div v-else class="image-placeholder">
@@ -113,6 +113,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   position: absolute;
   top: var(--space-4);
   right: var(--space-4);
+  view-transition-name: v-bind('viewTransitions.cuisine');
 }
 
 .dark-mode {

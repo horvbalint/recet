@@ -3,25 +3,32 @@ import type { Recipe } from '~/pages/index.vue'
 import { encode as encodeBlurhash } from 'blurhash'
 import { readAndCompressImage } from 'browser-image-resizer'
 
-let cachedRecipe: Recipe | null = null
+const cachedRecipe = ref<Recipe | null>(null)
 export function setCachedRecipe(recipe: Recipe) {
-  cachedRecipe = recipe
+  cachedRecipe.value = recipe
 }
-export function getCachedRecipe() {
-  const current = cachedRecipe
-  cachedRecipe = null
-  return current
+export function getCachedRecipe(recipeId: RecordId<'recipe'>['id']) {
+  if (recipeId !== cachedRecipe.value?.id.id)
+    return null
+
+  return cachedRecipe.value
 }
 
 export function getRecipeViewTransitionNames(recipeId: RecordId<'recipe'>['id']) {
-  return {
-    container: `recipe-container-${recipeId}`,
-    name: `recipe-name-${recipeId}`,
-    meta: `recipe-meta-${recipeId}`,
-    tags: `recipe-tags-${recipeId}`,
-    mealTypes: `recipe-meal-types-${recipeId}`,
-    image: `recipe-image-${recipeId}`,
-  }
+  return computed(() => {
+    if (recipeId !== cachedRecipe.value?.id.id)
+      return {}
+
+    return {
+      container: 'recipe-container',
+      name: 'recipe-name',
+      meta: 'recipe-meta',
+      tags: 'recipe-tags',
+      mealTypes: 'recipe-meal-types',
+      image: 'recipe-image',
+      cuisine: 'recipe-cuisine',
+    }
+  })
 }
 
 const cachedRecipeImages = new Map<RecordId<'recipe'>['id'], string | null>()

@@ -1,0 +1,35 @@
+/* ::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: 5s;
+} */
+
+::view-transition-new(auth-card),
+::view-transition-old(auth-card) {
+  height: 100%;
+}
+
+::view-transition-new(recipe-name),
+::view-transition-old(recipe-name),
+::view-transition-new(recipe-meal-types),
+::view-transition-old(recipe-meal-types),
+::view-transition-new(recipe-cuisine),
+::view-transition-old(recipe-cuisine),
+::view-transition-new(recipe-image),
+::view-transition-old(recipe-image) {
+  height: 100%;
+}
+
+::view-transition-new(recipe-name),
+::view-transition-old(recipe-name) {
+  height: 100%;
+  object-fit: cover;
+  object-position: left;
+}
+
+::view-transition-new(recipe-meta),
+::view-transition-old(recipe-meta) {
+  height: 100%;
+  object-fit: none;
+  object-position: left;
+  overflow: clip;
+}

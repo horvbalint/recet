@@ -253,7 +253,7 @@ DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id
     for(const ingredient of ingredientsToAdd) {
 			const existing_item = listItems.find(item => item.ingredient.id === ingredient.ingredient.id.id);
 
-			if(existing_item?.unit?.id === ingredient.unit?.id) {
+			if(existing_item && existing_item.unit?.id === ingredient.unit?.id) {
 				existing_item.amount = (existing_item.amount || 0) + (ingredient.amount || 0);
 				existing_item.checked = false;
 			}

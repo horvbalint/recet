@@ -206,9 +206,10 @@ watch(currentHousehold, async () => await navigateTo('/'))
               </recipe-image>
 
               <div class="recipe-info">
-                <h1 class="recipe-title">
-                  {{ recipe.name }}
-                </h1>
+                <neb-content-header
+                  type="page"
+                  :title="recipe.name"
+                />
 
                 <div class="recipe-meta">
                   <div class="meta-item">
@@ -386,15 +387,12 @@ watch(currentHousehold, async () => await navigateTo('/'))
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-}
 
-.recipe-title {
-  font-size: var(--title-lg);
-  font-weight: 700;
-  color: var(--neutral-color-900);
-  margin: 0;
-  line-height: 1.2;
-  view-transition-name: v-bind('viewTransitions.name');
+  :deep(.neb-content-header) {
+    h1 {
+      view-transition-name: v-bind('viewTransitions.name');
+    }
+  }
 }
 
 .recipe-meta {

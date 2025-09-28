@@ -8,8 +8,6 @@
   height: 100%;
 }
 
-::view-transition-new(recipe-name),
-::view-transition-old(recipe-name),
 ::view-transition-new(recipe-meal-types),
 ::view-transition-old(recipe-meal-types),
 ::view-transition-new(recipe-cuisine),
@@ -22,8 +20,10 @@
 ::view-transition-new(recipe-name),
 ::view-transition-old(recipe-name) {
   height: 100%;
+  width: 100%;
   object-fit: cover;
   object-position: left;
+  overflow: clip;
 }
 
 ::view-transition-new(recipe-meta),

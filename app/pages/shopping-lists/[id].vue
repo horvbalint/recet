@@ -247,22 +247,22 @@ function onUnitCreated(unit: OutUnit) {
                 class="item-card"
                 :class="{ 'item-checked': item.checked }"
               >
-                <neb-checkbox v-model="item.checked" @update:model-value="updateListItems()" />
+                <neb-checkbox v-model="item.checked" class="item-checkbox" @update:model-value="updateListItems()">
+                  <div class="item-content">
+                    <div class="item-main">
+                      <span class="item-name">{{ item.ingredient.name || 'Unknown ingredient' }}</span>
 
-                <div class="item-content">
-                  <div class="item-main">
-                    <span class="item-name">{{ item.ingredient.name || 'Unknown ingredient' }}</span>
+                      <neb-badge v-if="item.amount" class="item-amount">
+                        {{ getItemAmount(item) }}
+                      </neb-badge>
+                    </div>
 
-                    <neb-badge v-if="item.amount" class="item-amount">
-                      {{ getItemAmount(item) }}
-                    </neb-badge>
+                    <nuxt-link v-if="item.recipe" class="item-recipe" :to="`/recipe/${item.recipe.id.id}`" @click.stop>
+                      <icon name="material-symbols:link-rounded" />
+                      From {{ item.recipe.name }}
+                    </nuxt-link>
                   </div>
-
-                  <nuxt-link v-if="item.recipe" class="item-recipe" :to="`/recipe/${item.recipe.id.id}`">
-                    <icon name="material-symbols:link-rounded" />
-                    From {{ item.recipe.name }}
-                  </nuxt-link>
-                </div>
+                </neb-checkbox>
 
                 <div class="item-actions">
                   <icon name="material-symbols:edit-outline-rounded" @click="startEditItem(categoryName, index)" />
@@ -433,12 +433,15 @@ function onUnitCreated(unit: OutUnit) {
 
 .category-count {
   color: var(--neutral-color-600);
-  font-weight: var(--font-normal);
 }
 
 .items-list {
   display: flex;
   flex-direction: column;
+}
+
+.item-checkbox {
+  flex: 1;
 }
 
 .item-card {
@@ -471,6 +474,7 @@ function onUnitCreated(unit: OutUnit) {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  margin-left: var(--space-2);
 }
 
 .item-main {
@@ -480,8 +484,7 @@ function onUnitCreated(unit: OutUnit) {
 }
 
 .item-name {
-  font-size: var(--text-base);
-  font-weight: var(--font-medium);
+  font-size: var(--text-md);
   color: var(--neutral-color-900);
 }
 
@@ -492,6 +495,7 @@ function onUnitCreated(unit: OutUnit) {
   font-size: var(--text-xs);
   color: var(--primary-color-600);
   text-decoration: none;
+  width: fit-content;
 
   &:hover {
     text-decoration: underline;

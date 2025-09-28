@@ -13,6 +13,7 @@ interface Recipe {
     ingredient: string
     amount: string
     unit?: string
+    description?: string
     skip_from_shopping_list: boolean
   }>
   steps: string[]
@@ -55,6 +56,7 @@ const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncDat
         amount: $i.amount,
         ingredient: $i.ingredient.name,
         unit: $i.unit.name,
+        description: $i.description,
         skip_from_shopping_list: $i.ingredient.skip_from_shopping_list
       })
     FROM ONLY
@@ -276,10 +278,16 @@ watch(currentHousehold, async () => await navigateTo('/'))
                       <neb-checkbox ref="ingredientCheckbox" v-model="checkedIngredients" :value="index" @click.stop />
                     </div>
 
-                    <div class="ingredient-details">
-                      <span class="ingredient-amount">{{ ingredient.amount }}</span>
-                      <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
-                      <span class="ingredient-name">{{ ingredient.ingredient }}</span>
+                    <div class="ingredient-content">
+                      <div class="ingredient-details">
+                        <span class="ingredient-amount">{{ ingredient.amount }}</span>
+                        <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
+                        <span class="ingredient-name">{{ ingredient.ingredient }}</span>
+                      </div>
+
+                      <div v-if="ingredient.description" class="ingredient-description">
+                        {{ ingredient.description }}
+                      </div>
                     </div>
 
                     <neb-tooltip
@@ -492,10 +500,16 @@ watch(currentHousehold, async () => await navigateTo('/'))
   flex: 1;
 }
 
+.ingredient-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-1);
+}
+
 .ingredient-amount {
   font-weight: 600;
   color: var(--neutral-color-900);
-  min-width: 50px;
 }
 
 .ingredient-unit {
@@ -506,6 +520,12 @@ watch(currentHousehold, async () => await navigateTo('/'))
 .ingredient-name {
   color: var(--neutral-color-700);
   flex: 1;
+}
+
+.ingredient-description {
+  color: var(--neutral-color-500);
+  font-size: var(--text-sm);
+  font-style: italic;
 }
 
 .steps-list {

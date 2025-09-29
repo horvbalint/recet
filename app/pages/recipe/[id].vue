@@ -268,16 +268,13 @@ watch(currentHousehold, async () => await navigateTo('/'))
                 </neb-content-header>
 
                 <div v-if="recipe.ingredients?.length" class="ingredients-list">
-                  <div
+                  <neb-checkbox
                     v-for="(ingredient, index) in recipe.ingredients"
                     :key="index"
+                    v-model="checkedIngredients"
                     class="ingredient-item"
-                    @click="($refs.ingredientCheckbox as any)[index].handleClick()"
+                    :value="index"
                   >
-                    <div class="ingredient-checkbox">
-                      <neb-checkbox ref="ingredientCheckbox" v-model="checkedIngredients" :value="index" @click.stop />
-                    </div>
-
                     <div class="ingredient-content">
                       <div class="ingredient-details">
                         <span class="ingredient-amount">{{ ingredient.amount }}</span>
@@ -296,7 +293,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
                     >
                       <icon name="material-symbols:receipt-long-off-outline-rounded" />
                     </neb-tooltip>
-                  </div>
+                  </neb-checkbox>
                 </div>
 
                 <p v-else class="empty-message">
@@ -311,21 +308,16 @@ watch(currentHousehold, async () => await navigateTo('/'))
                   has-separator
                 />
                 <div v-if="recipe.steps?.length" class="steps-list">
-                  <div
+                  <neb-checkbox
                     v-for="(step, index) in recipe.steps"
                     :key="index"
+                    align="top"
                     class="step-item"
                   >
-                    <div class="step-number">
-                      {{ index + 1 }}
-                    </div>
-
-                    <div class="step-content">
-                      <p class="step-description">
-                        {{ step }}
-                      </p>
-                    </div>
-                  </div>
+                    <p class="step-description">
+                      {{ step }}
+                    </p>
+                  </neb-checkbox>
                 </div>
 
                 <p v-else class="empty-message">
@@ -470,8 +462,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
 }
 
 .ingredient-item {
-  display: flex;
-  align-items: center;
   gap: var(--space-3);
   padding: var(--space-3);
   border: 1px solid var(--neutral-color-100);
@@ -505,6 +495,10 @@ watch(currentHousehold, async () => await navigateTo('/'))
   flex-direction: column;
   flex: 1;
   gap: var(--space-1);
+  font-size: var(--text-md);
+  font-weight: normal;
+  cursor: text;
+  user-select: text;
 }
 
 .ingredient-amount {
@@ -542,24 +536,13 @@ watch(currentHousehold, async () => await navigateTo('/'))
   border-radius: var(--radius-default);
 }
 
-.step-number {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, var(--primary-color-500), var(--primary-color-400));
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: var(--text-lg);
-}
-
 .step-description {
+  font-size: var(--text-md);
+  font-weight: normal;
   color: var(--neutral-color-700);
-  line-height: 1.6;
-  margin: 0;
+  margin-top: -4px;
+  user-select: text;
+  cursor: text;
 }
 
 .empty-message {
@@ -614,12 +597,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
     padding: var(--space-3);
     gap: var(--space-3);
   }
-
-  .step-number {
-    width: 32px;
-    height: 32px;
-    font-size: var(--text-md);
-  }
 }
 
 /* Dark Mode */
@@ -671,10 +648,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
   .step-item {
     border-color: var(--neutral-color-800);
-  }
-
-  .step-number {
-    background: linear-gradient(135deg, var(--primary-color-600), var(--primary-color-700));
   }
 
   .step-description {

@@ -53,6 +53,9 @@ export default defineNuxtConfig({
   },
 
   pwa: {
+    client: {
+      installPrompt: true,
+    },
     manifest: {
       name: 'Recet',
       short_name: 'Recet',

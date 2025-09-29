@@ -272,27 +272,29 @@ watch(currentHousehold, async () => await navigateTo('/'))
                     v-for="(ingredient, index) in recipe.ingredients"
                     :key="index"
                     v-model="checkedIngredients"
-                    class="ingredient-item"
                     :value="index"
+                    class="ingredient-item"
                   >
-                    <div class="ingredient-content">
-                      <div class="ingredient-details">
-                        <span class="ingredient-amount">{{ ingredient.amount }}</span>
-                        <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
-                        <span class="ingredient-name">{{ ingredient.ingredient }}</span>
+                    <div class="ingredient-inner">
+                      <div class="ingredient-content">
+                        <div class="ingredient-details">
+                          <span v-if="ingredient.amount" class="ingredient-amount">{{ ingredient.amount }}</span>
+                          <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
+                          <span class="ingredient-name">{{ ingredient.ingredient }}</span>
+                        </div>
+
+                        <div v-if="ingredient.description" class="ingredient-description">
+                          {{ ingredient.description }}
+                        </div>
                       </div>
 
-                      <div v-if="ingredient.description" class="ingredient-description">
-                        {{ ingredient.description }}
-                      </div>
+                      <neb-tooltip
+                        v-if="ingredient.skip_from_shopping_list"
+                        title="This ingredient will be skipped from being added to shopping lists"
+                      >
+                        <icon name="material-symbols:receipt-long-off-outline-rounded" />
+                      </neb-tooltip>
                     </div>
-
-                    <neb-tooltip
-                      v-if="ingredient.skip_from_shopping_list"
-                      title="This ingredient will be skipped from being added to shopping lists"
-                    >
-                      <icon name="material-symbols:receipt-long-off-outline-rounded" />
-                    </neb-tooltip>
                   </neb-checkbox>
                 </div>
 
@@ -467,6 +469,12 @@ watch(currentHousehold, async () => await navigateTo('/'))
   border: 1px solid var(--neutral-color-100);
   border-radius: var(--radius-default);
   transition: all var(--duration-default);
+}
+
+.ingredient-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 
   .icon {
     font-size: 20px !important;

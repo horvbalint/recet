@@ -107,12 +107,12 @@ logOnError(shoppingListError)
 const isAddingToList = ref(false)
 
 const checkedIngredients = ref<number[]>([])
-const portions = ref(recipe.value?.portions || 1)
+const portions = ref(recipe.value?.portions)
 const portionRatio = computed(() => {
-  if (!recipe.value?.portions)
+  if (!portions.value || !recipe.value?.portions)
     return 1
 
-  return portions.value! / recipe.value.portions
+  return portions.value / recipe.value.portions
 })
 
 function decrementPortions() {
@@ -279,7 +279,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
                       <template #content="{ close }">
                         <div class="ingredients-dropdown">
-                          <neb-content-header title="Portions:" type="paragraph" has-separator>
+                          <neb-content-header v-if="portions" title="Portions:" type="paragraph" has-separator>
                             <template #actions>
                               <div class="portion-controls">
                                 <neb-button small square type="tertiary-neutral" @click="decrementPortions()">
@@ -723,6 +723,15 @@ watch(currentHousehold, async () => await navigateTo('/'))
   .instructions-section h2 {
     color: var(--neutral-color-200);
     border-color: var(--neutral-color-800);
+  }
+
+  .ingredients-dropdown {
+    background: var(--neutral-color-950);
+    border: 1px solid var(--neutral-color-800);
+  }
+
+  .portion-controls {
+    border: 1px solid var(--neutral-color-800);
   }
 
   .ingredient-item {

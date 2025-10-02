@@ -252,7 +252,6 @@ const isFormValid = ref(false)
                     label="Portion count"
                     placeholder="e.g., 4"
                     type="number"
-                    required
                   />
 
                   <neb-input
@@ -260,7 +259,6 @@ const isFormValid = ref(false)
                     label="Cooking time (minutes)"
                     placeholder="e.g., 30"
                     type="number"
-                    required
                   />
                 </div>
               </div>

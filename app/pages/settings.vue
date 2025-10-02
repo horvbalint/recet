@@ -71,6 +71,7 @@ const availableLanguages = [
               use-only-tracked-key
               label="Language"
               required
+              no-search
               :allow-empty="false"
             />
           </div>

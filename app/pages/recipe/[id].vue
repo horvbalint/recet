@@ -192,7 +192,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
           </neb-button>
         </neb-empty-state>
 
-        <div v-else class="recipe-container">
+        <template v-else>
           <header>
             <div class="recipe-hero">
               <recipe-image class="recipe-image" :recipe :width-px="600" :height-px="400">
@@ -328,7 +328,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
               </section>
             </main>
           </neb-state-content>
-        </div>
+        </template>
       </neb-state-content>
     </div>
   </page-layout>
@@ -337,15 +337,14 @@ watch(currentHousehold, async () => await navigateTo('/'))
 <style scoped>
 .recipe-detail {
   min-height: 100vh;
-  background: var(--neutral-color-25);
-  border-radius: var(--radius-large);
-  view-transition-name: v-bind('viewTransitions.container');
-}
-
-.recipe-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-6);
+  /* border: 1px solid var(--neutral-color-200); */
+  border-radius: var(--radius-large);
+  background: var(--neutral-color-25);
+  view-transition-name: v-bind('viewTransitions.container');
+  box-shadow: var(--shadow-md);
 }
 
 .header-navigation {
@@ -567,8 +566,9 @@ watch(currentHousehold, async () => await navigateTo('/'))
     gap: var(--space-6);
   }
 
-  .recipe-container {
+  .recipe-detail {
     padding: 0;
+    box-shadow: none;
   }
 
   .recipe-hero {

@@ -138,7 +138,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
 .recipe-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--space-3);
   width: fit-content;
   view-transition-name: v-bind('viewTransitions.meta');
 }
@@ -160,7 +160,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
 .recipe-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-1);
   align-items: center;
   width: fit-content;
   view-transition-name: v-bind('viewTransitions.tags');
@@ -169,7 +169,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
 .meal-types {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-1);
   width: fit-content;
   view-transition-name: v-bind('viewTransitions.mealTypes');
 }

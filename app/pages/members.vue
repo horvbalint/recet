@@ -217,6 +217,7 @@ function mapRoleToColor(role: OutMember['role']) {
               required
               :disabled="isLoading"
               :options="roleOptions"
+              no-search
             />
           </div>
         </neb-validator>
@@ -256,6 +257,7 @@ function mapRoleToColor(role: OutMember['role']) {
               label="Role"
               placeholder="Select a role"
               required
+              no-search
               :disabled="isLoading"
               :options="roleOptions"
             />

@@ -89,6 +89,7 @@ async function handleSubmit() {
           use-only-tracked-key
           placeholder="Select a shop"
           allow-empty
+          no-search
           @keydown.enter="handleSubmit()"
         />
       </neb-validator>

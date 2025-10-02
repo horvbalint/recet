@@ -92,7 +92,7 @@ function handleSave(item: OutRecipeTag) {
     <template #form="{ data }">
       <neb-input v-model="data.name" label="Name" required />
 
-      <neb-select v-model="data.icon" label="Icon" :options="iconOptions" placeholder="Select an icon" />
+      <neb-select v-model="data.icon" no-search label="Icon" :options="iconOptions" placeholder="Select an icon" />
 
       <neb-input v-model="data.color" label="Color" type="color" required />
     </template>

@@ -262,8 +262,17 @@ const isFormValid = ref(false)
                   label-key="name"
                   :transform-fun="transformId"
                   use-only-tracked-key
+                  no-search
                   @new="handleCreateCuisine"
-                />
+                >
+                  <template #option="{ option }">
+                    <badge-cuisine :cuisine="option" />
+                  </template>
+
+                  <template #selection="{ selected }">
+                    <badge-cuisine v-for="cuisine in selected" :key="cuisine.trackValue.toString()" small :cuisine="cuisine.option" />
+                  </template>
+                </neb-select>
 
                 <neb-select
                   v-model="formData.meal"
@@ -275,8 +284,17 @@ const isFormValid = ref(false)
                   :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
+                  no-search
                   @new="handleCreateMeal"
-                />
+                >
+                  <template #option="{ option }">
+                    <badge-meal :meal="option" />
+                  </template>
+
+                  <template #selection="{ selected }">
+                    <badge-meal v-for="meal in selected" :key="meal.trackValue.toString()" small :meal="meal.option" />
+                  </template>
+                </neb-select>
 
                 <neb-select
                   v-model="formData.tags"
@@ -288,8 +306,17 @@ const isFormValid = ref(false)
                   :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
+                  no-search
                   @new="handleCreateTag"
-                />
+                >
+                  <template #option="{ option }">
+                    <badge-tag :tag="option" />
+                  </template>
+
+                  <template #selection="{ selected }">
+                    <badge-tag v-for="tag in selected" :key="tag.trackValue.toString()" small :tag="tag.option" />
+                  </template>
+                </neb-select>
               </div>
             </div>
           </div>

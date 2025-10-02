@@ -1,6 +1,7 @@
-/* ::view-transition-old(*),
+/* ::view-transition-group(*),
+::view-transition-old(*),
 ::view-transition-new(*) {
-  animation-duration: 5s;
+  animation-duration: 1s;
 } */
 
 ::view-transition-new(auth-card),
@@ -15,15 +16,6 @@
 ::view-transition-new(recipe-image),
 ::view-transition-old(recipe-image) {
   height: 100%;
-}
-
-::view-transition-new(recipe-name),
-::view-transition-old(recipe-name) {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  object-position: left;
-  overflow: clip;
 }
 
 ::view-transition-new(recipe-meta),

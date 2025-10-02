@@ -33,7 +33,7 @@ async function handleSubmit() {
 }
 
 function goToLogin() {
-  document.startViewTransition(() => navigateTo('/auth/login'))
+  navigateToWithTransition('/auth/login')
 }
 </script>
 

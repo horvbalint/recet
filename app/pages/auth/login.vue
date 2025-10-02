@@ -24,7 +24,7 @@ async function handleSubmit() {
 }
 
 function goToSignup() {
-  document.startViewTransition(() => navigateTo('/auth/signup'))
+  navigateToWithTransition('/auth/signup')
 }
 </script>
 

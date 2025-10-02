@@ -18,10 +18,8 @@ function getEstimatedTime(stepCount: number) {
 async function handleCardClick() {
   setCachedRecipe(props.recipe)
 
-  document.startViewTransition(async () => {
-    await nextTick()
-    await navigateTo(`/recipe/${props.recipe.id.id}`)
-  })
+  await nextTick()
+  navigateToWithTransition(`/recipe/${props.recipe.id.id}`)
 }
 
 const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
@@ -32,35 +30,39 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
     <recipe-image :recipe="recipe" :width-px="400" :height-px="200" />
 
     <div class="recipe-content">
-      <div class="recipe-header">
-        <h3 class="recipe-title">
-          {{ recipe.name }}
-        </h3>
-      </div>
-
-      <div class="recipe-meta">
-        <div class="meta-item">
-          <icon name="material-symbols:grocery" />
-          <span>{{ recipe.ingredients }} ingredients</span>
+      <div class="recipe-content-inner-wrapper">
+        <div class="recipe-header">
+          <h3 class="recipe-title">
+            {{ recipe.name }}
+          </h3>
         </div>
 
-        <div class="meta-item">
-          <icon name="material-symbols:format-list-numbered-rounded" />
-          <span>{{ recipe.steps }} steps</span>
-        </div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <icon name="material-symbols:grocery" />
+            <span>{{ recipe.ingredients }} ingredients</span>
+          </div>
 
-        <div class="meta-item">
-          <icon name="material-symbols:schedule-outline-rounded" />
-          <span>{{ getEstimatedTime(recipe.steps) }}</span>
+          <div class="meta-item">
+            <icon name="material-symbols:format-list-numbered-rounded" />
+            <span>{{ recipe.steps }} steps</span>
+          </div>
+
+          <div class="meta-item">
+            <icon name="material-symbols:schedule-outline-rounded" />
+            <span>{{ getEstimatedTime(recipe.steps) }}</span>
+          </div>
         </div>
       </div>
 
-      <div v-if="recipe.tags?.length" class="recipe-tags">
-        <badge-tag v-for="tag in recipe.tags" :key="tag.name" :tag />
-      </div>
+      <div class="recipe-content-inner-wrapper">
+        <div v-if="recipe.tags?.length" class="recipe-tags">
+          <badge-tag v-for="tag in recipe.tags" :key="tag.name" :tag />
+        </div>
 
-      <div v-if="recipe.meal?.length" class="meal-types">
-        <badge-meal v-for="meal in recipe.meal" :key="meal.name" small :meal />
+        <div v-if="recipe.meal?.length" class="meal-types">
+          <badge-meal v-for="meal in recipe.meal" :key="meal.name" small :meal />
+        </div>
       </div>
     </div>
   </div>
@@ -111,6 +113,12 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   gap: var(--space-4);
 }
 
+.recipe-content-inner-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
 .recipe-header {
   display: flex;
   flex-direction: column;
@@ -124,6 +132,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   margin: 0;
   line-height: 1.3;
   view-transition-name: v-bind('viewTransitions.name');
+  width: fit-content;
 }
 
 .recipe-meta {

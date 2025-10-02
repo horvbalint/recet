@@ -80,10 +80,10 @@ function constructQuery() {
       query.append` WITH INDEX english_search_name`
   }
 
+  query.append` WHERE household = type::thing(${currentHousehold.value!.id})`
+
   if (searchTerm.value)
-    query.append` WHERE household = type::thing(${currentHousehold.value!.id}) && name @@ ${searchTerm.value}`
-  else
-    query.append` WHERE household = type::thing(${currentHousehold.value!.id})`
+    query.append` && name @@ ${searchTerm.value}`
 
   if (selectedCuisines.value.length)
     query.append` && cuisine IN ${selectedCuisines.value}`

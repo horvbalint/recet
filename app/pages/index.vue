@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RecordId } from 'surrealdb'
+import type { PreparedQuery, RecordId } from 'surrealdb'
 import type { OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
 
 definePageMeta({
@@ -53,7 +53,36 @@ const { data: filterData, status: filterDataStatus } = useAsyncData(async () => 
   return { cuisenes, tags, meals, ingredients }
 })
 
-function constructQuery() {
+const openedAt = new Date()
+function constructWhereClause(query: PreparedQuery) {
+  query.append` WHERE household = type::thing(${currentHousehold.value!.id}) && craeted_at <= ${openedAt}`
+
+  if (searchTerm.value)
+    query.append` && name @@ ${searchTerm.value}`
+
+  if (selectedCuisines.value.length)
+    query.append` && cuisine IN ${selectedCuisines.value}`
+  if (selectedTags.value.length)
+    query.append` && tags.intersect(${selectedTags.value}).len() > 0`
+  if (selectedMeals.value.length)
+    query.append` && meal.intersect(${selectedMeals.value}).len() > 0`
+  if (selectedIngredients.value.length)
+    query.append` && ingredients.ingredient.intersect(${selectedIngredients.value}).len() > 0`
+
+  return query
+}
+
+function constructCountQuery() {
+  const query = surql`SELECT VALUE count() FROM ONLY recipe`
+  constructWhereClause(query)
+  query.append` GROUP ALL`
+
+  return query
+}
+
+const recipesPerPage = isMobile.value ? 5 : 9
+const pageIndex = ref(0)
+function constructRecipeQuery() {
   const query = surql`
     SELECT
       id,
@@ -80,34 +109,59 @@ function constructQuery() {
       query.append` WITH INDEX english_search_name`
   }
 
-  query.append` WHERE household = type::thing(${currentHousehold.value!.id})`
-
-  if (searchTerm.value)
-    query.append` && name @@ ${searchTerm.value}`
-
-  if (selectedCuisines.value.length)
-    query.append` && cuisine IN ${selectedCuisines.value}`
-  if (selectedTags.value.length)
-    query.append` && tags.intersect(${selectedTags.value}).len() > 0`
-  if (selectedMeals.value.length)
-    query.append` && meal.intersect(${selectedMeals.value}).len() > 0`
-  if (selectedIngredients.value.length)
-    query.append` && ingredients.ingredient.intersect(${selectedIngredients.value}).len() > 0`
+  constructWhereClause(query)
 
   if (searchTerm.value)
     query.append` ORDER BY score, created_at DESC`
   else
     query.append` ORDER BY created_at DESC`
 
+  query.append` LIMIT ${recipesPerPage} START ${pageIndex.value * recipesPerPage}`
+
   return query
 }
 
-const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipes', async () => {
-  const query = constructQuery()
-  const [result] = await db.query<[Recipe[]]>(query)
+const conditionWatchSources = [currentHousehold, searchTerm, selectedCuisines, selectedIngredients, selectedMeals, selectedTags]
+const { data, status, error, refresh } = useAsyncData('recipes', async () => {
+  const recipeQuery = constructRecipeQuery()
+  const countQuery = constructCountQuery()
 
-  return result
-}, { watch: [currentHousehold, searchTerm, selectedCuisines, selectedIngredients, selectedMeals, selectedTags] })
+  const [[recipes], [count]] = await Promise.all([
+    db.query<[Recipe[]]>(recipeQuery),
+    db.query<[{ count: number } | null]>(countQuery),
+  ])
+
+  return { recipeChunks: recipes, recipeCount: count?.count || 0 }
+}, { watch: [...conditionWatchSources, pageIndex] })
+
+const recipes = ref<Recipe[]>([])
+watch(data, () => recipes.value.push(...data.value?.recipeChunks || []))
+
+watch(conditionWatchSources, () => {
+  pageIndex.value = 0
+  recipes.value = []
+}, {
+  flush: 'sync',
+})
+
+const recipeLoader = useTemplateRef('recipe-loader')
+const observer = new IntersectionObserver(([entry]) => {
+  if (entry!.isIntersecting && status.value !== 'pending')
+    pageIndex.value++
+}, {
+  rootMargin: '100px',
+})
+
+watch(recipeLoader, () => {
+  if (recipeLoader.value)
+    observer.observe(recipeLoader.value.$el)
+  else
+    observer!.disconnect()
+})
+
+onBeforeUnmount(() => {
+  observer!.disconnect()
+})
 </script>
 
 <template>
@@ -119,7 +173,7 @@ const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipe
         :type="pageHeaderType"
         has-separator
       >
-        <template v-if="recipes?.length" #actions>
+        <template v-if="recipes.length" #actions>
           <neb-button small type="primary" @click="$router.push('/recipe/create')">
             <icon name="material-symbols:add-rounded" />
             Add Recipe
@@ -224,35 +278,45 @@ const { data: recipes, status, error, refresh } = useAsyncData<Recipe[]>('recipe
         </div>
       </div>
 
-      <neb-state-content :status :refresh error-title="Failed to load recipes" :error-description="error?.message">
-        <template v-if="!recipes?.length">
-          <neb-empty-state
-            v-if="searchTerm"
-            title="No recipes found"
-            description="Try adjusting your search terms to find what you're looking for"
-          />
+      <neb-loading-state v-if="status === 'pending' && !recipes.length" />
 
-          <neb-empty-state
-            v-else
-            icon="material-symbols:menu-book-2-outline-rounded"
-            title="No recipes yet"
-            description="Start building your recipe collection by adding your first recipe"
-          >
-            <neb-button type="primary" @click="$router.push('/recipe/create')">
-              <icon name="material-symbols:add-rounded" />
-              Add Your First Recipe
-            </neb-button>
-          </neb-empty-state>
-        </template>
+      <neb-error-state v-else-if="status === 'error'" title="Failed to load recipes" :description="error?.message">
+        <neb-button @click="refresh">
+          Retry
+        </neb-button>
+      </neb-error-state>
 
-        <div v-else class="recipe-grid">
+      <template v-else-if="!recipes.length">
+        <neb-empty-state
+          v-if="searchTerm"
+          title="No recipes found"
+          description="Try adjusting your search terms to find what you're looking for"
+        />
+
+        <neb-empty-state
+          v-else
+          icon="material-symbols:menu-book-2-outline-rounded"
+          title="No recipes yet"
+          description="Start building your recipe collection by adding your first recipe"
+        >
+          <neb-button type="primary" @click="$router.push('/recipe/create')">
+            <icon name="material-symbols:add-rounded" />
+            Add Your First Recipe
+          </neb-button>
+        </neb-empty-state>
+      </template>
+
+      <template v-else>
+        <div class="recipe-grid">
           <recipe-card
             v-for="recipe in recipes"
             :key="recipe.id.id.toString()"
             :recipe="recipe"
           />
         </div>
-      </neb-state-content>
+
+        <neb-button v-if="recipes.length < data!.recipeCount" ref="recipe-loader" :hidden="status !== 'pending'" disabled loading />
+      </template>
     </div>
   </page-layout>
 </template>

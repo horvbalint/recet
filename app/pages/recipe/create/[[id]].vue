@@ -238,12 +238,32 @@ const isFormValid = ref(false)
             />
 
             <div class="basic-info-fields">
-              <neb-input
-                v-model="formData.name"
-                label="Recipe Name"
-                placeholder="Enter recipe name"
-                required
-              />
+              <div class="flex-row">
+                <neb-input
+                  v-model="formData.name"
+                  label="Recipe Name"
+                  placeholder="Enter recipe name"
+                  required
+                />
+
+                <div class="flex-row">
+                  <neb-input
+                    v-model="formData.portions"
+                    label="Portion count"
+                    placeholder="e.g., 4"
+                    type="number"
+                    required
+                  />
+
+                  <neb-input
+                    v-model="formData.cooking_time_minutes"
+                    label="Cooking time (minutes)"
+                    placeholder="e.g., 30"
+                    type="number"
+                    required
+                  />
+                </div>
+              </div>
 
               <neb-single-file-picker
                 v-model="selectedImage"
@@ -458,6 +478,12 @@ const isFormValid = ref(false)
 .basic-info-fields {
   display: flex;
   flex-direction: column;
+  gap: var(--space-4);
+}
+
+.flex-row {
+  width: 100%;
+  display: flex;
   gap: var(--space-4);
 }
 

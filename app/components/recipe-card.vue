@@ -5,16 +5,6 @@ const props = defineProps<{
   recipe: Recipe
 }>()
 
-function getEstimatedTime(stepCount: number) {
-  if (stepCount <= 3)
-    return '15-30 min'
-  if (stepCount <= 6)
-    return '30-45 min'
-  if (stepCount <= 10)
-    return '45-60 min'
-  return '60+ min'
-}
-
 async function handleCardClick() {
   setCachedRecipe(props.recipe)
 
@@ -48,9 +38,9 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
             <span>{{ recipe.steps }} steps</span>
           </div>
 
-          <div class="meta-item">
+          <div v-if="recipe.cooking_time_minutes" class="meta-item">
             <icon name="material-symbols:schedule-outline-rounded" />
-            <span>{{ getEstimatedTime(recipe.steps) }}</span>
+            <span>{{ recipe.cooking_time_minutes }} min</span>
           </div>
         </div>
       </div>

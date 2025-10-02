@@ -12,6 +12,7 @@ export interface Recipe {
   ingredients: number
   steps: number
   image_blur_hash?: string
+  cooking_time_minutes?: number
   author: {
     username: string
   }
@@ -89,6 +90,7 @@ function constructRecipeQuery() {
       name,
       created_at,
       image_blur_hash,
+      cooking_time_minutes,
       author.{username},
       ingredients.len(),
       steps.len(),

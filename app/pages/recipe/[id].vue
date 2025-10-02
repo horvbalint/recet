@@ -9,9 +9,11 @@ interface Recipe {
   id: RecordId<'recipe'>
   name: string
   image_blur_hash?: string
+  portions: number
+  cooking_time_minutes?: number
   ingredients: Array<{
     ingredient: string
-    amount: string
+    amount: number
     unit?: string
     description?: string
     skip_from_shopping_list: boolean
@@ -48,6 +50,8 @@ const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncDat
       steps,
       created_at,
       image_blur_hash,
+      portions,
+      cooking_time_minutes,
       author.{username},
       cuisine.{name, color, flag},
       tags.{name, color, icon},
@@ -100,20 +104,27 @@ const { data: shoppingLists, error: shoppingListError } = useAsyncData('shopping
 
 logOnError(shoppingListError)
 
-const shoppingListMenuItems = computed(() => {
-  if (!shoppingLists.value?.length)
-    return []
-
-  return shoppingLists.value.map(list => ({
-    text: list.name,
-    icon: 'material-symbols:shopping-cart-outline-rounded',
-    callback: () => addToShoppingList(list.id),
-  }))
-})
-
 const isAddingToList = ref(false)
 
 const checkedIngredients = ref<number[]>([])
+const portions = ref(recipe.value?.portions || 1)
+const portionRatio = computed(() => {
+  if (!recipe.value?.portions)
+    return 1
+
+  return portions.value! / recipe.value.portions
+})
+
+function decrementPortions() {
+  if (portions.value! >= 2)
+    portions.value! -= 1
+}
+function incrementPortions() {
+  portions.value! += 1
+}
+
+watch(recipe, () => portions.value = recipe.value!.portions)
+
 async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
   try {
     isAddingToList.value = true
@@ -129,6 +140,7 @@ async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
         ${recipe.value!.id},
         ${ingredientIndexesToAdd},
         ${shoppingListId},
+        ${portionRatio.value}
       )
     `)
 
@@ -223,6 +235,11 @@ watch(currentHousehold, async () => await navigateTo('/'))
                     <icon name="material-symbols:format-list-numbered-rounded" />
                     <span>{{ recipe.steps?.length || 0 }} steps</span>
                   </div>
+
+                  <div v-if="recipe.cooking_time_minutes" class="meta-item">
+                    <icon name="material-symbols:schedule-outline-rounded" />
+                    <span>{{ recipe.cooking_time_minutes }} min</span>
+                  </div>
                 </div>
 
                 <div class="recipe-author">
@@ -253,17 +270,54 @@ watch(currentHousehold, async () => await navigateTo('/'))
                   has-separator
                 >
                   <template #actions>
-                    <neb-menu v-if="recipe.ingredients?.length && shoppingListMenuItems.length" :menus="shoppingListMenuItems" :floating-options="{ placement: 'bottom-end' }">
+                    <neb-dropdown :floating-options="{ placement: 'bottom-end' }">
                       <template #trigger="{ toggle }">
-                        <neb-button type="secondary" small :loading="isAddingToList" @click="toggle()">
-                          <icon name="material-symbols:add-shopping-cart-rounded" />
-                          Add to Shopping List
-                          <template v-if="checkedIngredients.length">
-                            ({{ checkedIngredients.length }})
-                          </template>
+                        <neb-button type="tertiary-neutral" small :disabled="isAddingToList" :loading="isAddingToList" @click="toggle()">
+                          <icon name="material-symbols:more-vert" />
                         </neb-button>
                       </template>
-                    </neb-menu>
+
+                      <template #content="{ close }">
+                        <div class="ingredients-dropdown">
+                          <neb-content-header title="Portions:" type="paragraph" has-separator>
+                            <template #actions>
+                              <div class="portion-controls">
+                                <neb-button small square type="tertiary-neutral" @click="decrementPortions()">
+                                  <icon name="material-symbols:remove-rounded" />
+                                </neb-button>
+
+                                {{ portions }}
+
+                                <neb-button small square type="tertiary-neutral" @click="incrementPortions()">
+                                  <icon name="material-symbols:add-rounded" />
+                                </neb-button>
+                              </div>
+                            </template>
+                          </neb-content-header>
+
+                          <div class="add-to-list-wrapper">
+                            <neb-content-header
+                              :title="checkedIngredients.length ? `Add to shopping list (${checkedIngredients.length}):` : 'Add to shopping list:'"
+                              type="paragraph"
+                            />
+
+                            <div class="list-buttons">
+                              <neb-button
+                                v-for="list in shoppingLists!"
+                                :key="list.id.id.toString()"
+                                small
+                                type="tertiary-neutral"
+                                full-width
+                                @click="addToShoppingList(list.id); close()"
+                              >
+                                <icon name="material-symbols:shopping-cart-outline-rounded" />
+                                <span>{{ list.name }}</span>
+                              </neb-button>
+                            </div>
+                          </div>
+                        </div>
+                      </template>
+                    </neb-dropdown>
                   </template>
                 </neb-content-header>
 
@@ -278,7 +332,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
                     <div class="ingredient-inner">
                       <div class="ingredient-content">
                         <div class="ingredient-details">
-                          <span v-if="ingredient.amount" class="ingredient-amount">{{ ingredient.amount }}</span>
+                          <span v-if="ingredient.amount" class="ingredient-amount">{{ roundNumberIfNeeded(ingredient.amount * portionRatio) }}</span>
                           <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
                           <span class="ingredient-name">{{ ingredient.ingredient }}</span>
                         </div>
@@ -454,6 +508,44 @@ watch(currentHousehold, async () => await navigateTo('/'))
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+
+.ingredients-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: white;
+  border: 1px solid var(--neutral-color-200);
+  border-radius: var(--radius-default);
+  box-shadow: var(--shadow-lg);
+  min-width: 250px;
+
+  :deep(.neb-content-wrapper) {
+    align-items: center;
+  }
+}
+
+.portion-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: 600;
+  border: 1px solid var(--neutral-color-200);
+  border-radius: var(--radius-default);
+  overflow: hidden;
+}
+
+.add-to-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.list-buttons {
+  :deep(.neb-button) {
+    justify-content: flex-start;
+  }
 }
 
 .ingredients-list {

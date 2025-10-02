@@ -29,3 +29,10 @@ export function navigateToWithTransition<T extends string>(path: TypedPathParame
   else
     return document.startViewTransition(() => navigateTo(path))
 }
+
+export function roundNumberIfNeeded(num: number) {
+  if (Number.isInteger(num))
+    return num
+  else
+    return Number(num.toFixed(1))
+}

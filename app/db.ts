@@ -124,6 +124,7 @@ export type OutMember = {
 export type InRecipe = {
   id?: RecordId<"recipe">,
   author: Required<InUser>['id'],
+  cooking_time_minutes?: number | undefined,
   created_at?: Date | string,
   cuisine?: Required<InCuisine>['id'] | undefined,
   household: Required<InHousehold>['id'],
@@ -137,6 +138,7 @@ export type InRecipe = {
   }>,
   meal?: Array<Required<InMeal>['id']>,
   name: string,
+  portions?: number | undefined,
   steps?: Array<string>,
   tags?: Array<Required<InRecipeTag>['id']>,
   updated_at: Date | string,
@@ -145,6 +147,7 @@ export type InRecipe = {
 export type OutRecipe = {
   id: RecordId<"recipe">,
   author: OutUser,
+  cooking_time_minutes?: number | undefined,
   created_at: string,
   cuisine?: OutCuisine | undefined,
   household: OutHousehold,
@@ -158,6 +161,7 @@ export type OutRecipe = {
   }>,
   meal: Array<OutMeal>,
   name: string,
+  portions?: number | undefined,
   steps: Array<string>,
   tags: Array<OutRecipeTag>,
   updated_at: string,
@@ -538,6 +542,14 @@ export const tables = {
           ]
         }
       },
+      "cooking_time_minutes": {
+        "type": {
+          "name": "option",
+          "inner": {
+            "name": "number"
+          }
+        }
+      },
       "created_at": {
         "type": {
           "name": "date"
@@ -640,6 +652,14 @@ export const tables = {
       "name": {
         "type": {
           "name": "string"
+        }
+      },
+      "portions": {
+        "type": {
+          "name": "option",
+          "inner": {
+            "name": "number"
+          }
         }
       },
       "steps": {

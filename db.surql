@@ -59,7 +59,9 @@ DEFINE FIELD OVERWRITE ingredients.*.ingredient ON recipe TYPE record<ingredient
 DEFINE FIELD OVERWRITE ingredients.*.amount ON recipe TYPE option<number>;
 DEFINE FIELD OVERWRITE ingredients.*.unit ON recipe TYPE option<record<unit>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE ingredients.*.description ON recipe TYPE option<string>;
+DEFINE FIELD OVERWRITE portions ON recipe TYPE option<number> ASSERT $value > 0; 
 DEFINE FIELD OVERWRITE steps ON recipe TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE cooking_time_minutes ON recipe TYPE option<number> ASSERT $value >= 0;
 DEFINE FIELD OVERWRITE author ON recipe TYPE record<user>;
 DEFINE FIELD OVERWRITE household ON recipe TYPE record<household>;
 DEFINE FIELD OVERWRITE tags ON recipe TYPE array<record<recipe_tag>> DEFAULT [] ASSERT $value.all(|$v| household = $v.household);
@@ -233,7 +235,7 @@ DEFINE FUNCTION OVERWRITE fn::add_member_to_household($household: record<househo
 	RELATE ONLY ($user.id) -> member -> $household SET role = $role;
 };
 
-DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id: record<recipe>, $ingredient_indexes: array<number>, $shopping_list_id: record<shopping_list>) {
+DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id: record<recipe>, $ingredient_indexes: array<number>, $shopping_list_id: record<shopping_list>, $portionRatio: number) {
 	LET $recipe = SELECT id, ingredients FROM ONLY $recipe_id FETCH ingredients.ingredient;
 	LET $shopping_list = SELECT items FROM ONLY $shopping_list_id;
 	
@@ -245,8 +247,8 @@ DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id
 		THROW "Shopping list not found.";
 	};
 	
-	LET $items = function($recipe, $ingredient_indexes, $shopping_list.items) {
-    const [recipe, ingredientIndexes, listItems] = arguments;
+	LET $items = function($recipe, $ingredient_indexes, $shopping_list.items, $portionRatio) {
+    const [recipe, ingredientIndexes, listItems, portionRatio] = arguments;
 
 		const ingredientsToAdd = ingredientIndexes.map(index => recipe.ingredients[index]).filter(ing => !ing.ingredient.skip_from_shopping_list);
 
@@ -254,13 +256,13 @@ DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id
 			const existing_item = listItems.find(item => item.ingredient.id === ingredient.ingredient.id.id);
 
 			if(existing_item && existing_item.unit?.id === ingredient.unit?.id) {
-				existing_item.amount = (existing_item.amount || 0) + (ingredient.amount || 0);
+				existing_item.amount = (existing_item.amount || 0) + (ingredient.amount || 0) * portionRatio;
 				existing_item.checked = false;
 			}
 			else {
 				listItems.push({
 					ingredient: ingredient.ingredient.id,
-					amount: ingredient.amount,
+					amount: ingredient.amount && ingredient.amount * portionRatio,
 					unit: ingredient.unit,
 					category: ingredient.ingredient.category,
 					checked: false,

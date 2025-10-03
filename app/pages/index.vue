@@ -317,7 +317,14 @@ onBeforeUnmount(() => {
           />
         </div>
 
-        <neb-button v-if="recipes.length < data!.recipeCount" ref="recipe-loader" :hidden="status !== 'pending'" disabled loading />
+        <neb-button
+          v-if="recipes.length < data!.recipeCount"
+          ref="recipe-loader"
+          :hidden="status !== 'pending'"
+          type="secondary-neutral"
+          disabled
+          loading
+        />
       </template>
     </div>
   </page-layout>

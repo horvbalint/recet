@@ -43,7 +43,7 @@ const selectedIngredients = ref<OutIngredient['id'][]>([])
 const showFilter = ref(false)
 const conditionCount = computed(() => selectedCuisines.value.length + selectedTags.value.length + selectedMeals.value.length + selectedIngredients.value.length)
 
-const { data: filterData, status: filterDataStatus } = useAsyncData(async () => {
+const { data: filterData, status: filterDataStatus, refresh: queryFilterData } = useAsyncData(async () => {
   const [cuisenes, tags, meals, ingredients] = await db.query<[OutCuisine[], OutRecipeTag[], OutMeal[], OutIngredient[]]>(surql`
     SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
     SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
@@ -52,7 +52,16 @@ const { data: filterData, status: filterDataStatus } = useAsyncData(async () => 
   `)
 
   return { cuisenes, tags, meals, ingredients }
+}, {
+  immediate: false,
 })
+
+async function toggleFilter() {
+  if (!showFilter.value && !filterData.value)
+    await queryFilterData()
+
+  showFilter.value = !showFilter.value
+}
 
 const openedAt = new Date()
 function constructWhereClause(query: PreparedQuery) {
@@ -191,10 +200,10 @@ onBeforeUnmount(() => {
 
           <neb-button
             :type="conditionCount ? 'secondary' : 'secondary-neutral'"
-            :disabled="filterDataStatus !== 'success'"
-            :loading="filterDataStatus !== 'success'"
+            :disabled="filterDataStatus === 'pending'"
+            :loading="filterDataStatus === 'pending'"
             small
-            @click="showFilter = !showFilter"
+            @click="toggleFilter()"
           >
             <icon name="material-symbols:filter-list-rounded" />
             <span class="filter-span">Filters</span>

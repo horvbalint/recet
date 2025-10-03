@@ -179,7 +179,7 @@ DEFINE FIELD OVERWRITE household ON shopping_list TYPE record<household>;
 DEFINE FIELD OVERWRITE shop ON shopping_list TYPE option<record<shop>>;
 DEFINE FIELD OVERWRITE name ON shopping_list TYPE string;
 DEFINE FIELD OVERWRITE items ON shopping_list TYPE array<object> DEFAULT [];
-DEFINE FIELD OVERWRITE items.*.ingredient ON shopping_list TYPE record<ingredient> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE items.*.item ON shopping_list TYPE string | record<ingredient> ASSERT !type::is::record($value) || household = $value.household;
 DEFINE FIELD OVERWRITE items.*.category ON shopping_list TYPE option<record<ingredient_category>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE items.*.amount ON shopping_list TYPE option<number>;
 DEFINE FIELD OVERWRITE items.*.unit ON shopping_list TYPE option<record<unit>> ASSERT household = $value.household;

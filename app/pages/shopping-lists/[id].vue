@@ -11,7 +11,7 @@ const listId = route.params.id as string
 
 interface ShoppingList extends Omit<OutShoppingList, 'items'> {
   items: {
-    ingredient: {
+    item: string | {
       id: RecordId<'ingredient'>
       name: string
       category?: Pick<OutIngredientCategory, 'id' | 'name'>
@@ -29,10 +29,14 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
     SELECT
       *,
       items.map(|$i| {
-        ingredient: {
-          id: $i.ingredient.id,
-          name: $i.ingredient.name,
-          category: $i.ingredient.category.{id, name},
+        item: IF type::is::record($i.item) {
+          {
+            id: $i.item.id,
+            name: $i.item.name,
+            category: $i.item.category.{id, name},
+          }
+        } ELSE {
+          $i.item
         },
         amount: $i.amount,
         unit: $i.unit.{id, name},
@@ -53,7 +57,7 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
 const isLoading = ref(false)
 const showFormModal = ref<'add' | { type: 'edit', categoryName: string, index: number } | null>(null)
 const newItem = ref<{
-  ingredient?: ShoppingList['items'][number]['ingredient']
+  item?: ShoppingList['items'][number]['item']
   amount?: number
   unit?: ShoppingList['items'][number]['unit']
   category?: ShoppingList['items'][number]['category']
@@ -74,7 +78,7 @@ const groupedItems = computed(() => {
   const groups: Record<string, ShoppingList['items'][number][]> = Object.fromEntries(categoryList.map(c => [c.name, []]))
 
   for (const item of data.value.shoppingList.items) {
-    const categoryName = item.category?.name || item.ingredient.category?.name || 'Other'
+    const categoryName = item.category?.name || (typeof item.item === 'object' && item.item?.category?.name) || 'Other'
 
     if (!groups[categoryName])
       groups[categoryName] = []
@@ -95,7 +99,7 @@ async function updateListItems(onSuccess?: () => void) {
 
   try {
     const items = data.value!.shoppingList.items.map(item => ({
-      ingredient: item.ingredient.id,
+      item: typeof item.item === 'object' ? item.item.id : item.item,
       amount: item.amount,
       unit: item.unit?.id,
       checked: item.checked,
@@ -125,7 +129,7 @@ function handleSubmit() {
   }
   else {
     data.value!.shoppingList.items.push({
-      ingredient: newItem.value.ingredient!,
+      item: newItem.value.item!,
       amount: newItem.value.amount ? Number(newItem.value.amount) : undefined,
       unit: newItem.value.unit || undefined,
       category: newItem.value.category,
@@ -180,7 +184,7 @@ function handleCreateUnit(searchTerm: string) {
 }
 
 function onIngredientCreated(ingredient: OutIngredient) {
-  newItem.value.ingredient = ingredient
+  newItem.value.item = ingredient
   refresh()
 }
 
@@ -226,7 +230,7 @@ function onUnitCreated(unit: OutUnit) {
     <div class="page-wrapper">
       <neb-loading-state v-if="status === 'pending'" class="loading-state" />
 
-      <neb-error-state v-if="error" :error-description="error.message" class="error-state" />
+      <neb-error-state v-if="error" :description="error.message" class="error-state" />
 
       <div v-else-if="!!data" class="shopping-list-detail">
         <div v-if="Object.keys(groupedItems).length > 0" class="categories-container">
@@ -250,7 +254,7 @@ function onUnitCreated(unit: OutUnit) {
                 <neb-checkbox v-model="item.checked" class="item-checkbox" @update:model-value="updateListItems()">
                   <div class="item-content">
                     <div class="item-main">
-                      <span class="item-name">{{ item.ingredient.name || 'Unknown ingredient' }}</span>
+                      <span class="item-name">{{ typeof item.item === 'object' ? item.item.name : item.item }}</span>
 
                       <neb-badge v-if="item.amount" class="item-amount">
                         {{ getItemAmount(item) }}
@@ -296,18 +300,14 @@ function onUnitCreated(unit: OutUnit) {
     >
       <template #content>
         <div class="modal-form-content">
-          <neb-select
-            v-model="newItem.ingredient"
-            :options="data!.ingredients"
+          <suggestion-input
+            v-model="newItem.item"
             label="Ingredient"
-            placeholder="Select an ingredient"
-            track-by-key="id"
+            :options="data!.ingredients"
             label-key="name"
-            :transform-fun="transformId"
             required
-            :disabled="isLoading"
+            icon="material-symbols:grocery"
             @new="handleCreateIngredient($event)"
-            @update:model-value="newItem.category = ($event as OutIngredient)?.category"
           />
 
           <div class="amount-row">
@@ -355,7 +355,7 @@ function onUnitCreated(unit: OutUnit) {
 
         <neb-button
           type="primary"
-          :disabled="!newItem.ingredient || isLoading"
+          :disabled="!newItem.item || isLoading"
           :loading="isLoading"
           @click="handleSubmit()"
         >

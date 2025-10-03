@@ -16,7 +16,7 @@ const columns: Columns<OutRecipeTag> = {
     name="tag"
     icon="material-symbols:tag-rounded"
     :get-query
-    :columns="columns"
+    :columns
   >
     <template #td-icon="{ original }">
       <span v-if="original" class="tag-icon">{{ original }}</span>

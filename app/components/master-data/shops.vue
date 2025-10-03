@@ -15,7 +15,7 @@ const columns: Columns<OutShop> = {
     name="shop"
     icon="material-symbols:store-outline"
     :get-query
-    :columns="columns"
+    :columns
   >
     <template #modal="{ close, afterSave, docToEdit }">
       <shop-master-data-modal

@@ -47,7 +47,7 @@ async function handleDeleteClick(item: T) {
 <template>
   <div class="master-data-layout">
     <neb-table
-      :columns="columns"
+      :columns
       :rows="data || []"
       :status="status"
       :refresh="refresh"

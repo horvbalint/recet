@@ -381,6 +381,7 @@ onBeforeUnmount(() => {
 
   .filter-row {
     flex-direction: column;
+    flex-wrap: nowrap;
     gap: var(--space-2);
   }
 

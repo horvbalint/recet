@@ -173,7 +173,7 @@ function mapRoleToColor(role: OutMember['role']) {
 
     <div class="members-page">
       <neb-table
-        :columns="columns"
+        :columns
         :rows="members || []"
         :status="status"
         :refresh="refresh"

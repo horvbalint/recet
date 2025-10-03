@@ -16,7 +16,7 @@ const columns: Columns<OutIngredient> = {
     name="ingredient"
     icon="material-symbols:grocery"
     :get-query
-    :columns="columns"
+    :columns
   >
     <template #td-category="{ original }">
       <neb-tag v-if="original" small>
@@ -28,7 +28,7 @@ const columns: Columns<OutIngredient> = {
     <template #modal="{ close, afterSave, docToEdit }">
       <ingredient-master-data-modal
         :model-value="true"
-        :initial-data="docToEdit"
+        :initial-data="{ ...docToEdit, category: docToEdit?.category?.id }"
         @update:model-value="close()"
         @saved="afterSave()"
       />

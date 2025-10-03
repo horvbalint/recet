@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Menu } from '@nebula/components/overlays/neb-menu.vue'
 import type { OutHousehold } from '~/db'
 
 const showCreateModal = ref(false)
@@ -9,63 +10,42 @@ async function handleHouseholdCreated(household: OutHousehold) {
   await refresh()
   switchHousehold(household)
 }
+
+const menus = computed(() => {
+  const menus: Menu[] = data.map(household => ({
+    text: household.name,
+    icon: 'material-symbols:home-outline-rounded',
+    callback: () => switchHousehold(household),
+  }))
+
+  menus.push({
+    segment: true,
+    text: 'Create Household',
+    icon: 'material-symbols:add-rounded',
+    callback: () => showCreateModal.value = true,
+  })
+
+  return menus
+})
 </script>
 
 <template>
-  <neb-dropdown full-width>
+  <neb-menu full-width :menus>
     <template #trigger="{ toggle }">
       <neb-button
-        type="secondary"
-        full-width
         class="household-button"
+        type="secondary-neutral"
+        full-width
         @click="toggle()"
       >
         <div class="label">
-          <icon name="material-symbols:home-rounded" />
+          <icon name="material-symbols:home-outline-rounded" />
           {{ currentHousehold?.name || 'Select Household' }}
         </div>
         <icon name="material-symbols:keyboard-arrow-down-rounded" />
       </neb-button>
     </template>
-
-    <template #content="{ close }">
-      <div class="household-dropdown">
-        <div v-if="data!.length">
-          <neb-button
-            v-for="household in data"
-            :key="household.id.toString()"
-            type="tertiary"
-            small
-            full-width
-            class="household-button"
-            :class="{ active: currentHousehold?.id?.toString() === household.id.toString() }"
-            @click="() => { switchHousehold(household); close(); }"
-          >
-            <div class="label">
-              <icon name="material-symbols:home-rounded" />
-              <span>{{ household.name }}</span>
-            </div>
-            <icon
-              v-if="currentHousehold?.id?.toString() === household.id.toString()"
-              name="material-symbols:check-rounded"
-            />
-          </neb-button>
-        </div>
-
-        <div class="household-footer">
-          <neb-button
-            type="tertiary"
-            small
-            full-width
-            @click="() => { showCreateModal = true; close(); }"
-          >
-            <icon name="material-symbols:add-rounded" />
-            Create Household
-          </neb-button>
-        </div>
-      </div>
-    </template>
-  </neb-dropdown>
+  </neb-menu>
 
   <household-modal
     v-model="showCreateModal"
@@ -74,16 +54,6 @@ async function handleHouseholdCreated(household: OutHousehold) {
 </template>
 
 <style scoped>
-.household-dropdown {
-  max-height: 300px;
-  overflow-y: auto;
-  background: #fff;
-  border: 1px solid var(--neutral-color-200);
-  border-radius: var(--radius-default);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-1);
-}
-
 .household-button {
   justify-content: space-between;
   align-items: center;
@@ -93,23 +63,6 @@ async function handleHouseholdCreated(household: OutHousehold) {
     display: flex;
     align-items: center;
     gap: var(--space-2);
-  }
-}
-
-.household-footer {
-  padding-top: var(--space-1);
-  border-top: 1px solid var(--neutral-color-100);
-  margin-top: var(--space-1);
-}
-
-.dark-mode {
-  .household-dropdown {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
-  }
-
-  .household-footer {
-    border-color: var(--neutral-color-800);
   }
 }
 </style>

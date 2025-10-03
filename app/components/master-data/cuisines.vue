@@ -17,7 +17,7 @@ const columns: Columns<OutCuisine> = {
     name="cuisine"
     icon="material-symbols:public"
     :get-query
-    :columns="columns"
+    :columns
   >
     <template #td-flag="{ original }">
       <span v-if="original" class="flag-emoji">{{ original }}</span>

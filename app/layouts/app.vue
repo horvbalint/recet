@@ -70,7 +70,7 @@ function update() {
       >
         <div class="sidebar-header">
           <div class="brand">
-            <icon name="material-symbols:restaurant-rounded" class="brand-icon" />
+            <icon name="material-symbols:chef-hat-outline-rounded" class="brand-icon" />
             <span class="brand-text">Recet</span>
           </div>
 

@@ -16,7 +16,7 @@ const columns: Columns<OutMeal> = {
     name="meal type"
     icon="material-symbols:restaurant-rounded"
     :get-query
-    :columns="columns"
+    :columns
   >
     <template #td-color="{ original }">
       <div class="color-display">

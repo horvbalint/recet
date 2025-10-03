@@ -15,7 +15,7 @@ const columns: Columns<OutIngredientCategory> = {
     name="category"
     icon="material-symbols:category-outline-rounded"
     :get-query
-    :columns="columns"
+    :columns
   >
     <template #modal="{ close, afterSave, docToEdit }">
       <ingredient-category-master-data-modal

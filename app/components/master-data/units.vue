@@ -15,7 +15,7 @@ const columns: Columns<OutUnit> = {
     name="unit"
     icon="material-symbols:straighten-outline"
     :get-query
-    :columns="columns"
+    :columns
   >
     <template #modal="{ close, afterSave, docToEdit }">
       <unit-master-data-modal

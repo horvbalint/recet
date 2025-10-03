@@ -41,7 +41,7 @@
   }
 
   .main-content {
-    padding: 0 var(--space-4) var(--space-4);
+    padding: 0 var(--space-3) var(--space-3);
   }
 }
 </style>

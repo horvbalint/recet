@@ -504,7 +504,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   border: 1px solid var(--neutral-color-200);
   border-radius: var(--radius-large);
   padding: var(--space-6);
-  margin-bottom: var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
@@ -551,7 +550,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 .ingredients-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .ingredient-item {
@@ -624,7 +623,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 .steps-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .step-item {

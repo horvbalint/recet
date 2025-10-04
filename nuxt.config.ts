@@ -61,6 +61,23 @@ export default defineNuxtConfig({
       short_name: 'Recet',
       description: 'A recipe manager for your household',
       theme_color: '#BE2577',
+      start_url: '/',
+      shortcuts: [
+        {
+          name: 'Add recipe',
+          short_name: 'Add recipe',
+          description: 'Add a new recipe',
+          url: '/recipe/create',
+          icons: [{ src: 'add-recipe.svg', sizes: 'any', type: 'image/svg+xml' }],
+        },
+        {
+          name: 'Shopping lists',
+          short_name: 'Shopping lists',
+          description: 'View your shopping lists',
+          url: '/shopping-lists',
+          icons: [{ src: 'shopping-list.svg', sizes: 'any', type: 'image/svg+xml' }],
+        },
+      ],
       icons: [
         {
           src: 'pwa-64x64.png',
@@ -83,11 +100,19 @@ export default defineNuxtConfig({
           type: 'image/png',
           purpose: 'maskable',
         },
+        {
+          src: 'favicon.svg',
+          sizes: 'any',
+          type: 'image/svg+xml',
+        },
       ],
     },
     workbox: {
       skipWaiting: true,
     },
+    // devOptions: {
+    //   enabled: true,
+    // },
   },
 
   devtools: { enabled: true },

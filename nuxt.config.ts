@@ -65,17 +65,15 @@ export default defineNuxtConfig({
       shortcuts: [
         {
           name: 'Add recipe',
-          short_name: 'Add recipe',
           description: 'Add a new recipe',
           url: '/recipe/create',
-          icons: [{ src: 'add-recipe.svg', sizes: 'any', type: 'image/svg+xml' }],
+          icons: [{ src: 'add-recipe.png', sizes: '192x192', type: 'image/png' }],
         },
         {
           name: 'Shopping lists',
-          short_name: 'Shopping lists',
           description: 'View your shopping lists',
           url: '/shopping-lists',
-          icons: [{ src: 'shopping-list.svg', sizes: 'any', type: 'image/svg+xml' }],
+          icons: [{ src: 'shopping-list.png', sizes: '192x192', type: 'image/png' }],
         },
       ],
       icons: [
@@ -100,19 +98,52 @@ export default defineNuxtConfig({
           type: 'image/png',
           purpose: 'maskable',
         },
+      ],
+      screenshots: [
         {
-          src: 'favicon.svg',
-          sizes: 'any',
-          type: 'image/svg+xml',
+          src: 'screenshots/recipes-desktop.png',
+          label: 'The recipes page on a desktop screen',
+          form_factor: 'wide',
+          sizes: '1289x780',
+        },
+        {
+          src: 'screenshots/recipes-mobile.png',
+          label: 'The recipes page on a mobile screen',
+          form_factor: 'narrow',
+          sizes: '402x869',
+        },
+        {
+          src: 'screenshots/recipe-desktop.png',
+          label: 'The recipe page on a desktop screen',
+          form_factor: 'wide',
+          sizes: '1289x780',
+        },
+        {
+          src: 'screenshots/recipe-mobile.png',
+          label: 'The recipe page on a mobile screen',
+          form_factor: 'narrow',
+          sizes: '402x869',
+        },
+        {
+          src: 'screenshots/master-data-desktop.png',
+          label: 'The master data page on a desktop screen',
+          form_factor: 'wide',
+          sizes: '1289x780',
+        },
+        {
+          src: 'screenshots/master-data-mobile.png',
+          label: 'The master data page on a mobile screen',
+          form_factor: 'narrow',
+          sizes: '402x869',
         },
       ],
     },
     workbox: {
       skipWaiting: true,
     },
-    // devOptions: {
-    //   enabled: true,
-    // },
+    devOptions: {
+      enabled: true,
+    },
   },
 
   devtools: { enabled: true },

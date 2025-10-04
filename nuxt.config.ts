@@ -141,9 +141,9 @@ export default defineNuxtConfig({
     workbox: {
       skipWaiting: true,
     },
-    devOptions: {
-      enabled: true,
-    },
+    // devOptions: {
+    //   enabled: true,
+    // },
   },
 
   devtools: { enabled: true },

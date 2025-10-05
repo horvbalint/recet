@@ -25,10 +25,16 @@ function handleSave(item: OutMeal) {
     :initial-data
     @saved="handleSave"
   >
-    <template #form="{ data }">
+    <template #form="{ data, isFormValid }">
       <neb-input v-model="data.name" label="Name" required />
 
       <neb-input v-model="data.color" label="Color" type="color" required />
+
+      <neb-content-header v-if="isFormValid" title="Preview" type="paragraph" vertical-gap="var(--space-2)">
+        <template #bottom>
+          <badge-meal :meal="data as InMeal" />
+        </template>
+      </neb-content-header>
     </template>
   </master-data-modal>
 </template>

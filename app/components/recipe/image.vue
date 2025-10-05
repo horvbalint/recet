@@ -69,7 +69,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
     </div>
 
     <div v-if="recipe.cuisine" class="cuisine-badge">
-      <badge-cuisine :cuisine="recipe.cuisine" />
+      <cuisine-badge :cuisine="recipe.cuisine" />
     </div>
 
     <slot />

@@ -32,7 +32,7 @@ function handleSave(item: OutMeal) {
 
       <neb-content-header v-if="isFormValid" title="Preview" type="paragraph" vertical-gap="var(--space-2)">
         <template #bottom>
-          <badge-meal :meal="data as InMeal" />
+          <meal-badge :meal="data as InMeal" />
         </template>
       </neb-content-header>
     </template>

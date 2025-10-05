@@ -31,7 +31,7 @@ const columns: Columns<OutRecipeTag> = {
     </template>
 
     <template #modal="{ close, afterSave, docToEdit }">
-      <tag-master-data-modal
+      <recipe-tag-master-data-modal
         :model-value="true"
         :initial-data="docToEdit"
         @update:model-value="close()"

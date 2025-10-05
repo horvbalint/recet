@@ -35,13 +35,13 @@ watch(activeTable, () => navigateTo({ query: { table: activeTable.value } }))
     <div class="content-wrapper">
       <neb-tabs v-model="activeTable" :tabs="tabs" />
 
-      <master-data-units v-if="activeTable === 'unit'" />
-      <master-data-meals v-if="activeTable === 'meal'" />
-      <master-data-cuisines v-if="activeTable === 'cuisine'" />
-      <master-data-tags v-if="activeTable === 'recipe_tag'" />
-      <master-data-ingredient-categories v-if="activeTable === 'ingredient_category'" />
-      <master-data-shops v-if="activeTable === 'shop'" />
-      <master-data-ingredients v-if="activeTable === 'ingredient'" />
+      <unit-master-data-page v-if="activeTable === 'unit'" />
+      <meal-master-data-page v-if="activeTable === 'meal'" />
+      <cuisine-master-data-page v-if="activeTable === 'cuisine'" />
+      <recipe-tag-master-data-page v-if="activeTable === 'recipe_tag'" />
+      <ingredient-category-master-data-page v-if="activeTable === 'ingredient_category'" />
+      <shop-master-data-page v-if="activeTable === 'shop'" />
+      <ingredient-master-data-page v-if="activeTable === 'ingredient'" />
     </div>
   </page-layout>
 </template>

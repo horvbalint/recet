@@ -251,11 +251,11 @@ watch(currentHousehold, async () => await navigateTo('/'))
                 </div>
 
                 <div v-if="recipe.tags?.length" class="recipe-tags">
-                  <badge-tag v-for="tag in recipe.tags" :key="tag.name" :tag />
+                  <recipe-tag-badge v-for="tag in recipe.tags" :key="tag.name" :tag />
                 </div>
 
                 <div v-if="recipe.meal?.length" class="meal-types">
-                  <badge-meal v-for="meal in recipe.meal" :key="meal.name" :meal />
+                  <meal-badge v-for="meal in recipe.meal" :key="meal.name" :meal />
                 </div>
               </div>
             </div>

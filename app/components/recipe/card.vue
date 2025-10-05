@@ -47,11 +47,11 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
 
       <div class="recipe-content-inner-wrapper">
         <div v-if="recipe.tags?.length" class="recipe-tags">
-          <badge-tag v-for="tag in recipe.tags" :key="tag.name" :tag />
+          <recipe-tag-badge v-for="tag in recipe.tags" :key="tag.name" :tag />
         </div>
 
         <div v-if="recipe.meal?.length" class="meal-types">
-          <badge-meal v-for="meal in recipe.meal" :key="meal.name" small :meal />
+          <meal-badge v-for="meal in recipe.meal" :key="meal.name" small :meal />
         </div>
       </div>
     </div>

@@ -225,11 +225,11 @@ onBeforeUnmount(() => {
             leading-icon="material-symbols:public"
           >
             <template #option="{ option }">
-              <badge-cuisine :cuisine="option" />
+              <cuisine-badge :cuisine="option" />
             </template>
 
             <template #selection="{ selected }">
-              <badge-cuisine v-for="cuisine in selected" :key="cuisine.trackValue.toString()" small :cuisine="cuisine.option" />
+              <cuisine-badge v-for="cuisine in selected" :key="cuisine.trackValue.toString()" small :cuisine="cuisine.option" />
             </template>
           </neb-select>
 
@@ -246,11 +246,11 @@ onBeforeUnmount(() => {
             leading-icon="material-symbols:tag-rounded"
           >
             <template #option="{ option }">
-              <badge-tag :tag="option" />
+              <recipe-tag-badge :tag="option" />
             </template>
 
             <template #selection="{ selected }">
-              <badge-tag v-for="tag in selected" :key="tag.trackValue.toString()" small :tag="tag.option" />
+              <recipe-tag-badge v-for="tag in selected" :key="tag.trackValue.toString()" small :tag="tag.option" />
             </template>
           </neb-select>
 
@@ -267,11 +267,11 @@ onBeforeUnmount(() => {
             leading-icon="material-symbols:restaurant-rounded"
           >
             <template #option="{ option }">
-              <badge-meal :meal="option" />
+              <meal-badge :meal="option" />
             </template>
 
             <template #selection="{ selected }">
-              <badge-meal v-for="meal in selected" :key="meal.trackValue.toString()" small :meal="meal.option" />
+              <meal-badge v-for="meal in selected" :key="meal.trackValue.toString()" small :meal="meal.option" />
             </template>
           </neb-select>
 

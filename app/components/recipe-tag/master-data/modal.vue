@@ -105,7 +105,7 @@ function handleSave(item: OutRecipeTag) {
 
       <neb-content-header v-if="isFormValid" title="Preview" type="paragraph" vertical-gap="var(--space-2)">
         <template #bottom>
-          <badge-tag :tag="data as InRecipeTag" />
+          <recipe-tag-badge :tag="data as InRecipeTag" />
         </template>
       </neb-content-header>
     </template>

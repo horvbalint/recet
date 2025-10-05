@@ -284,11 +284,11 @@ const isFormValid = ref(false)
                   @new="handleCreateCuisine"
                 >
                   <template #option="{ option }">
-                    <badge-cuisine :cuisine="option" />
+                    <cuisine-badge :cuisine="option" />
                   </template>
 
                   <template #selection="{ selected }">
-                    <badge-cuisine v-for="cuisine in selected" :key="cuisine.trackValue.toString()" small :cuisine="cuisine.option" />
+                    <cuisine-badge v-for="cuisine in selected" :key="cuisine.trackValue.toString()" small :cuisine="cuisine.option" />
                   </template>
                 </neb-select>
 
@@ -306,11 +306,11 @@ const isFormValid = ref(false)
                   @new="handleCreateMeal"
                 >
                   <template #option="{ option }">
-                    <badge-meal :meal="option" />
+                    <meal-badge :meal="option" />
                   </template>
 
                   <template #selection="{ selected }">
-                    <badge-meal v-for="meal in selected" :key="meal.trackValue.toString()" small :meal="meal.option" />
+                    <meal-badge v-for="meal in selected" :key="meal.trackValue.toString()" small :meal="meal.option" />
                   </template>
                 </neb-select>
 
@@ -328,11 +328,11 @@ const isFormValid = ref(false)
                   @new="handleCreateTag"
                 >
                   <template #option="{ option }">
-                    <badge-tag :tag="option" />
+                    <recipe-tag-badge :tag="option" />
                   </template>
 
                   <template #selection="{ selected }">
-                    <badge-tag v-for="tag in selected" :key="tag.trackValue.toString()" small :tag="tag.option" />
+                    <recipe-tag-badge v-for="tag in selected" :key="tag.trackValue.toString()" small :tag="tag.option" />
                   </template>
                 </neb-select>
               </div>
@@ -427,7 +427,7 @@ const isFormValid = ref(false)
       @saved="onMealCreated"
     />
 
-    <tag-master-data-modal
+    <recipe-tag-master-data-modal
       v-if="dynamicCreateTable === 'recipe_tag'"
       :model-value="true"
       :initial-data="{ name: dynamicCreateSearchTerm }"

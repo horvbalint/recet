@@ -163,7 +163,7 @@ function handleSave(item: OutCuisine) {
 
       <neb-content-header v-if="isFormValid" title="Preview" type="paragraph" vertical-gap="var(--space-2)">
         <template #bottom>
-          <badge-cuisine :cuisine="data as InCuisine" />
+          <cuisine-badge :cuisine="data as InCuisine" />
         </template>
       </neb-content-header>
     </template>

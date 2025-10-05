@@ -18,7 +18,7 @@ const emit = defineEmits<{
 
 const modelValue = defineModel<boolean>({ required: true })
 
-const formData = ref<any>({})
+const formData = ref<Partial<T>>({})
 const isFormValid = ref(false)
 
 const isEdit = computed(() => !!props.initialData?.id)
@@ -86,7 +86,7 @@ function handleCancel() {
     <template #content>
       <neb-validator v-model="isFormValid">
         <div class="modal-form-content">
-          <slot name="form" :data="formData" />
+          <slot name="form" :data="formData" :is-form-valid />
         </div>
       </neb-validator>
     </template>

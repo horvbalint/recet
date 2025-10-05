@@ -3,7 +3,11 @@ definePageMeta({
   layout: 'app',
 })
 
-const activeTable = ref <'unit' | 'meal' | 'cuisine' | 'recipe_tag' | 'ingredient' | 'ingredient_category' | 'shop'> ('unit')
+const route = useRoute()
+
+type Table = 'unit' | 'meal' | 'cuisine' | 'recipe_tag' | 'ingredient' | 'ingredient_category' | 'shop'
+const activeTable = ref<Table>(route.query.table as Table || 'unit')
+
 const tabs = {
   unit: { text: 'Units', icon: 'material-symbols:straighten-outline' },
   meal: { text: 'Meal Types', icon: 'material-symbols:restaurant-rounded' },
@@ -13,6 +17,8 @@ const tabs = {
   shop: { text: 'Shops', icon: 'material-symbols:store-outline' },
   ingredient: { text: 'Ingredients', icon: 'material-symbols:grocery' },
 }
+
+watch(activeTable, () => navigateTo({ query: { table: activeTable.value } }))
 </script>
 
 <template>

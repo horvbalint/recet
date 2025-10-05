@@ -42,6 +42,11 @@ async function handleDeleteClick(item: T) {
     useNebToast({ type: 'error', title: 'Deletion failed!', description: 'We could not remove the item from the database.' })
   }
 }
+
+function closeModal() {
+  showModal.value = false
+  docToEdit.value = null
+}
 </script>
 
 <template>
@@ -77,7 +82,7 @@ async function handleDeleteClick(item: T) {
       </template>
     </neb-table>
 
-    <slot v-if="showModal" name="modal" :after-save="refresh" :close="() => showModal = false" :doc-to-edit />
+    <slot v-if="showModal" name="modal" :after-save="refresh" :close="closeModal" :doc-to-edit />
   </div>
 </template>
 

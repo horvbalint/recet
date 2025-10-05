@@ -11,8 +11,7 @@ const emit = defineEmits<{
 
 const modelValue = defineModel<boolean>({ required: true })
 
-// Recipe tag icon options (food and cooking related emojis)
-const iconOptions = [
+const emojis = [
   '🍽️',
   '🍴',
   '🥄',
@@ -89,12 +88,33 @@ function handleSave(item: OutRecipeTag) {
     :initial-data
     @saved="handleSave"
   >
-    <template #form="{ data }">
+    <template #form="{ data, isFormValid }">
       <neb-input v-model="data.name" label="Name" required />
 
-      <neb-select v-model="data.icon" no-search label="Icon" :options="iconOptions" placeholder="Select an icon" />
+      <div class="flex-row">
+        <neb-input v-model="data.color" label="Color" type="color" required />
 
-      <neb-input v-model="data.color" label="Color" type="color" required />
+        <emoji-picker
+          v-model="data.icon"
+          label="Icon"
+          :emojis
+          placeholder="Select an icon"
+        />
+        <!-- <neb-select v-model="data.icon" no-search label="Icon" :options="iconOptions" placeholder="Select an icon" /> -->
+      </div>
+
+      <neb-content-header v-if="isFormValid" title="Preview" type="paragraph" vertical-gap="var(--space-2)">
+        <template #bottom>
+          <badge-tag :tag="data as InRecipeTag" />
+        </template>
+      </neb-content-header>
     </template>
   </master-data-modal>
 </template>
+
+<style scoped>
+.flex-row {
+  display: flex;
+  gap: var(--space-2);
+}
+</style>

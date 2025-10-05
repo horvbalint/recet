@@ -29,25 +29,17 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
     SELECT
       *,
       items.map(|$i| {
-        item: IF type::is::record($i.item) {
-          {
-            id: $i.item.id,
-            name: $i.item.name,
-            category: $i.item.category.{id, name},
-          }
-        } ELSE {
-          $i.item
-        },
+        item: $i.item.{id, name, category.{id, name}} || $i.item,
         amount: $i.amount,
         unit: $i.unit.{id, name},
-        recipe: $i.recipe.*,
+        recipe: $i.recipe.{id, name},
         category: $i.category.{id, name},
         checked: $i.checked,
       }),
       shop.{id, name, categories.{id, name}}
     FROM ONLY type::thing(shopping_list, ${listId});
     SELECT * FROM ingredient FETCH category;
-    SELECT * FROM unit;
+    SELECT * FROM unit ORDER BY name ASC;
     SELECT * FROM ingredient_category ORDER BY name ASC;
     SELECT * FROM shop ORDER BY name ASC FETCH categories;
   `)
@@ -62,6 +54,11 @@ const newItem = ref<{
   unit?: ShoppingList['items'][number]['unit']
   category?: ShoppingList['items'][number]['category']
 }>({})
+
+watch(() => newItem.value.item, () => {
+  if (typeof newItem.value.item === 'object')
+    newItem.value.category = newItem.value.item.category
+})
 
 type Table = 'ingredient' | 'unit'
 const dynamicCreateTable = ref<Table | null>(null)
@@ -107,7 +104,7 @@ async function updateListItems(onSuccess?: () => void) {
       category: item.category?.id,
     }))
 
-    await db.query(surql`UPDATE ${data.value!.shoppingList.id} SET items = ${items}`)
+    await db.query(surql`UPDATE ${data.value!.shoppingList.id} SET items = ${items} RETURN NONE`)
 
     if (onSuccess)
       onSuccess()
@@ -302,7 +299,8 @@ function onUnitCreated(unit: OutUnit) {
         <div class="modal-form-content">
           <suggestion-input
             v-model="newItem.item"
-            label="Ingredient"
+            label="Item"
+            placeholder="Search an ingredient or add a custom item"
             :options="data!.ingredients"
             label-key="name"
             required
@@ -317,7 +315,6 @@ function onUnitCreated(unit: OutUnit) {
               type="number"
               placeholder="e.g., 2"
               step="0.1"
-              :disabled="isLoading"
             />
 
             <neb-select
@@ -328,8 +325,8 @@ function onUnitCreated(unit: OutUnit) {
               track-by-key="id"
               label-key="name"
               :transform-fun="transformId"
-              :disabled="isLoading"
               allow-empty
+              no-search
               @new="handleCreateUnit($event)"
             />
           </div>
@@ -342,8 +339,8 @@ function onUnitCreated(unit: OutUnit) {
             track-by-key="id"
             label-key="name"
             :transform-fun="transformId"
-            :disabled="isLoading"
             allow-empty
+            no-search
           />
         </div>
       </template>

@@ -62,13 +62,9 @@ watch(modelValue, () => {
     inputText.value = modelValue.value[props.labelKey].toString()
 })
 
-const dropwdown = useTemplateRef('dropwdown')
-
 const suggestion = computed(() => {
   if (inputText.value.length < 2 || typeof modelValue.value !== 'string')
     return null
-
-  dropwdown.value?.open()
 
   const [result] = searcher.value.search(inputText.value) as ProcessedOption[]
   return result || null
@@ -83,21 +79,55 @@ async function acceptSuggestion() {
   modelValue.value = suggestion.value.option
 }
 
-onMounted(() => dropwdown.value?.open())
+const input = useTemplateRef('input')
+watch(inputText, () => {
+  if (!input.value?.input)
+    return
+
+  if (!inputText.value.length)
+    input.value.input.style.width = '100%'
+  else
+    input.value.input.style.width = `${inputText.value.length}ch`
+})
 </script>
 
 <template>
-  <neb-dropdown ref="dropwdown" full-width>
-    <template #trigger>
-      <neb-input v-model="inputText" v-bind="$attrs" @keyup.enter="acceptSuggestion()">
-        <template #trailing>
-          <neb-button v-if="onNew && inputText.length > 2 && typeof modelValue === 'string'" type="link" @click="$emit('new', inputText)">
-            <Icon name="material-symbols:add-rounded" />
-          </neb-button>
+  <neb-input
+    ref="input"
+    v-model="inputText"
+    class="suggestion-input"
+    :class="{ 'has-suggestion': !!suggestion }"
+    v-bind="$attrs"
+    @keyup.tab="acceptSuggestion()"
+  >
+    <template #trailing>
+      <div class="trailing">
+        <neb-button
+          v-if="onNew && !!inputText.length && typeof modelValue === 'string'"
+          type="link"
+          small
+          @click="$emit('new', inputText)"
+        >
+          <Icon name="material-symbols:add-rounded" />
+        </neb-button>
 
-          <Icon v-else-if="typeof modelValue === 'object'" :name="icon" />
-        </template>
-      </neb-input>
+        <Icon v-else-if="typeof modelValue === 'object'" :name="icon" />
+
+        <div v-if="suggestion" class="suggestion">
+          <neb-tag small>
+            <Icon name="material-symbols:keyboard-tab-rounded" />
+
+            <p @click="acceptSuggestion()">
+              {{ suggestion.labelValue }}
+            </p>
+          </neb-tag>
+        </div>
+      </div>
+    </template>
+  </neb-input>
+  <!-- <neb-dropdown ref="dropwdown" full-width>
+    <template #trigger>
+
     </template>
 
     <template #content>
@@ -107,22 +137,49 @@ onMounted(() => dropwdown.value?.open())
         </neb-button>
       </div>
     </template>
-  </neb-dropdown>
+  </neb-dropdown> -->
 </template>
 
 <style scoped>
-.dropdown {
-  padding: var(--space-2) var(--space-3);
-  background: white;
-  border: 1px solid var(--neutral-color-200);
-  border-radius: var(--radius-default);
-  box-shadow: var(--shadow-lg);
-}
+.suggestion-input {
+  :deep(.input) {
+    min-width: unset;
+    justify-content: space-between;
+  }
 
-.dark-mode {
-  .dropdown {
-    background: var(--neutral-color-950);
-    border: 1px solid var(--neutral-color-700);
+  &.has-suggestion {
+    :deep(.input) {
+      input {
+        flex: unset;
+      }
+    }
+
+    .trailing {
+      flex: 1;
+    }
+  }
+}
+.trailing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row-reverse;
+  gap: var(--space-2);
+
+  .icon {
+    font-size: 22px !important;
+  }
+}
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+
+  p,
+  .icon {
+    color: var(--neutral-color-500);
+    font-size: var(--text-xs) !important;
+    user-select: none;
   }
 }
 </style>

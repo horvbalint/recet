@@ -375,6 +375,7 @@ const isFormValid = ref(false)
                   track-by-key="id"
                   placeholder="Select unit"
                   :transform-fun="transformId"
+                  no-search
                   use-only-tracked-key
                   allow-empty
                   @new="handleCreateUnit($event, index)"
@@ -512,6 +513,10 @@ const isFormValid = ref(false)
 
   .basic-info-fields {
     gap: var(--space-3);
+  }
+
+  .flex-row {
+    flex-wrap: wrap;
   }
 
   .selects-row {

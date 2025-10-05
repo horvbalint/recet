@@ -15,7 +15,9 @@ const dynamicCreateTable = ref<'ingredient_category' | null>(null)
 const dynamicCreateSearchTerm = ref<string>('')
 
 const { data: categories, refresh: refreshCategories } = useAsyncData(async () => {
-  const [result] = await db.query<[OutIngredientCategory[]]>(surql`SELECT id, name FROM ingredient_category ORDER BY name ASC`)
+  const [result] = await db.query<[OutIngredientCategory[]]>(surql`
+    SELECT id, name FROM ingredient_category ORDER BY name ASC
+  `)
   return result || []
 })
 
@@ -55,6 +57,7 @@ function onCategoryCreated() {
         use-only-tracked-key
         placeholder="Select a category"
         allow-empty
+        no-search
         @new="handleCreateCategory($event)"
       />
 

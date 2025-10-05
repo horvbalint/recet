@@ -30,11 +30,13 @@ defineEmits<{
 const modelValue = defineModel<T | string | null | undefined>()
 
 const processedOptions = computed<ProcessedOption[]>(() =>
-  props.options.map(option => ({
-    option,
-    trackValue: option.id.id.toString(),
-    labelValue: option[props.labelKey].toString(),
-  })),
+  props.options
+    .map(option => ({
+      option,
+      trackValue: option.id.id.toString(),
+      labelValue: option[props.labelKey].toString(),
+    }))
+    .sort((a, b) => a.labelValue.length - b.labelValue.length),
 )
 
 const searcher = computed(() => {

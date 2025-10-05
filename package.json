@@ -12,7 +12,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "generate-types": "surreal-ts -n recet -d recet --links-fetched -o ./app/db.ts",
-    "generate-icons": "pwa-assets-generator -p minimal ./public/favicon.svg"
+    "generate-icons": "pwa-assets-generator"
   },
   "dependencies": {
     "@formkit/drag-and-drop": "^0.5.3",

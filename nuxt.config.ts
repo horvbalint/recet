@@ -67,33 +67,41 @@ export default defineNuxtConfig({
           name: 'Add recipe',
           description: 'Add a new recipe',
           url: '/recipe/create',
-          icons: [{ src: 'add-recipe.png', sizes: '192x192', type: 'image/png' }],
+          icons: [{
+            src: 'icons/add-recipe.png',
+            sizes: '192x192',
+            type: 'image/png',
+          }],
         },
         {
           name: 'Shopping lists',
           description: 'View your shopping lists',
           url: '/shopping-lists',
-          icons: [{ src: 'shopping-list.png', sizes: '192x192', type: 'image/png' }],
+          icons: [{
+            src: 'icons/shopping-list.png',
+            sizes: '192x192',
+            type: 'image/png',
+          }],
         },
       ],
       icons: [
         {
-          src: 'pwa-64x64.png',
+          src: 'icons/pwa-64x64.png',
           sizes: '64x64',
           type: 'image/png',
         },
         {
-          src: 'pwa-192x192.png',
+          src: 'icons/pwa-192x192.png',
           sizes: '192x192',
           type: 'image/png',
         },
         {
-          src: 'pwa-512x512.png',
+          src: 'icons/pwa-512x512.png',
           sizes: '512x512',
           type: 'image/png',
         },
         {
-          src: 'maskable-icon-512x512.png',
+          src: 'icons/maskable-icon-512x512.png',
           sizes: '512x512',
           type: 'image/png',
           purpose: 'maskable',

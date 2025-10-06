@@ -1,7 +1,7 @@
 /* ::view-transition-group(*),
 ::view-transition-old(*),
 ::view-transition-new(*) {
-  animation-duration: 1s;
+  animation-duration: 5s;
 } */
 
 ::view-transition-new(auth-card),
@@ -16,6 +16,10 @@
 ::view-transition-new(recipe-image),
 ::view-transition-old(recipe-image) {
   height: 100%;
+}
+
+::view-transition-group(recipe-image) {
+  z-index: 100;
 }
 
 ::view-transition-new(recipe-meta),

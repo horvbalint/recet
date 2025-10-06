@@ -20,13 +20,13 @@ export function getRecipeViewTransitionNames(recipeId: RecordId<'recipe'>['id'])
       return {}
 
     return {
-      container: 'recipe-container',
-      name: 'recipe-name',
-      meta: 'recipe-meta',
-      tags: 'recipe-tags',
-      mealTypes: 'recipe-meal-types',
+      // container: 'recipe-container',
+      // name: 'recipe-name',
+      // meta: 'recipe-meta',
+      // tags: 'recipe-tags',
+      // mealTypes: 'recipe-meal-types',
       image: 'recipe-image',
-      cuisine: 'recipe-cuisine',
+      // cuisine: 'recipe-cuisine',
     }
   })
 }

@@ -18,7 +18,6 @@ interface ShoppingList extends Omit<OutShoppingList, 'items'> {
     }
     amount?: number
     unit?: Pick<OutUnit, 'id' | 'name'>
-    checked: boolean
     recipe?: OutRecipe
     category?: Pick<OutIngredientCategory, 'id' | 'name'>
   }[]
@@ -34,7 +33,6 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
         unit: $i.unit.{id, name},
         recipe: $i.recipe.{id, name},
         category: $i.category.{id, name},
-        checked: $i.checked,
       }),
       shop.{id, name, categories.{id, name}}
     FROM ONLY type::thing(shopping_list, ${listId});
@@ -99,7 +97,6 @@ async function updateListItems(onSuccess?: () => void) {
       item: typeof item.item === 'object' ? item.item.id : item.item,
       amount: item.amount,
       unit: item.unit?.id,
-      checked: item.checked,
       recipe: item.recipe?.id,
       category: item.category?.id,
     }))
@@ -130,16 +127,33 @@ function handleSubmit() {
       amount: newItem.value.amount ? Number(newItem.value.amount) : undefined,
       unit: newItem.value.unit || undefined,
       category: newItem.value.category,
-      checked: false,
     })
   }
 
   updateListItems(closeModal)
 }
 
+let undoToast: NebToast | null = null
 async function removeItem(item: ShoppingList['items'][number]) {
   data.value!.shoppingList.items = data.value!.shoppingList.items.filter(i => i !== item)
-  updateListItems()
+  await updateListItems()
+
+  if (undoToast)
+    undoToast.destroy()
+
+  undoToast = useNebToast({
+    type: 'success',
+    title: `Item removed`,
+    timeout: 3000,
+    actions: [{
+      text: 'Undo',
+      callback() {
+        undoToast?.destroy()
+        data.value!.shoppingList.items.push(item)
+        updateListItems()
+      },
+    }],
+  })
 }
 
 function closeModal() {
@@ -244,30 +258,25 @@ function onUnitCreated(unit: OutUnit) {
             <div class="items-list">
               <div
                 v-for="(item, index) in items"
-                :key="index"
+                :key="`${categoryName}-${typeof item.item === 'object' ? item.item.id : item.item}`"
                 class="item-card"
-                :class="{ 'item-checked': item.checked }"
+                @click="startEditItem(categoryName, index)"
               >
-                <neb-checkbox v-model="item.checked" class="item-checkbox" @update:model-value="updateListItems()">
-                  <div class="item-content">
-                    <div class="item-main">
-                      <span class="item-name">{{ typeof item.item === 'object' ? item.item.name : item.item }}</span>
+                <neb-checkbox class="item-checkbox" @click.stop @update:model-value="removeItem(item)" />
 
-                      <neb-badge v-if="item.amount" class="item-amount">
-                        {{ getItemAmount(item) }}
-                      </neb-badge>
-                    </div>
+                <div class="item-content">
+                  <div class="item-main">
+                    <span class="item-name">{{ typeof item.item === 'object' ? item.item.name : item.item }}</span>
 
-                    <nuxt-link v-if="item.recipe" class="item-recipe" :to="`/recipe/${item.recipe.id.id}`" @click.stop>
-                      <icon name="material-symbols:link-rounded" />
-                      From {{ item.recipe.name }}
-                    </nuxt-link>
+                    <neb-badge v-if="item.amount" class="item-amount">
+                      {{ getItemAmount(item) }}
+                    </neb-badge>
                   </div>
-                </neb-checkbox>
 
-                <div class="item-actions">
-                  <icon name="material-symbols:edit-outline-rounded" @click="startEditItem(categoryName, index)" />
-                  <icon name="material-symbols:close-rounded" @click="removeItem(item)" />
+                  <nuxt-link v-if="item.recipe" class="item-recipe" :to="`/recipe/${item.recipe.id.id}`" @click.stop>
+                    <icon name="material-symbols:link-rounded" />
+                    From {{ item.recipe.name }}
+                  </nuxt-link>
                 </div>
               </div>
             </div>
@@ -437,10 +446,6 @@ function onUnitCreated(unit: OutUnit) {
   flex-direction: column;
 }
 
-.item-checkbox {
-  flex: 1;
-}
-
 .item-card {
   display: flex;
   align-items: center;
@@ -454,14 +459,6 @@ function onUnitCreated(unit: OutUnit) {
   border-bottom: none;
 }
 
-.item-card.item-checked {
-  opacity: 0.6;
-}
-
-.item-card.item-checked .item-name {
-  text-decoration: line-through;
-}
-
 .item-amount {
   text-wrap: nowrap;
 }
@@ -471,7 +468,6 @@ function onUnitCreated(unit: OutUnit) {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  margin-left: var(--space-2);
 }
 
 .item-main {
@@ -500,18 +496,6 @@ function onUnitCreated(unit: OutUnit) {
 
   .icon {
     font-size: 16px !important;
-  }
-}
-
-.item-actions {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  margin-top: var(--space-1);
-
-  .icon {
-    cursor: pointer;
-    color: var(--neutral-color-500);
   }
 }
 
@@ -568,14 +552,6 @@ function onUnitCreated(unit: OutUnit) {
 
   .item-recipe {
     color: var(--primary-color-400);
-  }
-
-  .item-actions .icon {
-    color: var(--neutral-color-400);
-  }
-
-  .item-actions .icon:hover {
-    color: var(--neutral-color-200);
   }
 
   .loading-state {

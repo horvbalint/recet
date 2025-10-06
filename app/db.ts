@@ -203,8 +203,8 @@ export type InShoppingList = {
   items?: Array<{
     amount?: number | undefined,
     category?: Required<InIngredientCategory>['id'] | undefined,
-    checked?: boolean,
-    ingredient: Required<InIngredient>['id'],
+    ingredient?: Required<InIngredient>['id'] | undefined,
+    item: string | Required<InIngredient>['id'],
     recipe?: Required<InRecipe>['id'] | undefined,
     unit?: Required<InUnit>['id'] | undefined,
   }>,
@@ -219,8 +219,8 @@ export type OutShoppingList = {
   items: Array<{
     amount?: number | undefined,
     category?: OutIngredientCategory | undefined,
-    checked: boolean,
-    ingredient: OutIngredient,
+    ingredient?: OutIngredient | undefined,
+    item: string | OutIngredient,
     recipe?: OutRecipe | undefined,
     unit?: OutUnit | undefined,
   }>,
@@ -783,17 +783,30 @@ export const tables = {
                   }
                 }
               },
-              "checked": {
-                "type": {
-                  "name": "boolean"
-                },
-                "hasDefault": true
-              },
               "ingredient": {
                 "type": {
-                  "name": "record",
-                  "tables": [
-                    "ingredient"
+                  "name": "option",
+                  "inner": {
+                    "name": "record",
+                    "tables": [
+                      "ingredient"
+                    ]
+                  }
+                }
+              },
+              "item": {
+                "type": {
+                  "name": "union",
+                  "variants": [
+                    {
+                      "name": "string"
+                    },
+                    {
+                      "name": "record",
+                      "tables": [
+                        "ingredient"
+                      ]
+                    }
                   ]
                 }
               },

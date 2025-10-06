@@ -184,7 +184,6 @@ DEFINE FIELD OVERWRITE items.*.category ON shopping_list TYPE option<record<ingr
 DEFINE FIELD OVERWRITE items.*.amount ON shopping_list TYPE option<number>;
 DEFINE FIELD OVERWRITE items.*.unit ON shopping_list TYPE option<record<unit>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE items.*.recipe ON shopping_list TYPE option<record<recipe>> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE items.*.checked ON shopping_list TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE updated_at ON shopping_list TYPE datetime VALUE time::now();
 
 // TABLE: meal_plan
@@ -257,7 +256,6 @@ DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id
 
 			if(existing_item && existing_item.unit?.id === ingredient.unit?.id) {
 				existing_item.amount = (existing_item.amount || 0) + (ingredient.amount || 0) * portionRatio;
-				existing_item.checked = false;
 			}
 			else {
 				listItems.push({
@@ -265,7 +263,6 @@ DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id
 					amount: ingredient.amount && ingredient.amount * portionRatio,
 					unit: ingredient.unit,
 					category: ingredient.ingredient.category,
-					checked: false,
 					recipe: recipe.id
 				});
 			}

@@ -34,3 +34,14 @@ I plan to create the following modules:
 ## Is it ready?
 No, well not yet. Besides some modules not being ready yet, SurrealDB currently does not provide every feature (email sending, plugins) that would be needed to make this app 'production ready' or better, something that can be shared with others. Household invites are currently automatically accepted and image compression is done client side.
 Luckily SurrealDB v.3 is around the corner and these shortcommings are addressed in it.
+
+## Start/Deploy
+The project uses Nuxt.js and SurrealDB. It needs a DB instance running with the structure defined in `db.surql`.
+
+#### Steps:
+- clone the repo
+- pnpm i
+- pnpm run dev
+- it should be running on port 3000
+
+It looks for the database at 'ws://localhost:8000' by default, but this can be changed with the `NUXT_PUBLIC_SURREAL_DB_URL` enviroment variable.

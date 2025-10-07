@@ -186,41 +186,6 @@ DEFINE FIELD OVERWRITE items.*.unit ON shopping_list TYPE option<record<unit>> A
 DEFINE FIELD OVERWRITE items.*.recipe ON shopping_list TYPE option<record<recipe>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE updated_at ON shopping_list TYPE datetime VALUE time::now();
 
-// TABLE: meal_plan
-DEFINE TABLE OVERWRITE meal_plan SCHEMAFULL PERMISSIONS 
-	for select WHERE fn::can_read_household(household)
-	for create, delete, update WHERE fn::can_write_household(household);
-
-DEFINE FIELD OVERWRITE household ON meal_plan TYPE record<household>;
-DEFINE FIELD OVERWRITE recipes ON meal_plan TYPE array<record<recipe>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE rules ON meal_plan TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
-
-// TABLE: meal_plan_day
-DEFINE TABLE OVERWRITE meal_plan_day SCHEMAFULL PERMISSIONS 
-	for select WHERE fn::can_read_household(household)
-	for create, delete, update WHERE fn::can_write_household(household);
-
-DEFINE FIELD OVERWRITE household ON meal_plan_day TYPE record<household>;
-DEFINE FIELD OVERWRITE breakfast ON meal_plan_day TYPE record<meal_plan> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE lunch ON meal_plan_day TYPE record<meal_plan> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE dinner ON meal_plan_day TYPE record<meal_plan> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE other ON meal_plan_day TYPE record<meal_plan> ASSERT household = $value.household;
-
-// TABLE: weekly_plan
-DEFINE TABLE OVERWRITE weekly_plan SCHEMAFULL PERMISSIONS 
-	for select WHERE fn::can_read_household(household)
-	for create, delete, update WHERE fn::can_write_household(household);
-	
-DEFINE FIELD OVERWRITE name ON weekly_plan TYPE string;
-DEFINE FIELD OVERWRITE household ON weekly_plan TYPE record<household>;
-DEFINE FIELD OVERWRITE monday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE tuesday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE wednesday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE thursday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE friday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE saturday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE sunday ON weekly_plan TYPE record<meal_plan_day> ASSERT household = $value.household;
-
 DEFINE FUNCTION OVERWRITE fn::add_member_to_household($household: record<household>, $username: string, $role: "owner" | "writer" | "guest") {
 	LET $user = (SELECT id FROM ONLY user WHERE username = $username);
 	IF ($user == NONE) {

@@ -10,11 +10,11 @@ const formData = ref({
 
 const isFormValid = ref(false)
 
-async function handleSubmit() {
+async function handleSignin() {
   try {
     await signIn(formData.value.email, formData.value.password)
 
-    await navigateTo('/')
+    await navigateTo(useRoute().query.to as string || '/')
   }
   catch (err) {
     console.error(err)
@@ -56,6 +56,7 @@ function goToSignup() {
               type="password"
               placeholder="Enter your password"
               required
+              @keyup.enter="handleSignin()"
             />
           </div>
         </neb-validator>
@@ -65,7 +66,7 @@ function goToSignup() {
             type="primary"
             :disabled="!isFormValid"
             class="submit-button"
-            @click="handleSubmit()"
+            @click="handleSignin()"
           >
             Sign In
           </neb-button>

@@ -506,16 +506,11 @@ function onUnitCreated(unit: OutUnit) {
 }
 
 .amount-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: var(--space-3);
 }
 
 @media (--tablet-viewport) {
-  .amount-row {
-    grid-template-columns: 1fr;
-  }
-
   .categories-container {
     gap: var(--space-4);
   }

@@ -1,7 +1,7 @@
 import type { RecordId } from 'surrealdb'
 import type { OutMember, OutUser } from '~/db'
 
-export default defineNuxtRouteMiddleware(async () => {
+export default defineNuxtRouteMiddleware(async (to) => {
   try {
     if (authUser.value)
       return
@@ -18,6 +18,6 @@ export default defineNuxtRouteMiddleware(async () => {
   }
   catch (err) {
     console.error(err)
-    return navigateTo('/auth/login')
+    return navigateTo(`/auth/login?to=${encodeURIComponent(to.path)}`)
   }
 })

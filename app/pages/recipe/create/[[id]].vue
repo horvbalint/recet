@@ -16,9 +16,32 @@ const formData = ref<Partial<InRecipe>>({
 const selectedImage = ref<File | null>(null)
 
 const recipeId = useRoute().params.id
-const isEdit = !!recipeId
-const headerTitle = isEdit ? 'Edit Recipe' : 'Create Recipe'
-const headerDescription = isEdit ? 'Edit the details of the recipe' : 'Add a new recipe to your collection'
+const action = computed(() => {
+  const isCopy = useRoute().query.copy
+
+  if (recipeId)
+    return isCopy ? 'copy' : 'edit'
+  else
+    return 'create'
+})
+
+const headerTitle = computed(() => {
+  if (action.value === 'edit')
+    return 'Edit Recipe'
+  if (action.value === 'copy')
+    return 'Copy Recipe'
+  else
+    return 'Create Recipe'
+})
+
+const headerDescription = computed(() => {
+  if (action.value === 'edit')
+    return 'Edit the details of the recipe'
+  if (action.value === 'copy')
+    return 'Edit the details before saving the copied recipe'
+  else
+    return 'Add a new recipe to your collection'
+})
 
 const { data: recipeToEdit, status: recipeStatus, refresh: recipeRefresh, error: recipeError } = useAsyncData(async () => {
   if (!recipeId)
@@ -77,7 +100,7 @@ async function refresh() {
 
 const submitting = ref(false)
 async function handleSubmit() {
-  if (isEdit)
+  if (action.value === 'edit')
     await updateRecipe()
   else
     await createRecipe()
@@ -95,6 +118,9 @@ async function createRecipe() {
       steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
       image_blur_hash: blurhash,
       image: imageBuffer,
+      id: undefined,
+      created_at: undefined,
+      updated_at: undefined,
     } })
 
     useNebToast({ type: 'success', title: 'Recipe created!', description: 'Your recipe has been saved successfully.' })

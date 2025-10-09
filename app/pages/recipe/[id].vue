@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Menu } from 'nebula/components/overlays/neb-menu.vue'
 import type { RecordId } from 'surrealdb'
 
 definePageMeta({
@@ -183,6 +184,15 @@ async function editRecipe() {
   await navigateTo(`/recipe/create/${recipeId}`)
 }
 
+async function copyRecipe() {
+  await navigateTo(`/recipe/create/${recipeId}?copy=true`)
+}
+
+const menus: Menu[] = [
+  { text: 'Copy', icon: 'material-symbols:content-copy-outline-rounded', callback: copyRecipe },
+  { text: 'Delete', icon: 'material-symbols:delete-outline-rounded', callback: deleteRecipe, segment: true, desctructive: true },
+]
+
 const viewTransitions = getRecipeViewTransitionNames(recipeId)
 
 watch(currentHousehold, async () => await navigateTo('/'))
@@ -213,9 +223,13 @@ watch(currentHousehold, async () => await navigateTo('/'))
                     <icon name="material-symbols:edit-outline-rounded" />
                   </neb-button>
 
-                  <neb-button type="secondary-neutral" small :disabled="inProgress" :loading="inProgress" @click="deleteRecipe()">
-                    <icon name="material-symbols:delete-outline-rounded" />
-                  </neb-button>
+                  <neb-menu small :menus>
+                    <template #trigger="{ toggle }">
+                      <neb-button type="secondary-neutral" small :disabled="inProgress" :loading="inProgress" @click="toggle()">
+                        <icon name="material-symbols:more-horiz" />
+                      </neb-button>
+                    </template>
+                  </neb-menu>
                 </div>
               </recipe-image>
 

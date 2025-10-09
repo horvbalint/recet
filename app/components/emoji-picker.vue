@@ -10,7 +10,7 @@ const modelValue = defineModel<string | null | undefined>()
 
 <template>
   <neb-dropdown>
-    <template #trigger="{ toggle }">
+    <template #trigger="{ toggle, isOpen }">
       <neb-content-header :title="label" vertical-gap="var(--space-2)" type="paragraph">
         <template #bottom>
           <neb-button class="trigger-button" small type="secondary-neutral" @click="toggle()">
@@ -22,6 +22,8 @@ const modelValue = defineModel<string | null | undefined>()
               <p v-else class="placeholder">
                 {{ placeholder }}
               </p>
+
+              <icon :class="{ open: isOpen }" name="material-symbols:keyboard-arrow-down-rounded" />
             </div>
           </neb-button>
         </template>
@@ -52,6 +54,16 @@ const modelValue = defineModel<string | null | undefined>()
     height: 40px;
     display: flex;
     align-items: center;
+    gap: var(--space-1);
+
+    .icon {
+      color: var(--neutral-color-500);
+      transition: transform var(--duration-default);
+
+      &.open {
+        transform: rotate(180deg);
+      }
+    }
   }
 
   .value {

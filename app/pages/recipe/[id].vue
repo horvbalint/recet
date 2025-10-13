@@ -168,6 +168,8 @@ async function deleteRecipe() {
     inProgress.value = true
 
     await db.query(surql`DELETE type::thing('recipe', ${recipeId})`)
+    clearRecipeCache()
+
     useNebToast({ type: 'success', title: 'Recipe deleted!', description: 'The recipe has been deleted successfully.' })
     await navigateTo('/')
   }
@@ -652,7 +654,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   font-size: var(--text-md);
   font-weight: normal;
   color: var(--neutral-color-700);
-  margin-top: -4px;
   user-select: text;
   cursor: text;
 }

@@ -34,27 +34,35 @@ export interface Recipe {
   updated_at: string
 }
 
-const searchTerm = ref('')
-const selectedCuisines = ref<OutCuisine['id'][]>([])
-const selectedTags = ref<OutRecipeTag['id'][]>([])
-const selectedMeals = ref<OutMeal['id'][]>([])
-const selectedIngredients = ref<OutIngredient['id'][]>([])
+const {
+  recipes: {
+    data: {
+      pageIndex,
+      recipes,
+      recipeCount,
+    },
+    status,
+    error,
+    refresh,
+  },
+  filter: {
+    conditions: {
+      searchTerm,
+      selectedCuisines,
+      selectedTags,
+      selectedMeals,
+      selectedIngredients,
+    },
+    data: {
+      data: filterData,
+      status: filterDataStatus,
+      refresh: queryFilterData,
+    },
+  },
+} = useRecipeState()
 
-const showFilter = ref(false)
 const conditionCount = computed(() => selectedCuisines.value.length + selectedTags.value.length + selectedMeals.value.length + selectedIngredients.value.length)
-
-const { data: filterData, status: filterDataStatus, refresh: queryFilterData } = useAsyncData(async () => {
-  const [cuisenes, tags, meals, ingredients] = await db.query<[OutCuisine[], OutRecipeTag[], OutMeal[], OutIngredient[]]>(surql`
-    SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
-    SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
-    SELECT id, name, color FROM meal ORDER BY name ASC;
-    SELECT id, name FROM ingredient ORDER BY name ASC;
-  `)
-
-  return { cuisenes, tags, meals, ingredients }
-}, {
-  immediate: false,
-})
+const showFilter = ref(!!conditionCount.value)
 
 async function toggleFilter() {
   if (!showFilter.value && !filterData.value)
@@ -62,98 +70,6 @@ async function toggleFilter() {
 
   showFilter.value = !showFilter.value
 }
-
-const openedAt = new Date()
-function constructWhereClause(query: PreparedQuery) {
-  query.append` WHERE household = type::thing(${currentHousehold.value!.id}) && craeted_at <= ${openedAt}`
-
-  if (searchTerm.value)
-    query.append` && name @@ ${searchTerm.value}`
-
-  if (selectedCuisines.value.length)
-    query.append` && cuisine IN ${selectedCuisines.value}`
-  if (selectedTags.value.length)
-    query.append` && tags.intersect(${selectedTags.value}).len() > 0`
-  if (selectedMeals.value.length)
-    query.append` && meal.intersect(${selectedMeals.value}).len() > 0`
-  if (selectedIngredients.value.length)
-    query.append` && ingredients.ingredient.intersect(${selectedIngredients.value}).len() > 0`
-
-  return query
-}
-
-function constructCountQuery() {
-  const query = surql`SELECT VALUE count() FROM ONLY recipe`
-  constructWhereClause(query)
-  query.append` GROUP ALL`
-
-  return query
-}
-
-const recipesPerPage = isMobile.value ? 5 : 9
-const pageIndex = ref(0)
-function constructRecipeQuery() {
-  const query = surql`
-    SELECT
-      id,
-      name,
-      created_at,
-      image_blur_hash,
-      cooking_time_minutes,
-      author.{username},
-      ingredients.len(),
-      steps.len(),
-      cuisine.{name, color, flag},
-      tags.{name, color, icon},
-      meal.{name, color}
-  `
-
-  if (searchTerm.value)
-    query.append`,search::score(0) as score FROM recipe`
-  else
-    query.append`FROM recipe`
-
-  if (searchTerm.value) {
-    if (currentHousehold.value!.language === 'hu')
-      query.append` WITH INDEX hungarian_search_name`
-    else
-      query.append` WITH INDEX english_search_name`
-  }
-
-  constructWhereClause(query)
-
-  if (searchTerm.value)
-    query.append` ORDER BY score, created_at DESC`
-  else
-    query.append` ORDER BY created_at DESC`
-
-  query.append` LIMIT ${recipesPerPage} START ${pageIndex.value * recipesPerPage}`
-
-  return query
-}
-
-const conditionWatchSources = [currentHousehold, searchTerm, selectedCuisines, selectedIngredients, selectedMeals, selectedTags]
-const { data, status, error, refresh } = useAsyncData('recipes', async () => {
-  const recipeQuery = constructRecipeQuery()
-  const countQuery = constructCountQuery()
-
-  const [[recipes], [count]] = await Promise.all([
-    db.query<[Recipe[]]>(recipeQuery),
-    db.query<[{ count: number } | null]>(countQuery),
-  ])
-
-  return { recipeChunks: recipes, recipeCount: count?.count || 0 }
-}, { watch: [...conditionWatchSources, pageIndex] })
-
-const recipes = ref<Recipe[]>([])
-watch(data, () => recipes.value.push(...data.value?.recipeChunks || []))
-
-watch(conditionWatchSources, () => {
-  pageIndex.value = 0
-  recipes.value = []
-}, {
-  flush: 'sync',
-})
 
 const recipeLoader = useTemplateRef('recipe-loader')
 const observer = new IntersectionObserver(([entry]) => {
@@ -327,7 +243,7 @@ onBeforeUnmount(() => {
         </div>
 
         <neb-button
-          v-if="recipes.length < data!.recipeCount"
+          v-if="recipes.length < recipeCount!"
           ref="recipe-loader"
           :hidden="status !== 'pending'"
           type="secondary-neutral"

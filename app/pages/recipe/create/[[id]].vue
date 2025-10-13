@@ -123,6 +123,7 @@ async function createRecipe() {
       updated_at: undefined,
     } })
 
+    clearRecipeCache()
     useNebToast({ type: 'success', title: 'Recipe created!', description: 'Your recipe has been saved successfully.' })
     await navigateTo(`/recipe/${result[0]!.id.id}`)
   }
@@ -152,6 +153,7 @@ async function updateRecipe() {
 
     await db.query<[OutIngredient[]]>(surql`UPDATE ONLY ${recipeToEdit.value!.id} MERGE ${update}`)
 
+    clearRecipeCache()
     useNebToast({ type: 'success', title: 'Recipe updated!', description: 'Your recipe has been saved successfully.' })
     await navigateTo(`/recipe/${recipeId}`)
   }

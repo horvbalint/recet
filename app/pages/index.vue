@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { PreparedQuery, RecordId } from 'surrealdb'
-import type { OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
+import type { RecordId } from 'surrealdb'
 
 definePageMeta({
   layout: 'app',

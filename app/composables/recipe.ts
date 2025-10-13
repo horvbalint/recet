@@ -22,13 +22,7 @@ export function getRecipeViewTransitionNames(recipeId: RecordId<'recipe'>['id'])
       return {}
 
     return {
-      // container: 'recipe-container',
-      // name: 'recipe-name',
-      // meta: 'recipe-meta',
-      // tags: 'recipe-tags',
-      // mealTypes: 'recipe-meal-types',
       image: 'recipe-image',
-      // cuisine: 'recipe-cuisine',
     }
   })
 }
@@ -85,8 +79,8 @@ function loadImage(blob: Blob): Promise<HTMLImageElement> {
 // RECIPE STATE + QUERY
 const recipesPerPage = isMobile.value ? 5 : 9
 const pageIndex = ref(0)
+let firstPageQueriedAt = new Date()
 const recipes = ref<Recipe[]>([])
-const openedAt = new Date()
 const recipeCount = ref<number | null>(null)
 const filterData = ref<{
   cuisenes: OutCuisine[]
@@ -102,7 +96,7 @@ const selectedMeals = ref<OutMeal['id'][]>([])
 const selectedIngredients = ref<OutIngredient['id'][]>([])
 
 function constructWhereClause(query: PreparedQuery) {
-  query.append` WHERE household = type::thing(${currentHousehold.value!.id}) && craeted_at <= ${openedAt}`
+  query.append` WHERE household = type::thing(${currentHousehold.value!.id}) && craeted_at <= ${firstPageQueriedAt}`
 
   if (searchTerm.value)
     query.append` && name @@ ${searchTerm.value}`
@@ -173,6 +167,7 @@ export function clearRecipeCache() {
   pageIndex.value = 0
   recipes.value = []
   recipeCount.value = null
+  firstPageQueriedAt = new Date()
 }
 
 export function useRecipeState() {

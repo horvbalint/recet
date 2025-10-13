@@ -24,7 +24,7 @@ async function handleSignin() {
 }
 
 function goToSignup() {
-  navigateToWithTransition('/auth/signup')
+  startTransitionThen(() => navigateTo('/auth/signup'))
 }
 </script>
 

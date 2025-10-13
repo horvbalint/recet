@@ -6,6 +6,13 @@ definePageMeta({
   layout: 'app',
 })
 
+onBeforeRouteLeave((to, _, next) => {
+  if (to.path !== '/')
+    return next()
+
+  startTransitionThen(next)
+})
+
 interface Recipe {
   id: RecordId<'recipe'>
   name: string
@@ -194,8 +201,6 @@ const menus: Menu[] = [
   { text: 'Copy', icon: 'material-symbols:content-copy-outline-rounded', callback: copyRecipe },
   { text: 'Delete', icon: 'material-symbols:delete-outline-rounded', callback: deleteRecipe, segment: true, desctructive: true },
 ]
-
-const viewTransitions = getRecipeViewTransitionNames(recipeId)
 
 watch(currentHousehold, async () => await navigateTo('/'))
 </script>
@@ -410,10 +415,8 @@ watch(currentHousehold, async () => await navigateTo('/'))
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-6);
-  /* border: 1px solid var(--neutral-color-200); */
   border-radius: var(--radius-large);
   background: var(--neutral-color-25);
-  view-transition-name: v-bind('viewTransitions.container');
   box-shadow: var(--shadow-md);
 }
 
@@ -458,12 +461,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-
-  :deep(.neb-content-header) {
-    h1 {
-      view-transition-name: v-bind('viewTransitions.name');
-    }
-  }
 }
 
 .recipe-meta {
@@ -471,7 +468,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   flex-wrap: wrap;
   gap: var(--space-6);
   width: fit-content;
-  view-transition-name: v-bind('viewTransitions.meta');
 }
 
 .meta-item {
@@ -496,7 +492,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  view-transition-name: v-bind('viewTransitions.tags');
   width: fit-content;
 }
 
@@ -505,7 +500,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   flex-wrap: wrap;
   gap: var(--space-2);
   width: fit-content;
-  view-transition-name: v-bind('viewTransitions.mealTypes');
 }
 
 .recipe-content {

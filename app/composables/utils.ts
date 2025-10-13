@@ -1,4 +1,3 @@
-import type { TypedPathParameter } from '@typed-router/__paths'
 import type { PreparedQuery, RecordId } from 'surrealdb'
 
 export const { isMobile } = useAppBreakpoints()
@@ -23,11 +22,23 @@ export function transformId<T extends string>(id: RecordId<T>) {
   return id.toString()
 }
 
-export function navigateToWithTransition<T extends string>(path: TypedPathParameter<T>) {
-  if (!document.startViewTransition)
-    navigateTo(path)
-  else
-    return document.startViewTransition(() => navigateTo(path))
+let resolveTransition: ((_: unknown) => void) | null = null
+export function startTransitionThen(fun: () => any) {
+  if (!document.startViewTransition) {
+    fun()
+  }
+  else {
+    document.startViewTransition(() => new Promise((resolve) => {
+      resolveTransition = resolve
+      fun()
+    }))
+  }
+}
+export function resolvePendingViewTransition() {
+  if (resolveTransition) {
+    resolveTransition(true)
+    resolveTransition = null
+  }
 }
 
 export function roundNumberIfNeeded(num: number) {

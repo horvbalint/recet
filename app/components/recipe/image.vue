@@ -113,7 +113,6 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   position: absolute;
   top: var(--space-4);
   right: var(--space-4);
-  view-transition-name: v-bind('viewTransitions.cuisine');
 }
 
 .dark-mode {

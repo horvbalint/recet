@@ -9,10 +9,8 @@ async function handleCardClick() {
   setCachedRecipe(props.recipe)
 
   await nextTick()
-  navigateToWithTransition(`/recipe/${props.recipe.id.id}`)
+  startTransitionThen(() => navigateTo(`/recipe/${props.recipe.id.id}`))
 }
-
-const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
 </script>
 
 <template>
@@ -67,7 +65,6 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   transition: all var(--duration-default);
   cursor: pointer;
   border: 1px solid var(--neutral-color-100);
-  view-transition-name: v-bind('viewTransitions.container');
 }
 
 .recipe-card:hover {
@@ -121,7 +118,6 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   color: var(--neutral-color-900);
   margin: 0;
   line-height: 1.3;
-  view-transition-name: v-bind('viewTransitions.name');
   width: fit-content;
 }
 
@@ -130,7 +126,6 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   flex-wrap: wrap;
   gap: var(--space-3);
   width: fit-content;
-  view-transition-name: v-bind('viewTransitions.meta');
 }
 
 .meta-item {
@@ -153,7 +148,6 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   gap: var(--space-1);
   align-items: center;
   width: fit-content;
-  view-transition-name: v-bind('viewTransitions.tags');
 }
 
 .meal-types {
@@ -161,7 +155,6 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   flex-wrap: wrap;
   gap: var(--space-1);
   width: fit-content;
-  view-transition-name: v-bind('viewTransitions.mealTypes');
 }
 
 @media (--tablet-viewport) {

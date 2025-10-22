@@ -13,7 +13,9 @@ const props = defineProps<{
 const showModal = ref(false)
 
 const { data, status, refresh } = useAsyncData(`${props.table}-master-data-layout`, async () => {
-  const [result] = await db.query<[T[]]>(props.getQuery, [householdGap.fill(currentHousehold.value!.id)])
+  const [result] = await db
+    .query(props.getQuery)
+    .collect<[T[]]>()
   return result || []
 }, { watch: [currentHousehold] })
 
@@ -32,7 +34,9 @@ async function handleDeleteClick(item: T) {
     if (!await useNebConfirm({ title: 'Are you sure you want to delete this item?', description: 'This action cannot be undone.' }))
       return
 
-    await db.query(surql`DELETE ${item.id}`)
+    await db
+      .query(surql`DELETE ${item.id}`)
+      .collect()
     await refresh()
 
     useNebToast({ type: 'success', title: 'Succesfully deleted!', description: 'The item got removed from the database.' })

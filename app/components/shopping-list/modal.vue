@@ -12,7 +12,9 @@ const emit = defineEmits<{
 const modelValue = defineModel<boolean>({ required: true })
 
 const { data: shops } = useAsyncData('shops', async () => {
-  const [result] = await db.query<[OutShop[]]>(surql`SELECT * FROM shop ORDER BY name ASC`)
+  const [result] = await db
+    .query(surql`SELECT * FROM shop ORDER BY name ASC`)
+    .collect<[OutShop[]]>()
   return result || []
 })
 
@@ -31,20 +33,23 @@ async function handleSubmit() {
 
   try {
     if (formData.value.id) {
-      await db.query<[OutShoppingList]>(surql`UPDATE ONLY ${formData.value.id} MERGE ${{
-        ...formData.value,
-        household: currentHousehold.value!.id,
-      }}`)
+      await db
+        .query(surql`UPDATE ONLY ${formData.value.id} MERGE ${{
+          ...formData.value,
+          household: currentHousehold.value!.id,
+        }}`)
+        .collect<[OutShoppingList]>()
+
       useNebToast({ type: 'success', title: 'List updated', description: `"${formData.value.name}" has been updated.` })
     }
     else {
-      await db.query<[OutShoppingList]>(
-        surql`CREATE shopping_list CONTENT ${{
+      await db
+        .query(surql`CREATE shopping_list CONTENT ${createData = {
           ...formData.value,
           items: [],
           household: currentHousehold.value!.id,
-        }}`,
-      )
+        }}`)
+        .collect<[OutShoppingList]>()
 
       useNebToast({ type: 'success', title: 'List created', description: `"${formData.value.name}" has been created.` })
     }

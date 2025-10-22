@@ -33,9 +33,9 @@ export async function getRecipeImageUrl(recipeId: RecordId<'recipe'>) {
   if (cachedRecipeImages.has(recipeId.id))
     return cachedRecipeImages.get(recipeId.id)!
 
-  const [buffer] = await db.query<[ArrayBuffer | null]>(surql`
-    SELECT VALUE image FROM ONLY type::thing('recipe', ${recipeId})
-  `)
+  const [buffer] = await db
+    .query(surql`SELECT VALUE image FROM ONLY type::record('recipe', ${recipeId})`)
+    .collect<[ArrayBuffer | null]>()
 
   const url = buffer ? URL.createObjectURL(new Blob([buffer], { type: 'image/*' })) : null
   cachedRecipeImages.set(recipeId.id, url)
@@ -96,7 +96,7 @@ const selectedMeals = ref<OutMeal['id'][]>([])
 const selectedIngredients = ref<OutIngredient['id'][]>([])
 
 function constructWhereClause(query: PreparedQuery) {
-  query.append` WHERE household = type::thing(${currentHousehold.value!.id}) && craeted_at <= ${firstPageQueriedAt}`
+  query.append` WHERE household = type::record(${currentHousehold.value!.id}) && created_at <= ${firstPageQueriedAt}`
 
   if (searchTerm.value)
     query.append` && name @@ ${searchTerm.value}`
@@ -176,8 +176,8 @@ export function useRecipeState() {
     const countQuery = constructCountQuery()
 
     const [[recipes], [count]] = await Promise.all([
-      db.query<[Recipe[]]>(recipeQuery),
-      db.query<[{ count: number } | null]>(countQuery),
+      db.query(recipeQuery).collect<[Recipe[]]>(),
+      db.query(countQuery).collect<[{ count: number } | null]>(),
     ])
 
     return { recipeChunks: recipes, recipeCount: count?.count || 0 }
@@ -198,12 +198,14 @@ export function useRecipeState() {
   })
 
   const { data: filterDataTemp, status: filterDataStatus, refresh: queryFilterData } = useAsyncData('filter-data', async () => {
-    const [cuisenes, tags, meals, ingredients] = await db.query<[OutCuisine[], OutRecipeTag[], OutMeal[], OutIngredient[]]>(surql`
-    SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
-    SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
-    SELECT id, name, color FROM meal ORDER BY name ASC;
-    SELECT id, name FROM ingredient ORDER BY name ASC;
-  `)
+    const [cuisenes, tags, meals, ingredients] = await db
+      .query(surql`
+        SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
+        SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
+        SELECT id, name, color FROM meal ORDER BY name ASC;
+        SELECT id, name FROM ingredient ORDER BY name ASC;
+      `)
+      .collect<[OutCuisine[], OutRecipeTag[], OutMeal[], OutIngredient[]]>()
 
     return { cuisenes, tags, meals, ingredients }
   }, {

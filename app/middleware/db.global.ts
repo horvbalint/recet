@@ -2,8 +2,8 @@ export default defineNuxtRouteMiddleware(async () => {
   if (db.status === 'connected')
     return
 
-  if (db.status === 'disconnected' || db.status === 'error')
-    await db.connect(useRuntimeConfig().public.surrealDbUrl, { reconnect: true })
+  if (db.status === 'disconnected')
+    await db.connect(useRuntimeConfig().public.surrealDbUrl, { reconnect: true, renewAccess: true })
 
   await db.ready
 

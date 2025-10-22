@@ -47,9 +47,9 @@ const { data: recipeToEdit, status: recipeStatus, refresh: recipeRefresh, error:
   if (!recipeId)
     return null
 
-  const [recipe] = await db.query<[InRecipe]>(surql`
-    SELECT * FROM ONLY type::thing('recipe', ${recipeId})
-  `)
+  const [recipe] = await db
+    .query(surql`SELECT * FROM ONLY type::record('recipe', ${recipeId})`)
+    .collect<[InRecipe]>()
 
   return recipe
 })
@@ -65,19 +65,21 @@ watchOnce(recipeToEdit, () => {
 })
 
 const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, error: masterDataError } = useAsyncData(async () => {
-  const [ingredients, units, cuisines, meals, recipeTags] = await db.query<[
+  const [ingredients, units, cuisines, meals, recipeTags] = await db
+    .query(surql`
+      SELECT id, name FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name FROM unit WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color, flag FROM cuisine WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color FROM meal WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color, icon FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+    `)
+    .collect<[
     OutIngredient[],
     OutUnit[],
     OutCuisine[],
     OutMeal[],
     OutRecipeTag[],
-  ]>(surql`
-    SELECT id, name FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-    SELECT id, name FROM unit WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-    SELECT id, name, color, flag FROM cuisine WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-    SELECT id, name, color FROM meal WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-    SELECT id, name, color, icon FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-  `)
+  ]>()
 
   return {
     ingredients,
@@ -111,7 +113,7 @@ async function createRecipe() {
     submitting.value = true
     const { blurhash, imageBuffer } = await processRecipeImage(selectedImage.value)
 
-    const [result] = await db.query<[OutIngredient[]]>('INSERT INTO recipe $data RETURN id', { data: {
+    const data = {
       ...formData.value,
       author: authUser.value!.id,
       household: currentHousehold.value!.id,
@@ -121,7 +123,11 @@ async function createRecipe() {
       id: undefined,
       created_at: undefined,
       updated_at: undefined,
-    } })
+    }
+
+    const [result] = await db
+      .query(surql`INSERT INTO recipe ${data} RETURN id`)
+      .collect<[OutIngredient[]]>()
 
     clearRecipeCache()
     useNebToast({ type: 'success', title: 'Recipe created!', description: 'Your recipe has been saved successfully.' })
@@ -151,7 +157,9 @@ async function updateRecipe() {
       update.image = imageBuffer
     }
 
-    await db.query<[OutIngredient[]]>(surql`UPDATE ONLY ${recipeToEdit.value!.id} MERGE ${update}`)
+    await db
+      .query(surql`UPDATE ONLY ${recipeToEdit.value!.id} MERGE ${update}`)
+      .collect<[OutIngredient[]]>()
 
     clearRecipeCache()
     useNebToast({ type: 'success', title: 'Recipe updated!', description: 'Your recipe has been saved successfully.' })

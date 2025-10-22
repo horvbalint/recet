@@ -46,16 +46,21 @@ watch(modelValue, (isOpen) => {
 async function handleSubmit() {
   try {
     if (!isEdit.value) {
-      const [result] = await db.query<[T]>(`CREATE ONLY ${props.table} CONTENT $data`, {
-        data: { ...props.transformBeforeCreate(formData.value), household: currentHousehold.value!.id },
-      })
+      const [result] = await db
+        .query(surql`CREATE ONLY type::table(${props.table}) CONTENT ${{
+          ...props.transformBeforeCreate(formData.value),
+          household: currentHousehold.value!.id,
+        }}`)
+        .collect<[T]>()
 
       useNebToast({ type: 'success', title: `${props.name} created!`, description: `The ${props.name} was saved successfully.` })
 
       emit('saved', result)
     }
     else {
-      const [result] = await db.query<[T]>(surql`UPDATE ONLY ${formData.value.id} MERGE ${props.transformBeforeEdit(formData.value)} RETURN AFTER`)
+      const [result] = await db
+        .query(surql`UPDATE ONLY ${formData.value.id} MERGE ${props.transformBeforeEdit(formData.value)} RETURN AFTER`)
+        .collect<[T]>()
 
       useNebToast({ type: 'success', title: `${props.name} updated!`, description: `The ${props.name} was updated successfully.` })
 

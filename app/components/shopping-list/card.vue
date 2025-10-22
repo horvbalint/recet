@@ -40,7 +40,9 @@ async function deleteList() {
     if (!await useNebConfirm({ title: 'Confirm deletion!', description: 'Are you sure you want to delete this shopping list? This action cannot be undone.' }))
       return
 
-    await db.query(surql`DELETE ${props.list.id}`)
+    await db
+      .query(surql`DELETE ${props.list.id}`)
+      .collect()
     useNebToast({ type: 'success', title: 'List deleted', description: 'Shopping list has been deleted.' })
     emit('changed')
   }

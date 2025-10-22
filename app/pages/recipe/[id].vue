@@ -51,29 +51,31 @@ const route = useRoute()
 const recipeId = route.params.id as string
 
 const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncData<Recipe | null>(`recipe-${recipeId}`, async () => {
-  const [result] = await db.query<[Recipe]>(surql`
-    SELECT
-      id,
-      name,
-      steps,
-      created_at,
-      image_blur_hash,
-      portions,
-      cooking_time_minutes,
-      author.{username},
-      cuisine.{name, color, flag},
-      tags.{name, color, icon},
-      meal.{name, color},
-      ingredients.map(|$i| {
-        amount: $i.amount,
-        ingredient: $i.ingredient.name,
-        unit: $i.unit.name,
-        description: $i.description,
-        skip_from_shopping_list: $i.ingredient.skip_from_shopping_list
-      })
-    FROM ONLY
-      type::thing('recipe', ${recipeId})
-  `)
+  const [result] = await db
+    .query(surql`
+      SELECT
+        id,
+        name,
+        steps,
+        created_at,
+        image_blur_hash,
+        portions,
+        cooking_time_minutes,
+        author.{username},
+        cuisine.{name, color, flag},
+        tags.{name, color, icon},
+        meal.{name, color},
+        ingredients.map(|$i| {
+          amount: $i.amount,
+          ingredient: $i.ingredient.name,
+          unit: $i.unit.name,
+          description: $i.description,
+          skip_from_shopping_list: $i.ingredient.skip_from_shopping_list
+        })
+      FROM ONLY
+        type::record('recipe', ${recipeId})
+    `)
+    .collect<[Recipe]>()
 
   return result
 })
@@ -101,11 +103,13 @@ const { data: shoppingLists, error: shoppingListError } = useAsyncData('shopping
   if (!currentHousehold.value)
     return []
 
-  const [lists] = await db.query<[{ id: RecordId<'shopping_list'>, name: string }[]]>(surql`
-    SELECT id, name, updated_at FROM shopping_list 
-    WHERE household = ${currentHousehold.value.id}
-    ORDER BY updated_at DESC
-  `)
+  const [lists] = await db
+    .query(surql`
+      SELECT id, name, updated_at FROM shopping_list 
+      WHERE household = ${currentHousehold.value.id}
+      ORDER BY updated_at DESC
+    `)
+    .collect<[{ id: RecordId<'shopping_list'>, name: string }[]]>()
 
   return lists
 }, { watch: [currentHousehold] })
@@ -143,14 +147,16 @@ async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
 
     const ingredientIndexesToAdd = checkedIngredientIndexes.filter(index => !recipe.value!.ingredients[index]!.skip_from_shopping_list)
 
-    await db.query(surql`
-      fn::add_recipe_ingredients_to_shopping_list(
-        ${recipe.value!.id},
-        ${ingredientIndexesToAdd},
-        ${shoppingListId},
-        ${portionRatio.value}
-      )
-    `)
+    await db
+      .query(surql`
+        fn::add_recipe_ingredients_to_shopping_list(
+          ${recipe.value!.id},
+          ${ingredientIndexesToAdd},
+          ${shoppingListId},
+          ${portionRatio.value}
+        )
+      `)
+      .collect()
 
     checkedIngredients.value = []
 
@@ -174,7 +180,9 @@ async function deleteRecipe() {
 
     inProgress.value = true
 
-    await db.query(surql`DELETE type::thing('recipe', ${recipeId})`)
+    await db
+      .query(surql`DELETE type::record('recipe', ${recipeId})`)
+      .collect()
     clearRecipeCache()
 
     useNebToast({ type: 'success', title: 'Recipe deleted!', description: 'The recipe has been deleted successfully.' })

@@ -9,18 +9,20 @@ definePageMeta({
 const router = useRouter()
 
 const { data: shoppingLists, status: shoppingListsStatus, refresh: refreshShoppingLists } = useAsyncData('shopping-lists', async () => {
-  const [shoppingLists] = await db.query<[OutShoppingList[]]>(surql`
-    SELECT
-      *
-    FROM
-      shopping_list
-    WHERE
-      household = ${currentHousehold.value!.id}
-    ORDER BY
-      updated_at DESC
-    FETCH
-      shop
-  `)
+  const [shoppingLists] = await db
+    .query(surql`
+      SELECT
+        *
+      FROM
+        shopping_list
+      WHERE
+        household = ${currentHousehold.value!.id}
+      ORDER BY
+        updated_at DESC
+      FETCH
+        shop
+    `)
+    .collect<[OutShoppingList[]]>()
 
   return shoppingLists
 }, { watch: [currentHousehold] })

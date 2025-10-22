@@ -1,19 +1,16 @@
 import type { AsyncData } from '#app'
 import type { OutHousehold } from '~/db'
-import { Gap } from 'surrealdb'
 
 export const householdQuery = ref<Awaited<AsyncData<OutHousehold[], any>> | null>(null)
 
-export const currentHousehold = ref<OutHousehold | null>(null)
-export const householdGap = new Gap<OutHousehold['id']>()
+export const currentHousehold = shallowRef<OutHousehold | null>(null)
 
 // Create a new household
 export async function createHousehold(name: string) {
   try {
-    const [result] = await db.query<[OutHousehold]>(surql`
-      CREATE ONLY household SET name = ${name}
-    `)
-
+    const [result] = await db
+      .query(surql`CREATE ONLY household SET name = ${name}`)
+      .collect<[OutHousehold]>()
     if (!currentHousehold.value)
       currentHousehold.value = result
 

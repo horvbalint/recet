@@ -3,7 +3,7 @@ import type { OutHousehold } from '~/db'
 
 export const householdQuery = ref<Awaited<AsyncData<OutHousehold[], any>> | null>(null)
 
-export const currentHousehold = shallowRef<OutHousehold | null>(null)
+export const currentHousehold = ref<OutHousehold | null>(null)
 
 // Create a new household
 export async function createHousehold(name: string) {

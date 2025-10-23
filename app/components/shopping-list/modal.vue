@@ -44,7 +44,7 @@ async function handleSubmit() {
     }
     else {
       await db
-        .query(surql`CREATE shopping_list CONTENT ${createData = {
+        .query(surql`CREATE shopping_list CONTENT ${{
           ...formData.value,
           items: [],
           household: currentHousehold.value!.id,

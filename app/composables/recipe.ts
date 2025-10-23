@@ -1,4 +1,4 @@
-import type { PreparedQuery, RecordId } from 'surrealdb'
+import type { BoundQuery, RecordId } from 'surrealdb'
 import type { OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
 import type { Recipe } from '~/pages/index.vue'
 import { encode as encodeBlurhash } from 'blurhash'
@@ -95,20 +95,20 @@ const selectedTags = ref<OutRecipeTag['id'][]>([])
 const selectedMeals = ref<OutMeal['id'][]>([])
 const selectedIngredients = ref<OutIngredient['id'][]>([])
 
-function constructWhereClause(query: PreparedQuery) {
-  query.append` WHERE household = type::record(${currentHousehold.value!.id}) && created_at <= ${firstPageQueriedAt}`
+function constructWhereClause(query: BoundQuery) {
+  query.append(surql` WHERE household = type::record(${currentHousehold.value!.id}) && created_at <= ${firstPageQueriedAt}`)
 
   if (searchTerm.value)
-    query.append` && name @@ ${searchTerm.value}`
+    query.append(surql` && name @@ ${searchTerm.value}`)
 
   if (selectedCuisines.value.length)
-    query.append` && cuisine IN ${selectedCuisines.value}`
+    query.append(surql` && cuisine IN ${selectedCuisines.value}`)
   if (selectedTags.value.length)
-    query.append` && tags.intersect(${selectedTags.value}).len() > 0`
+    query.append(surql` && tags.intersect(${selectedTags.value}).len() > 0`)
   if (selectedMeals.value.length)
-    query.append` && meal.intersect(${selectedMeals.value}).len() > 0`
+    query.append(surql` && meal.intersect(${selectedMeals.value}).len() > 0`)
   if (selectedIngredients.value.length)
-    query.append` && ingredients.ingredient.intersect(${selectedIngredients.value}).len() > 0`
+    query.append(surql` && ingredients.ingredient.intersect(${selectedIngredients.value}).len() > 0`)
 
   return query
 }
@@ -116,7 +116,7 @@ function constructWhereClause(query: PreparedQuery) {
 function constructCountQuery() {
   const query = surql`SELECT VALUE count() FROM ONLY recipe`
   constructWhereClause(query)
-  query.append` GROUP ALL`
+  query.combine(surql` GROUP ALL`)
 
   return query
 }
@@ -138,25 +138,25 @@ function constructRecipeQuery() {
   `
 
   if (searchTerm.value)
-    query.append`,search::score(0) as score FROM recipe`
+    query.append(surql`,search::score(0) as score FROM recipe`)
   else
-    query.append`FROM recipe`
+    query.append(surql`FROM recipe`)
 
   if (searchTerm.value) {
     if (currentHousehold.value!.language === 'hu')
-      query.append` WITH INDEX hungarian_search_name`
+      query.append(surql` WITH INDEX hungarian_search_name`)
     else
-      query.append` WITH INDEX english_search_name`
+      query.append(surql` WITH INDEX english_search_name`)
   }
 
   constructWhereClause(query)
 
   if (searchTerm.value)
-    query.append` ORDER BY score, created_at DESC`
+    query.append(surql` ORDER BY score, created_at DESC`)
   else
-    query.append` ORDER BY created_at DESC`
+    query.append(surql` ORDER BY created_at DESC`)
 
-  query.append` LIMIT ${recipesPerPage} START ${pageIndex.value * recipesPerPage}`
+  query.append(surql` LIMIT ${recipesPerPage} START ${pageIndex.value * recipesPerPage}`)
 
   return query
 }

@@ -8,7 +8,7 @@ definePageMeta({
 
 const router = useRouter()
 
-const { data: shoppingLists, status: shoppingListsStatus, refresh: refreshShoppingLists } = useAsyncData('shopping-lists', async () => {
+const { data: shoppingLists, status, refresh } = useAsyncData('shopping-lists', async () => {
   const [shoppingLists] = await db
     .query(surql`
       SELECT
@@ -26,11 +26,6 @@ const { data: shoppingLists, status: shoppingListsStatus, refresh: refreshShoppi
 
   return shoppingLists
 }, { watch: [currentHousehold] })
-
-const status = shoppingListsStatus
-async function refresh() {
-  await refreshShoppingLists()
-}
 
 const showCreateModal = ref(false)
 
@@ -103,7 +98,7 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
 
 .lists-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: var(--space-6);
 }
 

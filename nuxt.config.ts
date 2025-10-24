@@ -154,5 +154,15 @@ export default defineNuxtConfig({
     // },
   },
 
+  vite: {
+    optimizeDeps: {
+      include: [
+        'blurhash',
+        'browser-image-resizer',
+        '@formkit/drag-and-drop/vue',
+      ]
+    }
+  },
+
   devtools: { enabled: true },
 })

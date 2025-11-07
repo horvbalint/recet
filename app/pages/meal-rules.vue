@@ -3,7 +3,7 @@ definePageMeta({
   layout: 'app',
 })
 
-const { data: mealRules, status, refresh } = useAsyncData('meal-rules', async () => {
+const { data: mealRules, status, refresh, error } = useAsyncData('meal-rules', async () => {
   const [mealRules] = await db
     .query(surql`
       SELECT
@@ -34,7 +34,7 @@ const showCreateModal = ref(false)
       />
     </template>
 
-    <neb-state-content :status :refresh>
+    <neb-state-content :status :refresh :error-description="error?.message">
       <div class="meal-rules-page">
         <div v-if="mealRules?.length" class="rules-grid">
           <meal-rule-card

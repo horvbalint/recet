@@ -53,10 +53,10 @@ DEFINE FUNCTION OVERWRITE fn::define_household_table($name: string) {
 		for create, delete, update WHERE fn::can_write_household(household);
 
 	DEFINE FIELD OVERWRITE household ON $name TYPE record<household>;
-	fn::add_meta_fields($name);
+	fn::define_meta_fields($name);
 };
 
-DEFINE FUNCTION OVERWRITE fn::add_meta_fields($table: string) {
+DEFINE FUNCTION OVERWRITE fn::define_meta_fields($table: string) {
 	DEFINE FIELD OVERWRITE created_at ON $table TYPE datetime DEFAULT time::now();
 	DEFINE FIELD OVERWRITE updated_at ON $table TYPE datetime VALUE time::now();
 };
@@ -140,7 +140,7 @@ DEFINE FIELD OVERWRITE meal_rules.breakfast ON household TYPE array<record<meal_
 DEFINE FIELD OVERWRITE meal_rules.lunch ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household);
 DEFINE FIELD OVERWRITE meal_rules.dinner ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household);
 DEFINE FIELD OVERWRITE meal_rules.snack ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household);
-fn::add_meta_fields("household");
+fn::define_meta_fields("household");
 
 DEFINE EVENT OVERWRITE relate_owner ON household WHEN $event = "CREATE" THEN (
 	RELATE ONLY $auth -> member -> $after SET role = "owner"

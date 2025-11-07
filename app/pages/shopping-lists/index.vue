@@ -8,7 +8,7 @@ definePageMeta({
 
 const router = useRouter()
 
-const { data: shoppingLists, status, refresh } = useAsyncData('shopping-lists', async () => {
+const { data: shoppingLists, status, refresh, error } = useAsyncData('shopping-lists', async () => {
   const [shoppingLists] = await db
     .query(surql`
       SELECT
@@ -57,7 +57,7 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
       </neb-content-header>
     </template>
 
-    <neb-state-content :status :refresh>
+    <neb-state-content :status :refresh :error-description="error?.message">
       <div class="shopping-lists-page">
         <div v-if="shoppingLists?.length" class="lists-grid">
           <shopping-list-card

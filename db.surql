@@ -78,10 +78,25 @@ DEFINE FIELD OVERWRITE tags ON recipe TYPE array<record<recipe_tag>> DEFAULT [] 
 DEFINE FIELD OVERWRITE cuisine ON recipe TYPE option<record<cuisine>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE meal ON recipe TYPE array<record<meal>> DEFAULT [] ASSERT $value.all(|$v| household = $v.household);
 DEFINE FIELD OVERWRITE image_blur_hash ON recipe TYPE option<string> ASSERT image != NONE;
-DEFINE FIELD OVERWRITE image ON recipe TYPE option<bytes> ASSERT image_blur_hash != NONE && bytes::len($value) < 1 * 1024 * 1024; // max 1MB
+DEFINE FIELD OVERWRITE image ON recipe TYPE option<file>;
 
 DEFINE INDEX OVERWRITE hungarian_search_name ON recipe FIELDS name FULLTEXT ANALYZER hungarian_analyzer;
 DEFINE INDEX OVERWRITE english_search_name ON recipe FIELDS name FULLTEXT ANALYZER english_analyzer;
+
+// FILES
+DEFINE BUCKET OVERWRITE recipe_images BACKEND "memory" PERMISSIONS WHERE
+	IF $action = 'get' {
+		LET $household = SELECT VALUE household FROM ONLY recipe WHERE image = $file;
+		fn::can_read_household($household)
+	}
+	ELSE IF $action = 'put' {
+		LET $household = SELECT VALUE household FROM ONLY type::record("recipe", file::key($file).slice(1..));
+		fn::can_write_household($household)
+	}
+	ELSE {
+		false
+	};
+
 
 // TABLE: meal
 fn::define_household_table("meal");

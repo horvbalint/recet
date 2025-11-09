@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { InRecipe, OutCuisine, OutIngredient, OutMeal, OutRecipeTag, OutUnit } from '~/db'
+import { FileRef } from 'surrealdb'
 
 definePageMeta({
   layout: 'app',
@@ -55,13 +56,15 @@ const { data: recipeToEdit, status: recipeStatus, refresh: recipeRefresh, error:
 })
 
 let originalImage: null | File = null
-watchOnce(recipeToEdit, () => {
+watchOnce(recipeToEdit, async () => {
   if (!recipeToEdit.value)
     return
 
   formData.value = recipeToEdit.value
-  selectedImage.value = recipeToEdit.value.image ? new File([recipeToEdit.value.image], 'recipe-image.jpg', { type: 'image/jpeg' }) : null
-  originalImage = selectedImage.value
+  if (recipeToEdit.value.image) {
+    selectedImage.value = await getRecipeImage(recipeToEdit.value.id!)
+    originalImage = selectedImage.value
+  }
 })
 
 const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, error: masterDataError } = useAsyncData(async () => {
@@ -113,25 +116,29 @@ async function createRecipe() {
     submitting.value = true
     const { blurhash, imageBuffer } = await processRecipeImage(selectedImage.value)
 
-    const data = {
-      ...formData.value,
-      author: authUser.value!.id,
-      household: currentHousehold.value!.id,
-      steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
-      image_blur_hash: blurhash,
-      image: imageBuffer,
-      id: undefined,
-      created_at: undefined,
-      updated_at: undefined,
-    }
-
     const [result] = await db
-      .query(surql`INSERT INTO recipe ${data} RETURN id`)
-      .collect<[OutIngredient[]]>()
+      .query(surql`CREATE ONLY recipe CONTENT ${{
+        ...formData.value,
+        author: authUser.value!.id,
+        household: currentHousehold.value!.id,
+        steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
+        id: undefined,
+        created_at: undefined,
+        updated_at: undefined,
+      }} RETURN id`)
+      .collect<[OutIngredient]>()
+
+    await db.query(surql`file::put(type::file("recipe_images", ${result.id!.id}), ${imageBuffer})`)
+    await db
+      .query(surql`UPDATE ONLY ${result.id} MERGE ${{
+        image_blur_hash: blurhash,
+        image: new FileRef('recipe_images', result!.id.id as string),
+      }}`)
+      .collect()
 
     clearRecipeCache()
     useNebToast({ type: 'success', title: 'Recipe created!', description: 'Your recipe has been saved successfully.' })
-    await navigateTo(`/recipe/${result[0]!.id.id}`)
+    await navigateTo(`/recipe/${result!.id.id}`)
   }
   catch (error) {
     console.error(error)
@@ -153,8 +160,10 @@ async function updateRecipe() {
 
     if (selectedImage.value !== originalImage) {
       const { blurhash, imageBuffer } = await processRecipeImage(selectedImage.value)
+
+      await db.query(surql`file::put(type::file("recipe_images", ${formData.value.id!.id}), ${imageBuffer})`)
+      update.image = new FileRef('recipe_images', formData.value.id!.id as string)
       update.image_blur_hash = blurhash
-      update.image = imageBuffer
     }
 
     await db

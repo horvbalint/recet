@@ -28,16 +28,25 @@ export function getRecipeViewTransitionNames(recipeId: RecordId<'recipe'>['id'])
 }
 
 // RECIPE IMAGE HANDLING
+export async function getRecipeImage(recipeId: RecordId<'recipe'>) {
+  const [buffer] = await db
+    .query(surql`file::get(type::file('recipe_images', ${recipeId.id}))`)
+    .collect<[ArrayBuffer | null]>()
+
+  if (buffer)
+    return new File([buffer!], 'recipe-image.jpg', { type: 'image/*' })
+  else
+    return null
+}
+
 const cachedRecipeImages = new Map<RecordId<'recipe'>['id'], string | null>()
 export async function getRecipeImageUrl(recipeId: RecordId<'recipe'>) {
   if (cachedRecipeImages.has(recipeId.id))
     return cachedRecipeImages.get(recipeId.id)!
 
-  const [buffer] = await db
-    .query(surql`SELECT VALUE image FROM ONLY type::record('recipe', ${recipeId})`)
-    .collect<[ArrayBuffer | null]>()
+  const image = await getRecipeImage(recipeId)
 
-  const url = buffer ? URL.createObjectURL(new Blob([buffer], { type: 'image/*' })) : null
+  const url = image && URL.createObjectURL(image)
   cachedRecipeImages.set(recipeId.id, url)
   return url
 }
@@ -114,7 +123,7 @@ function constructWhereClause(query: BoundQuery) {
 }
 
 function constructCountQuery() {
-  const query = surql`SELECT VALUE count() FROM ONLY recipe`
+  const query = surql`SELECT VALUE count() FROM recipe`
   constructWhereClause(query)
   query.combine(surql` GROUP ALL`)
 

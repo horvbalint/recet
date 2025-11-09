@@ -1,8 +1,6 @@
 import type { BoundQuery, RecordId } from 'surrealdb'
 import type { OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
 import type { Recipe } from '~/pages/index.vue'
-import { encode as encodeBlurhash } from 'blurhash'
-import { readAndCompressImage } from 'browser-image-resizer'
 
 // VIEW TRANSITION
 const cachedRecipe = ref<Recipe | null>(null)
@@ -51,38 +49,10 @@ export async function getRecipeImageUrl(recipeId: RecordId<'recipe'>) {
   return url
 }
 
-export async function processRecipeImage(file: File | null) {
-  if (!file)
-    return { blurhash: undefined, imageBuffer: undefined }
-
-  const resizedImage = await readAndCompressImage(file, {
-    quality: 0.8,
-    maxHeight: 800,
-    maxWidth: 800,
-  })
-
-  const image = await loadImage(resizedImage)
-
-  const { naturalWidth: width, naturalHeight: height } = image
-  const canvas = new OffscreenCanvas(width, height)
-  const ctx = canvas.getContext('2d')!
-  ctx.drawImage(image, 0, 0)
-  const imageData = ctx.getImageData(0, 0, width, height)
-
-  const blurhash = encodeBlurhash(imageData.data, width, height, 4, 4)
-  const imageBuffer = await resizedImage.arrayBuffer()
-
-  return { blurhash, imageBuffer }
-}
-
-function loadImage(blob: Blob): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.src = URL.createObjectURL(blob)
-
-    image.onload = () => resolve(image)
-    image.onerror = reject
-  })
+export async function setImageOnRecipe(recipeId: RecordId<'recipe'>, image: File) {
+  const buffer = await image.arrayBuffer()
+  await db.query(surql`fn::add_image_to_recipe(${recipeId}, ${buffer})`)
+  cachedRecipeImages.delete(recipeId.id)
 }
 
 // RECIPE STATE + QUERY

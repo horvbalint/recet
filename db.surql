@@ -8,6 +8,10 @@ DEFINE ANALYZER OVERWRITE english_analyzer
   TOKENIZERS class
   FILTERS snowball(english), lowercase, ascii;
 
+// PLUGINS
+DEFINE BUCKET OVERWRITE plugins BACKEND "file:/data/recet/plugins" PERMISSIONS NONE;
+DEFINE MODULE OVERWRITE mod::recet AS f"plugins:/recet.surli";
+
 // TABLE: user
 DEFINE TABLE OVERWRITE user SCHEMAFULL PERMISSIONS
 	FOR select FULL
@@ -83,20 +87,11 @@ DEFINE FIELD OVERWRITE image ON recipe TYPE option<file>;
 DEFINE INDEX OVERWRITE hungarian_search_name ON recipe FIELDS name FULLTEXT ANALYZER hungarian_analyzer;
 DEFINE INDEX OVERWRITE english_search_name ON recipe FIELDS name FULLTEXT ANALYZER english_analyzer;
 
-// FILES
-DEFINE BUCKET OVERWRITE recipe_images BACKEND "memory" PERMISSIONS WHERE
-	IF $action = 'get' {
-		LET $household = SELECT VALUE household FROM ONLY recipe WHERE image = $file;
-		fn::can_read_household($household)
+DEFINE EVENT OVERWRITE delete_unused_image ON recipe WHEN $event = "DELETE" THEN (
+	IF ($before.image != NONE) {
+		file::delete($before.image);
 	}
-	ELSE IF $action = 'put' {
-		LET $household = SELECT VALUE household FROM ONLY type::record("recipe", file::key($file).slice(1..));
-		fn::can_write_household($household)
-	}
-	ELSE {
-		false
-	};
-
+);
 
 // TABLE: meal
 fn::define_household_table("meal");
@@ -151,10 +146,10 @@ DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
 DEFINE FIELD OVERWRITE name ON household TYPE string;
 DEFINE FIELD OVERWRITE language ON household TYPE 'en' | 'hu' DEFAULT 'en';
 DEFINE FIELD OVERWRITE meal_rules ON household TYPE object DEFAULT {};
-DEFINE FIELD OVERWRITE meal_rules.breakfast ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE meal_rules.lunch ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE meal_rules.dinner ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household);
-DEFINE FIELD OVERWRITE meal_rules.snack ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE meal_rules.breakfast ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household) DEFAULT [];
+DEFINE FIELD OVERWRITE meal_rules.lunch ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household) DEFAULT [];
+DEFINE FIELD OVERWRITE meal_rules.dinner ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household) DEFAULT [];
+DEFINE FIELD OVERWRITE meal_rules.snack ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household) DEFAULT [];
 fn::define_meta_fields("household");
 
 DEFINE EVENT OVERWRITE relate_owner ON household WHEN $event = "CREATE" THEN (
@@ -212,6 +207,30 @@ DEFINE FIELD OVERWRITE conditions ON meal_rule TYPE {
 	}>
 };
 
+DEFINE BUCKET OVERWRITE recipe_images BACKEND "file:/data/recet/recipe_images" PERMISSIONS WHERE
+	IF $action = 'get' {
+		LET $household = SELECT VALUE household FROM ONLY recipe WHERE image = $file;
+		fn::can_read_household($household)
+	}
+	ELSE IF $action = 'put' {
+		LET $household = SELECT VALUE household FROM ONLY type::record("recipe", file::key($file).slice(1..));
+		fn::can_write_household($household)
+	}
+	ELSE {
+		false
+	};
+
+DEFINE FUNCTION OVERWRITE fn::add_image_to_recipe($recipe_id: record<recipe>, $image: bytes) {
+	LET $result = mod::recet::process_image($image);
+
+	LET $file_handle = type::file("recipe_images", record::id($recipe_id));
+	file::put($file_handle, $result.bytes);
+
+	UPDATE ONLY $recipe_id MERGE {
+		image: $file_handle,
+		image_blur_hash: $result.blurhash
+	};
+};
 
 DEFINE FUNCTION OVERWRITE fn::add_member_to_household($household: record<household>, $username: string, $role: "owner" | "writer" | "guest") {
 	LET $user = (SELECT id FROM ONLY user WHERE username = $username);

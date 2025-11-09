@@ -1,0 +1,6 @@
+[package]
+organisation = "recet"
+name = "recet"
+version = "1.0.0"
+
+[capabilities]

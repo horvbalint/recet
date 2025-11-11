@@ -75,7 +75,7 @@ const selectedMeals = ref<OutMeal['id'][]>([])
 const selectedIngredients = ref<OutIngredient['id'][]>([])
 
 function constructWhereClause(query: BoundQuery) {
-  query.append(surql` WHERE household = type::record(${currentHousehold.value!.id}) && created_at <= ${firstPageQueriedAt}`)
+  query.append(surql` WHERE household = ${currentHousehold.value!.id} && created_at <= ${firstPageQueriedAt}`)
 
   if (searchTerm.value)
     query.append(surql` && name @@ ${searchTerm.value}`)
@@ -93,9 +93,9 @@ function constructWhereClause(query: BoundQuery) {
 }
 
 function constructCountQuery() {
-  const query = surql`SELECT VALUE count() FROM recipe`
+  const query = surql`SELECT VALUE count() FROM ONLY recipe`
   constructWhereClause(query)
-  query.combine(surql` GROUP ALL`)
+  query.append(surql` GROUP ALL`)
 
   return query
 }
@@ -156,10 +156,10 @@ export function useRecipeState() {
 
     const [[recipes], [count]] = await Promise.all([
       db.query(recipeQuery).collect<[Recipe[]]>(),
-      db.query(countQuery).collect<[{ count: number } | null]>(),
+      db.query(countQuery).collect<[number]>(),
     ])
 
-    return { recipeChunks: recipes, recipeCount: count?.count || 0 }
+    return { recipeChunks: recipes, recipeCount: count }
   }, { immediate: false, watch: [...conditionWatchSources, pageIndex] })
 
   if (recipeCount.value === null)

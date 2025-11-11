@@ -1,4 +1,4 @@
-import { DateTime, FileRef, RecordId, Surreal } from 'surrealdb'
+import { applyDiagnostics, createRemoteEngines, DateTime, FileRef, RecordId, Surreal } from 'surrealdb'
 
 export { surql } from 'surrealdb'
 
@@ -13,4 +13,8 @@ export const db = new Surreal({
         return value
     },
   },
+  // engines: applyDiagnostics(createRemoteEngines(), (event) => {
+  //   if (event.type === 'query' && event.phase === 'after')
+  //     console.log(event.success, event.result.query, event.result.params)
+  // }),
 })

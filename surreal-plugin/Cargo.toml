@@ -10,4 +10,5 @@ crate-type = [ "cdylib" ]
 image = "0.25.8"
 surrealism = { git = "https://github.com/surrealdb/surrealdb" }
 surrealdb-types = { git = "https://github.com/surrealdb/surrealdb" }
-fast-blurhash = "1.0.1"
+blurhash = "0.2.3"
+anyhow = "1.0.100"

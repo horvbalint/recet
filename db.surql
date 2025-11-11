@@ -76,7 +76,7 @@ DEFINE FIELD OVERWRITE ingredients.*.description ON recipe TYPE option<string>;
 DEFINE FIELD OVERWRITE portions ON recipe TYPE option<number> ASSERT $value > 0; 
 DEFINE FIELD OVERWRITE steps ON recipe TYPE array<string> DEFAULT [];
 DEFINE FIELD OVERWRITE cooking_time_minutes ON recipe TYPE option<number> ASSERT $value >= 0;
-DEFINE FIELD OVERWRITE author ON recipe TYPE record<user> VALUE $auth.id;
+DEFINE FIELD OVERWRITE author ON recipe TYPE record<user> VALUE author || $auth.id;
 DEFINE FIELD OVERWRITE household ON recipe TYPE record<household>;
 DEFINE FIELD OVERWRITE tags ON recipe TYPE array<record<recipe_tag>> DEFAULT [] ASSERT $value.all(|$v| household = $v.household);
 DEFINE FIELD OVERWRITE cuisine ON recipe TYPE option<record<cuisine>> ASSERT household = $value.household;

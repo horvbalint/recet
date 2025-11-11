@@ -170,6 +170,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "blurhash"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e79769241dcd44edf79a732545e8b5cec84c247ac060f5252cd51885d093a8fc"
+
+[[package]]
 name = "borsh"
 version = "1.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -586,12 +592,6 @@ name = "fallible-iterator"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2acce4a10f12dc2fb14a218589d4f1f62ef011b2d0cc4b3cb1bba8e94da14649"
-
-[[package]]
-name = "fast-blurhash"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ee43bf33e29174a8fc38cdb4fba8641f6cb6f21931a1669bc0f834766821503"
 
 [[package]]
 name = "fax"
@@ -1911,7 +1911,8 @@ checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 name = "surreal-plugin"
 version = "0.1.0"
 dependencies = [
- "fast-blurhash",
+ "anyhow",
+ "blurhash",
  "image",
  "surrealdb-types",
  "surrealism",

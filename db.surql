@@ -1,5 +1,13 @@
 BEGIN TRANSACTION;
 
+IF $pluginsBucketPath == NONE {
+	throw "Please run `DEFINE PARAM $pluginsBucketPath VALUE '/path/to/the/directory'` with the path to the directory where plugins will be stored.";
+};
+
+IF $recipeImagesBucketPath == NONE {
+	throw "Please run `DEFINE PARAM $recipeImagesBucketPath VALUE '/path/to/the/directory'` with the path to the directory where recipe images will be stored.";
+};
+
 DEFINE ANALYZER OVERWRITE hungarian_analyzer
   TOKENIZERS class
   FILTERS snowball(hungarian), lowercase, ascii;
@@ -9,7 +17,7 @@ DEFINE ANALYZER OVERWRITE english_analyzer
   FILTERS snowball(english), lowercase, ascii;
 
 // PLUGINS
-DEFINE BUCKET OVERWRITE plugins BACKEND "file:/data/recet/plugins" PERMISSIONS NONE;
+DEFINE BUCKET OVERWRITE plugins BACKEND $pluginsBucketPath PERMISSIONS NONE;
 DEFINE MODULE OVERWRITE mod::recet AS f"plugins:/recet.surli";
 
 // TABLE: user
@@ -207,7 +215,7 @@ DEFINE FIELD OVERWRITE conditions ON meal_rule TYPE {
 	}>
 };
 
-DEFINE BUCKET OVERWRITE recipe_images BACKEND "file:/data/recet/recipe_images" PERMISSIONS WHERE
+DEFINE BUCKET OVERWRITE recipe_images BACKEND $recipeImagesBucketPath PERMISSIONS WHERE
 	IF $action = 'get' {
 		LET $household = SELECT VALUE household FROM ONLY recipe WHERE image = $file;
 		fn::can_read_household($household)

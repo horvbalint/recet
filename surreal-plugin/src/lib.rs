@@ -13,9 +13,7 @@ struct ImageData {
 
 #[surrealism]
 fn process_image(buffer: Bytes) -> anyhow::Result<ImageData> {
-    let image = image::load_from_memory(&buffer)
-        .unwrap()
-        .resize(600, 600, FilterType::Lanczos3);
+    let image = image::load_from_memory(&buffer)?.resize(600, 600, FilterType::Lanczos3);
 
     let (width, height) = image.dimensions();
     let blurhash = encode(4, 4, width, height, &image.to_rgba8().to_vec())?;

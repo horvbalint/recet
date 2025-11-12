@@ -8,4 +8,13 @@ FOR $recipe IN $recipes {
 	UPDATE ONLY $recipe.id SET image = $file_handle;
 };
 
+let $info = INFO FOR DB STRUCTURE;
+FOR $table IN $info.tables {
+	IF $table.name = 'member' {
+			continue
+	};
+	
+	UPDATE type::table($table.name) SET created_at = time::now() WHERE created_at = NONE;
+};
+
 COMMIT;

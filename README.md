@@ -41,6 +41,8 @@ The project uses two currently experimental features:
   - files: for this to work the `SURREAL_BUCKET_FOLDER_ALLOWLIST` env var has to be set
   - surrealism: the `recet.surli` plugin in the `surreal-plugin` directory has to be copied into the `plugins` bucket's directory
 
+These experimental features are available in the latest v3 alpha versions of SurrealDB.
+
 #### Steps:
 - clone the repo
 - pnpm i

@@ -87,7 +87,7 @@ function constructWhereClause(query: BoundQuery) {
   if (selectedMeals.value.length)
     query.append(surql` && meal.intersect(${selectedMeals.value}).len() > 0`)
   if (selectedIngredients.value.length)
-    query.append(surql` && ingredients.ingredient.intersect(${selectedIngredients.value}).len() > 0`)
+    query.append(surql` && (ingredients.ingredient || []).intersect(${selectedIngredients.value}).len() > 0`)
 
   return query
 }

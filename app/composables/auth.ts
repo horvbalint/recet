@@ -8,7 +8,6 @@ export const authMemberships = ref<MemberShips | null>(null)
 export const currHouseholdRole = computed(() => {
   if (!currentHousehold.value || !authMemberships.value)
     return false
-
   return authMemberships.value.get(currentHousehold.value.id.toString())
 })
 
@@ -17,7 +16,7 @@ export const isCurrHouseholdEditor = computed(() => ['owner', 'writer'].includes
 export const isCurrHouseholdViewer = computed(() => ['owner', 'writer', 'guest'].includes(currHouseholdRole.value || ''))
 
 export async function signUp(email: string, username: string, password: string) {
-  const token = await db.signup({
+  const { token } = await db.signup({
     access: 'user',
     variables: {
       email,
@@ -30,7 +29,7 @@ export async function signUp(email: string, username: string, password: string) 
 }
 
 export async function signIn(email: string, password: string) {
-  const token = await db.signin({
+  const { token } = await db.signin({
     access: 'user',
     variables: {
       email,

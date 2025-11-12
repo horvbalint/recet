@@ -1,0 +1,1 @@
+surrealism build --out ./recet.surli .

@@ -1,8 +1,6 @@
-import type { PreparedQuery, RecordId } from 'surrealdb'
+import type { BoundQuery, RecordId } from 'surrealdb'
 import type { OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
 import type { Recipe } from '~/pages/index.vue'
-import { encode as encodeBlurhash } from 'blurhash'
-import { readAndCompressImage } from 'browser-image-resizer'
 
 // VIEW TRANSITION
 const cachedRecipe = ref<Recipe | null>(null)
@@ -28,52 +26,33 @@ export function getRecipeViewTransitionNames(recipeId: RecordId<'recipe'>['id'])
 }
 
 // RECIPE IMAGE HANDLING
+export async function getRecipeImage(recipeId: RecordId<'recipe'>) {
+  const [buffer] = await db
+    .query(surql`file::get(type::file('recipe_images', ${recipeId.id}))`)
+    .collect<[ArrayBuffer | null]>()
+
+  if (buffer)
+    return new File([buffer!], 'recipe-image.jpg', { type: 'image/*' })
+  else
+    return null
+}
+
 const cachedRecipeImages = new Map<RecordId<'recipe'>['id'], string | null>()
 export async function getRecipeImageUrl(recipeId: RecordId<'recipe'>) {
   if (cachedRecipeImages.has(recipeId.id))
     return cachedRecipeImages.get(recipeId.id)!
 
-  const [buffer] = await db.query<[ArrayBuffer | null]>(surql`
-    SELECT VALUE image FROM ONLY type::thing('recipe', ${recipeId})
-  `)
+  const image = await getRecipeImage(recipeId)
 
-  const url = buffer ? URL.createObjectURL(new Blob([buffer], { type: 'image/*' })) : null
+  const url = image && URL.createObjectURL(image)
   cachedRecipeImages.set(recipeId.id, url)
   return url
 }
 
-export async function processRecipeImage(file: File | null) {
-  if (!file)
-    return { blurhash: undefined, imageBuffer: undefined }
-
-  const resizedImage = await readAndCompressImage(file, {
-    quality: 0.8,
-    maxHeight: 800,
-    maxWidth: 800,
-  })
-
-  const image = await loadImage(resizedImage)
-
-  const { naturalWidth: width, naturalHeight: height } = image
-  const canvas = new OffscreenCanvas(width, height)
-  const ctx = canvas.getContext('2d')!
-  ctx.drawImage(image, 0, 0)
-  const imageData = ctx.getImageData(0, 0, width, height)
-
-  const blurhash = encodeBlurhash(imageData.data, width, height, 4, 4)
-  const imageBuffer = await resizedImage.arrayBuffer()
-
-  return { blurhash, imageBuffer }
-}
-
-function loadImage(blob: Blob): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.src = URL.createObjectURL(blob)
-
-    image.onload = () => resolve(image)
-    image.onerror = reject
-  })
+export async function setImageOnRecipe(recipeId: RecordId<'recipe'>, image: File) {
+  const buffer = await image.arrayBuffer()
+  await db.query(surql`fn::add_image_to_recipe(${recipeId}, ${buffer})`)
+  cachedRecipeImages.delete(recipeId.id)
 }
 
 // RECIPE STATE + QUERY
@@ -95,20 +74,20 @@ const selectedTags = ref<OutRecipeTag['id'][]>([])
 const selectedMeals = ref<OutMeal['id'][]>([])
 const selectedIngredients = ref<OutIngredient['id'][]>([])
 
-function constructWhereClause(query: PreparedQuery) {
-  query.append` WHERE household = type::thing(${currentHousehold.value!.id}) && craeted_at <= ${firstPageQueriedAt}`
+function constructWhereClause(query: BoundQuery) {
+  query.append(surql` WHERE household = ${currentHousehold.value!.id} && created_at <= ${firstPageQueriedAt}`)
 
   if (searchTerm.value)
-    query.append` && name @@ ${searchTerm.value}`
+    query.append(surql` && name @@ ${searchTerm.value}`)
 
   if (selectedCuisines.value.length)
-    query.append` && cuisine IN ${selectedCuisines.value}`
+    query.append(surql` && cuisine IN ${selectedCuisines.value}`)
   if (selectedTags.value.length)
-    query.append` && tags.intersect(${selectedTags.value}).len() > 0`
+    query.append(surql` && tags.intersect(${selectedTags.value}).len() > 0`)
   if (selectedMeals.value.length)
-    query.append` && meal.intersect(${selectedMeals.value}).len() > 0`
+    query.append(surql` && meal.intersect(${selectedMeals.value}).len() > 0`)
   if (selectedIngredients.value.length)
-    query.append` && ingredients.ingredient.intersect(${selectedIngredients.value}).len() > 0`
+    query.append(surql` && (ingredients.ingredient || []).intersect(${selectedIngredients.value}).len() > 0`)
 
   return query
 }
@@ -116,7 +95,7 @@ function constructWhereClause(query: PreparedQuery) {
 function constructCountQuery() {
   const query = surql`SELECT VALUE count() FROM ONLY recipe`
   constructWhereClause(query)
-  query.append` GROUP ALL`
+  query.append(surql` GROUP ALL`)
 
   return query
 }
@@ -138,25 +117,25 @@ function constructRecipeQuery() {
   `
 
   if (searchTerm.value)
-    query.append`,search::score(0) as score FROM recipe`
+    query.append(surql`,search::score(0) as score FROM recipe`)
   else
-    query.append`FROM recipe`
+    query.append(surql`FROM recipe`)
 
   if (searchTerm.value) {
     if (currentHousehold.value!.language === 'hu')
-      query.append` WITH INDEX hungarian_search_name`
+      query.append(surql` WITH INDEX hungarian_search_name`)
     else
-      query.append` WITH INDEX english_search_name`
+      query.append(surql` WITH INDEX english_search_name`)
   }
 
   constructWhereClause(query)
 
   if (searchTerm.value)
-    query.append` ORDER BY score, created_at DESC`
+    query.append(surql` ORDER BY score, created_at DESC`)
   else
-    query.append` ORDER BY created_at DESC`
+    query.append(surql` ORDER BY created_at DESC`)
 
-  query.append` LIMIT ${recipesPerPage} START ${pageIndex.value * recipesPerPage}`
+  query.append(surql` LIMIT ${recipesPerPage} START ${pageIndex.value * recipesPerPage}`)
 
   return query
 }
@@ -176,11 +155,11 @@ export function useRecipeState() {
     const countQuery = constructCountQuery()
 
     const [[recipes], [count]] = await Promise.all([
-      db.query<[Recipe[]]>(recipeQuery),
-      db.query<[{ count: number } | null]>(countQuery),
+      db.query(recipeQuery).collect<[Recipe[]]>(),
+      db.query(countQuery).collect<[number]>(),
     ])
 
-    return { recipeChunks: recipes, recipeCount: count?.count || 0 }
+    return { recipeChunks: recipes, recipeCount: count }
   }, { immediate: false, watch: [...conditionWatchSources, pageIndex] })
 
   if (recipeCount.value === null)
@@ -198,12 +177,14 @@ export function useRecipeState() {
   })
 
   const { data: filterDataTemp, status: filterDataStatus, refresh: queryFilterData } = useAsyncData('filter-data', async () => {
-    const [cuisenes, tags, meals, ingredients] = await db.query<[OutCuisine[], OutRecipeTag[], OutMeal[], OutIngredient[]]>(surql`
-    SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
-    SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
-    SELECT id, name, color FROM meal ORDER BY name ASC;
-    SELECT id, name FROM ingredient ORDER BY name ASC;
-  `)
+    const [cuisenes, tags, meals, ingredients] = await db
+      .query(surql`
+        SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
+        SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
+        SELECT id, name, color FROM meal ORDER BY name ASC;
+        SELECT id, name FROM ingredient ORDER BY name ASC;
+      `)
+      .collect<[OutCuisine[], OutRecipeTag[], OutMeal[], OutIngredient[]]>()
 
     return { cuisenes, tags, meals, ingredients }
   }, {

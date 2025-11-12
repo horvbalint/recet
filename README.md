@@ -37,6 +37,9 @@ Luckily SurrealDB v.3 is around the corner and these shortcommings are addressed
 
 ## Start/Deploy
 The project uses Nuxt.js and SurrealDB. It needs a DB instance running with the structure defined in `db.surql`.
+The project uses two currently experimental features:
+  - files: for this to work the `SURREAL_BUCKET_FOLDER_ALLOWLIST` env var has to be set
+  - surrealism: the `recet.surli` plugin in the `surreal-plugin` directory has to be copied into the `plugins` bucket's directory
 
 #### Steps:
 - clone the repo

@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import type { OutShoppingList } from '~/db'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
 const props = defineProps<{
-  list: OutShoppingList
+  rule: OutMealRule
 }>()
 
 const emit = defineEmits<{
@@ -30,43 +29,43 @@ const menuItems = [
   },
 ]
 
-async function handleListChange() {
+async function handleRuleChange() {
   showEditModal.value = false
   emit('changed')
 }
 
 async function deleteList() {
   try {
-    if (!await useNebConfirm({ title: 'Confirm deletion!', description: 'Are you sure you want to delete this shopping list? This action cannot be undone.' }))
+    if (!await useNebConfirm({ title: 'Confirm deletion!', description: 'Are you sure you want to delete this meal rule? This action cannot be undone.' }))
       return
 
     await db
-      .query(surql`DELETE ${props.list.id}`)
+      .query(surql`DELETE ${props.rule.id}`)
       .collect()
-    useNebToast({ type: 'success', title: 'List deleted', description: 'Shopping list has been deleted.' })
+    useNebToast({ type: 'success', title: 'Rule deleted', description: 'Meal rule has been deleted.' })
     emit('changed')
   }
   catch (error) {
     console.error('Error deleting list:', error)
-    useNebToast({ type: 'error', title: 'Delete failed', description: 'Could not delete the shopping list.' })
+    useNebToast({ type: 'error', title: 'Delete failed', description: 'Could not delete the meal rule.' })
   }
 }
 </script>
 
 <template>
-  <div class="list-card" @click="emit('view')">
-    <div class="list-header">
-      <div class="list-header-texts">
-        <h3 class="list-name">
-          {{ props.list.name }}
+  <div class="rule-card" @click="emit('view')">
+    <div class="rule-header">
+      <div class="rule-header-texts">
+        <h3 class="rule-name">
+          {{ props.rule.name }}
         </h3>
 
-        <div class="list-stats">
+        <div class="rule-stats">
           <neb-badge small>
-            {{ props.list.items.length }} items
+            {{ props.rule.items.length }} items
           </neb-badge>
 
-          <span class="updated-time">{{ dayjs(props.list.updated_at).fromNow() }}</span>
+          <span class="updated-time">{{ dayjs(props.rule.updated_at).fromNow() }}</span>
         </div>
       </div>
 
@@ -83,18 +82,18 @@ async function deleteList() {
       </neb-menu>
     </div>
 
-    <div class="list-actions">
+    <div class="rule-actions">
       <neb-button type="secondary" small>
         View List
       </neb-button>
     </div>
   </div>
 
-  <shopping-list-modal v-if="showEditModal" v-model="showEditModal" :initial-data="{ ...list, shop: list.shop?.id }" @change="handleListChange()" />
+  <meal-rule-modal v-if="showEditModal" v-model="showEditModal" :initial-data="{ ...rule, shop: rule.shop?.id }" @change="handleRuleChange()" />
 </template>
 
 <style scoped>
-.list-card {
+.rule-card {
   background: #fff;
   border-radius: var(--radius-large);
   border: 1px solid var(--neutral-color-200);
@@ -107,32 +106,32 @@ async function deleteList() {
   gap: var(--space-8);
 }
 
-.list-card:hover {
+.rule-card:hover {
   box-shadow: var(--shadow-md);
   border-color: var(--primary-color-200);
 }
 
-.list-header {
+.rule-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-4);
 }
 
-.list-header-texts {
+.rule-header-texts {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
 }
 
-.list-name {
+.rule-name {
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   color: var(--neutral-color-900);
   margin: 0;
 }
 
-.list-stats {
+.rule-stats {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -143,30 +142,30 @@ async function deleteList() {
   color: var(--neutral-color-500);
 }
 
-.list-actions {
+.rule-actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-2);
 }
 
 @media (--tablet-viewport) {
-  .list-card {
+  .rule-card {
     padding: var(--space-4);
   }
 }
 
 /* Dark mode support */
 .dark-mode {
-  .list-card {
+  .rule-card {
     background: var(--neutral-color-900);
     border-color: var(--neutral-color-800);
   }
 
-  .list-card:hover {
+  .rule-card:hover {
     border-color: var(--primary-color-600);
   }
 
-  .list-name {
+  .rule-name {
     color: var(--neutral-color-100);
   }
 

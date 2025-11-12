@@ -24,23 +24,25 @@ interface ShoppingList extends Omit<OutShoppingList, 'items'> {
 }
 
 const { status, data, refresh, error } = useAsyncData('shopping-list', async () => {
-  const [shoppingList, ingredients, units, categories, shops] = await db.query<[ShoppingList, OutIngredient[], OutUnit[], OutIngredientCategory[], OutShop[]]>(surql`
-    SELECT
-      *,
-      items.map(|$i| {
-        item: $i.item.{id, name, category.{id, name}} || $i.item,
-        amount: $i.amount,
-        unit: $i.unit.{id, name},
-        recipe: $i.recipe.{id, name},
-        category: $i.category.{id, name},
-      }),
-      shop.{id, name, categories.{id, name}}
-    FROM ONLY type::thing(shopping_list, ${listId});
-    SELECT * FROM ingredient FETCH category;
-    SELECT * FROM unit ORDER BY name ASC;
-    SELECT * FROM ingredient_category ORDER BY name ASC;
-    SELECT * FROM shop ORDER BY name ASC FETCH categories;
-  `)
+  const [shoppingList, ingredients, units, categories, shops] = await db
+    .query(surql`
+      SELECT
+        *,
+        items.map(|$i| {
+          item: $i.item.{id, name, category.{id, name}} || $i.item,
+          amount: $i.amount,
+          unit: $i.unit.{id, name},
+          recipe: $i.recipe.{id, name},
+          category: $i.category.{id, name},
+        }),
+        shop.{id, name, categories.{id, name}}
+      FROM ONLY type::record(shopping_list, ${listId});
+      SELECT * FROM ingredient FETCH category;
+      SELECT * FROM unit ORDER BY name ASC;
+      SELECT * FROM ingredient_category ORDER BY name ASC;
+      SELECT * FROM shop ORDER BY name ASC FETCH categories;
+    `)
+    .collect<[ShoppingList, OutIngredient[], OutUnit[], OutIngredientCategory[], OutShop[]]>()
   return { shoppingList, ingredients, units, categories, shops }
 })
 
@@ -101,7 +103,9 @@ async function updateListItems(onSuccess?: () => void) {
       category: item.category?.id,
     }))
 
-    await db.query(surql`UPDATE ${data.value!.shoppingList.id} SET items = ${items} RETURN NONE`)
+    await db
+      .query(surql`UPDATE ${data.value!.shoppingList.id} SET items = ${items} RETURN NONE`)
+      .collect()
 
     if (onSuccess)
       onSuccess()

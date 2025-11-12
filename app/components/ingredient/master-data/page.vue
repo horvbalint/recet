@@ -2,7 +2,7 @@
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
 import type { OutIngredient } from '~/db'
 
-const getQuery = surql`SELECT * FROM ingredient WHERE household = type::thing(${householdGap}) ORDER BY name ASC FETCH category`
+const getQuery = computed(() => surql`SELECT * FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH category`)
 
 const columns: Columns<OutIngredient> = {
   name: { text: 'Name' },

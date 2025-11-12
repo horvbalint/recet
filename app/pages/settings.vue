@@ -19,7 +19,9 @@ async function handleSaveHousehold() {
   isLoading.value = true
 
   try {
-    const [result] = await db.query<[OutHousehold]>(surql`UPDATE ONLY ${currentHousehold.value!.id} MERGE ${householdForm.value} RETURN AFTER`)
+    const [result] = await db
+      .query(surql`UPDATE ONLY ${currentHousehold.value!.id} MERGE ${householdForm.value} RETURN AFTER`)
+      .collect<[OutHousehold]>()
     currentHousehold.value = result
 
     useNebToast({ type: 'success', title: 'Household updated!', description: 'The household has been successfully updated.' })

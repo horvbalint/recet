@@ -8,27 +8,24 @@ definePageMeta({
 
 const router = useRouter()
 
-const { data: shoppingLists, status: shoppingListsStatus, refresh: refreshShoppingLists } = useAsyncData('shopping-lists', async () => {
-  const [shoppingLists] = await db.query<[OutShoppingList[]]>(surql`
-    SELECT
-      *
-    FROM
-      shopping_list
-    WHERE
-      household = ${currentHousehold.value!.id}
-    ORDER BY
-      updated_at DESC
-    FETCH
-      shop
-  `)
+const { data: shoppingLists, status, refresh, error } = useAsyncData('shopping-lists', async () => {
+  const [shoppingLists] = await db
+    .query(surql`
+      SELECT
+        *
+      FROM
+        shopping_list
+      WHERE
+        household = ${currentHousehold.value!.id}
+      ORDER BY
+        updated_at DESC
+      FETCH
+        shop
+    `)
+    .collect<[OutShoppingList[]]>()
 
   return shoppingLists
 }, { watch: [currentHousehold] })
-
-const status = shoppingListsStatus
-async function refresh() {
-  await refreshShoppingLists()
-}
 
 const showCreateModal = ref(false)
 
@@ -60,7 +57,7 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
       </neb-content-header>
     </template>
 
-    <neb-state-content :status :refresh>
+    <neb-state-content :status :refresh :error-description="error?.message">
       <div class="shopping-lists-page">
         <div v-if="shoppingLists?.length" class="lists-grid">
           <shopping-list-card
@@ -101,7 +98,7 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
 
 .lists-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: var(--space-6);
 }
 

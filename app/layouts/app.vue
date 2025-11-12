@@ -23,6 +23,7 @@ const navigationGroups = computed(() => {
     {
       title: 'Data',
       items: [
+        { id: 'meal-rules', name: 'Meal rules', path: '/meal-rules', icon: 'material-symbols:rule-rounded' },
         { id: 'master-data', name: 'Master Data', path: '/master-data', icon: 'material-symbols:category-outline-rounded' },
       ],
     },
@@ -109,7 +110,7 @@ function update() {
         </nav>
 
         <neb-tooltip
-          v-if="$pwa.needRefresh"
+          v-if="$pwa?.needRefresh"
           class="pwa-button"
           title="There is a new version available."
           text="To update, click this button and wait for the page to reload."
@@ -120,7 +121,7 @@ function update() {
         </neb-tooltip>
 
         <neb-tooltip
-          v-else-if="$pwa.showInstallPrompt"
+          v-else-if="$pwa?.showInstallPrompt"
           class="pwa-button"
           title="Install Recet as an app!"
           text="Click this button to install Recet on your device in an instant."
@@ -140,7 +141,7 @@ function update() {
             @click="isMobileMenuOpen = true"
           >
             <icon name="material-symbols:menu-rounded" />
-            <neb-badge v-if="$pwa.needRefresh || $pwa.showInstallPrompt" color="warning" small>
+            <neb-badge v-if="$pwa?.needRefresh || $pwa?.showInstallPrompt" color="warning" small>
               1
             </neb-badge>
           </neb-button>

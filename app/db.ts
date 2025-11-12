@@ -1,4 +1,4 @@
-import { RecordId, Duration, Uuid, Decimal } from "surrealdb";
+import type { RecordId, Duration, Uuid, Decimal } from "surrealdb";
 
 // ---------- TABLE TYPES ----------
 export type InCuisine = {

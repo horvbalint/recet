@@ -33,7 +33,7 @@ const editForm = ref({
 const isFormValid = ref(false)
 const isLoading = ref(false)
 
-const getQuery = surql`
+const getQuery = computed(() => surql`
   SELECT
     id as member,
     in as user,
@@ -41,12 +41,14 @@ const getQuery = surql`
     in.username as username,
     role
   FROM member 
-  WHERE out = type::thing(${householdGap}) 
+  WHERE out = ${currentHousehold.value!.id} 
   ORDER username ASC
-`
+`)
 
 const { data: members, status, refresh } = useAsyncData(async () => {
-  const [result] = await db.query<[Member[]]>(getQuery, [householdGap.fill(currentHousehold.value!.id)])
+  const [result] = await db
+    .query(getQuery.value)
+    .collect<[Member[]]>()
   return result || []
 }, { watch: [currentHousehold] })
 
@@ -80,7 +82,9 @@ async function handleDeleteMember(member: Member) {
     if (!confirmResult)
       return
 
-    await db.query(surql`DELETE ${member.member}`)
+    await db
+      .query(surql`DELETE ${member.member}`)
+      .collect()
     await refresh()
 
     useNebToast({ type: 'success', title: 'Member removed!', description: 'The member has been successfully removed from the household.' })
@@ -98,7 +102,9 @@ async function handleAddSubmit() {
 
   isLoading.value = true
   try {
-    await db.query(surql`fn::add_member_to_household(${currentHousehold.value!.id}, ${addForm.value.username}, ${addForm.value.role})`)
+    await db
+      .query(surql`fn::add_member_to_household(${currentHousehold.value!.id}, ${addForm.value.username}, ${addForm.value.role})`)
+      .collect()
 
     useNebToast({ type: 'success', title: 'Member added!', description: 'The user has been successfully added to the household.' })
     showAddModal.value = false
@@ -120,7 +126,9 @@ async function handleEditSubmit() {
 
   isLoading.value = true
   try {
-    await db.query(surql`UPDATE ${memberToEdit.value.member} SET role = ${editForm.value.role}`)
+    await db
+      .query(surql`UPDATE ${memberToEdit.value.member} SET role = ${editForm.value.role}`)
+      .collect()
     useNebToast({ type: 'success', title: 'Role updated!', description: 'The member role has been successfully updated.' })
 
     showEditModal.value = false

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { InRecipe, OutCuisine, OutIngredient, OutMeal, OutRecipeTag, OutUnit } from '~/db'
+import type { InRecipe, OutCuisine, OutIngredient, OutMeal, OutRecipe, OutRecipeTag, OutUnit } from '~/db'
 
 definePageMeta({
   layout: 'app',
@@ -47,37 +47,41 @@ const { data: recipeToEdit, status: recipeStatus, refresh: recipeRefresh, error:
   if (!recipeId)
     return null
 
-  const [recipe] = await db.query<[InRecipe]>(surql`
-    SELECT * FROM ONLY type::thing('recipe', ${recipeId})
-  `)
+  const [recipe] = await db
+    .query(surql`SELECT * FROM ONLY type::record('recipe', ${recipeId})`)
+    .collect<[InRecipe]>()
 
   return recipe
 })
 
 let originalImage: null | File = null
-watchOnce(recipeToEdit, () => {
+watchOnce(recipeToEdit, async () => {
   if (!recipeToEdit.value)
     return
 
   formData.value = recipeToEdit.value
-  selectedImage.value = recipeToEdit.value.image ? new File([recipeToEdit.value.image], 'recipe-image.jpg', { type: 'image/jpeg' }) : null
-  originalImage = selectedImage.value
+  if (recipeToEdit.value.image) {
+    selectedImage.value = await getRecipeImage(recipeToEdit.value.id!)
+    originalImage = selectedImage.value
+  }
 })
 
 const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, error: masterDataError } = useAsyncData(async () => {
-  const [ingredients, units, cuisines, meals, recipeTags] = await db.query<[
+  const [ingredients, units, cuisines, meals, recipeTags] = await db
+    .query(surql`
+      SELECT id, name FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name FROM unit WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color, flag FROM cuisine WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color FROM meal WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color, icon FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+    `)
+    .collect<[
     OutIngredient[],
     OutUnit[],
     OutCuisine[],
     OutMeal[],
     OutRecipeTag[],
-  ]>(surql`
-    SELECT id, name FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-    SELECT id, name FROM unit WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-    SELECT id, name, color, flag FROM cuisine WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-    SELECT id, name, color FROM meal WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-    SELECT id, name, color, icon FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-  `)
+  ]>()
 
   return {
     ingredients,
@@ -109,23 +113,24 @@ async function handleSubmit() {
 async function createRecipe() {
   try {
     submitting.value = true
-    const { blurhash, imageBuffer } = await processRecipeImage(selectedImage.value)
+    const [result] = await db
+      .query(surql`CREATE ONLY recipe CONTENT ${{
+        ...formData.value,
+        author: authUser.value!.id,
+        household: currentHousehold.value!.id,
+        steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
+        id: undefined,
+        created_at: undefined,
+        updated_at: undefined,
+      }} RETURN id`)
+      .collect<[OutRecipe]>()
 
-    const [result] = await db.query<[OutIngredient[]]>('INSERT INTO recipe $data RETURN id', { data: {
-      ...formData.value,
-      author: authUser.value!.id,
-      household: currentHousehold.value!.id,
-      steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
-      image_blur_hash: blurhash,
-      image: imageBuffer,
-      id: undefined,
-      created_at: undefined,
-      updated_at: undefined,
-    } })
+    if (selectedImage.value)
+      await setImageOnRecipe(result!.id, selectedImage.value)
 
     clearRecipeCache()
     useNebToast({ type: 'success', title: 'Recipe created!', description: 'Your recipe has been saved successfully.' })
-    await navigateTo(`/recipe/${result[0]!.id.id}`)
+    await navigateTo(`/recipe/${result!.id.id}`)
   }
   catch (error) {
     console.error(error)
@@ -140,18 +145,19 @@ async function updateRecipe() {
   try {
     submitting.value = true
 
-    const update: Partial<InRecipe> = {
-      ...formData.value,
-      steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
-    }
+    await db
+      .query(surql`UPDATE ONLY ${recipeToEdit.value!.id} MERGE ${{
+        ...formData.value,
+        steps: formData.value.steps?.map(step => step.trim()).filter(step => step),
+      }}`)
+      .collect<[OutIngredient[]]>()
 
     if (selectedImage.value !== originalImage) {
-      const { blurhash, imageBuffer } = await processRecipeImage(selectedImage.value)
-      update.image_blur_hash = blurhash
-      update.image = imageBuffer
+      if (selectedImage.value)
+        await setImageOnRecipe(recipeToEdit.value!.id!, selectedImage.value)
+      else
+        await db.query(surql`UPDATE ONLY ${recipeToEdit.value!.id} SET image = NONE, image_blur_hash = NONE`)
     }
-
-    await db.query<[OutIngredient[]]>(surql`UPDATE ONLY ${recipeToEdit.value!.id} MERGE ${update}`)
 
     clearRecipeCache()
     useNebToast({ type: 'success', title: 'Recipe updated!', description: 'Your recipe has been saved successfully.' })

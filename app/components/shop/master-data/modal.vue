@@ -13,7 +13,9 @@ const emit = defineEmits<{
 const modelValue = defineModel<boolean>({ required: true })
 
 const { data: categories } = await useAsyncData(async () => {
-  const [result] = await db.query<[OutIngredientCategory[]]>(surql`SELECT id, name FROM ingredient_category ORDER BY name ASC`)
+  const [result] = await db
+    .query(surql`SELECT id, name FROM ingredient_category ORDER BY name ASC`)
+    .collect<[OutIngredientCategory[]]>()
   return result
 })
 

@@ -9,8 +9,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (localStorage.recet_token)
       await db.authenticate(localStorage.recet_token)
 
-    authUser.value = await db.info<OutUser>() || null
-    const [memberships] = await db.query<[{ out: RecordId<'household'>, role: OutMember['role'] }[]]>(surql`SELECT out, role FROM member WHERE in = $auth.id`)
+    authUser.value = await db.auth<OutUser>() || null
+    const [memberships] = await db
+      .query(surql`SELECT out, role FROM member WHERE in = $auth.id`)
+      .collect<[{ out: RecordId<'household'>, role: OutMember['role'] }[]]>()
+
     authMemberships.value = new Map(memberships.map(m => [m.out.toString(), m.role]))
 
     if (!authUser.value)

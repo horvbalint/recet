@@ -1,11 +1,11 @@
 BEGIN TRANSACTION;
 
 IF $pluginsBucketPath == NONE {
-	throw "Please run `DEFINE PARAM $pluginsBucketPath VALUE '/path/to/the/directory'` with the path to the directory where plugins will be stored.";
+	throw "Please run `DEFINE PARAM $pluginsBucketPath VALUE 'file:/path/to/the/directory'` with the path to the directory where plugins will be stored.";
 };
 
 IF $recipeImagesBucketPath == NONE {
-	throw "Please run `DEFINE PARAM $recipeImagesBucketPath VALUE '/path/to/the/directory'` with the path to the directory where recipe images will be stored.";
+	throw "Please run `DEFINE PARAM $recipeImagesBucketPath VALUE 'file:/path/to/the/directory'` with the path to the directory where recipe images will be stored.";
 };
 
 DEFINE ANALYZER OVERWRITE hungarian_analyzer

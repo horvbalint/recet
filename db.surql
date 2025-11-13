@@ -182,6 +182,7 @@ DEFINE FIELD OVERWRITE items.*.category ON shopping_list TYPE option<record<ingr
 DEFINE FIELD OVERWRITE items.*.amount ON shopping_list TYPE option<number>;
 DEFINE FIELD OVERWRITE items.*.unit ON shopping_list TYPE option<record<unit>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE items.*.recipe ON shopping_list TYPE option<record<recipe>> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE items.*.marked ON shopping_list TYPE option<bool>;
 
 // TABLE: meal_plan
 fn::define_household_table("meal_plan");

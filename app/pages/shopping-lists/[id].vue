@@ -20,6 +20,7 @@ interface ShoppingList extends Omit<OutShoppingList, 'items'> {
     unit?: Pick<OutUnit, 'id' | 'name'>
     recipe?: OutRecipe
     category?: Pick<OutIngredientCategory, 'id' | 'name'>
+    marked?: boolean
   }[]
 }
 
@@ -34,6 +35,7 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
           unit: $i.unit.{id, name},
           recipe: $i.recipe.{id, name},
           category: $i.category.{id, name},
+          marked: $i.marked,
         }),
         shop.{id, name, categories.{id, name}}
       FROM ONLY type::record(shopping_list, ${listId});
@@ -101,6 +103,7 @@ async function updateListItems(onSuccess?: () => void) {
       unit: item.unit?.id,
       recipe: item.recipe?.id,
       category: item.category?.id,
+      marked: item.marked,
     }))
 
     await db
@@ -207,6 +210,11 @@ function onUnitCreated(unit: OutUnit) {
   newItem.value.unit = unit
   refresh()
 }
+
+function toggleMarkedItem(item: ShoppingList['items'][number]) {
+  item.marked = !item.marked
+  updateListItems()
+}
 </script>
 
 <template>
@@ -281,6 +289,11 @@ function onUnitCreated(unit: OutUnit) {
                     <icon name="material-symbols:link-rounded" />
                     From {{ item.recipe.name }}
                   </nuxt-link>
+                </div>
+
+                <div class="star-wrapper" @click.stop="toggleMarkedItem(item)">
+                  <icon v-if="item.marked" class="active" name="material-symbols:star-rounded" />
+                  <icon v-else name="material-symbols:star-outline-rounded" />
                 </div>
               </div>
             </div>
@@ -500,6 +513,17 @@ function onUnitCreated(unit: OutUnit) {
 
   .icon {
     font-size: 16px !important;
+  }
+}
+
+.star-wrapper {
+  display: flex;
+  align-items: center;
+  color: var(--neutral-color-400);
+  cursor: pointer;
+
+  .active {
+    color: var(--warning-color-500);
   }
 }
 

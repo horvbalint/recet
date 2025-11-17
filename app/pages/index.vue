@@ -136,7 +136,6 @@ onBeforeUnmount(() => {
             :transform-fun="transformId"
             use-only-tracked-key
             multiple
-            no-search
             leading-icon="material-symbols:public"
           >
             <template #option="{ option }">
@@ -157,7 +156,6 @@ onBeforeUnmount(() => {
             :transform-fun="transformId"
             use-only-tracked-key
             multiple
-            no-search
             leading-icon="material-symbols:tag-rounded"
           >
             <template #option="{ option }">
@@ -178,7 +176,6 @@ onBeforeUnmount(() => {
             :transform-fun="transformId"
             use-only-tracked-key
             multiple
-            no-search
             leading-icon="material-symbols:restaurant-rounded"
           >
             <template #option="{ option }">

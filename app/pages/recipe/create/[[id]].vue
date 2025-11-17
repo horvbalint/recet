@@ -314,7 +314,6 @@ const isFormValid = ref(false)
                   label-key="name"
                   :transform-fun="transformId"
                   use-only-tracked-key
-                  no-search
                   @new="handleCreateCuisine"
                 >
                   <template #option="{ option }">
@@ -336,7 +335,6 @@ const isFormValid = ref(false)
                   :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
-                  no-search
                   @new="handleCreateMeal"
                 >
                   <template #option="{ option }">
@@ -358,7 +356,6 @@ const isFormValid = ref(false)
                   :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
-                  no-search
                   @new="handleCreateTag"
                 >
                   <template #option="{ option }">
@@ -377,7 +374,7 @@ const isFormValid = ref(false)
             v-model="formData.ingredients"
             label="Ingredients"
             class="form-section"
-            with-initial-item
+            :with-initial-item="!formData.id"
           >
             <template #default="{ item: ingredient, index }">
               <div class="ingredient-fields">
@@ -390,7 +387,6 @@ const isFormValid = ref(false)
                   placeholder="Select ingredient"
                   :transform-fun="transformId"
                   use-only-tracked-key
-                  required
                   @new="handleCreateIngredient($event, index)"
                 />
 
@@ -409,7 +405,6 @@ const isFormValid = ref(false)
                   track-by-key="id"
                   placeholder="Select unit"
                   :transform-fun="transformId"
-                  no-search
                   use-only-tracked-key
                   allow-empty
                   @new="handleCreateUnit($event, index)"
@@ -429,7 +424,7 @@ const isFormValid = ref(false)
             label="Instructions"
             class="form-section"
             :factory="() => ''"
-            with-initial-item
+            :with-initial-item="!formData.id"
           >
             <template #default="{ index }">
               <neb-textarea

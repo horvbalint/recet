@@ -4,10 +4,10 @@ import type { OutIngredient } from '~/db'
 
 const getQuery = computed(() => surql`SELECT * FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH category`)
 
-const columns: Columns<OutIngredient> = {
+const columns = {
   name: { text: 'Name' },
   category: { text: 'Category' },
-}
+} satisfies Columns<OutIngredient>
 </script>
 
 <template>

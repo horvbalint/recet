@@ -4,9 +4,9 @@ import type { OutShop } from '~/db'
 
 const getQuery = computed(() => surql`SELECT *, categories.* FROM shop WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH categories`)
 
-const columns: Columns<OutShop> = {
+const columns = {
   name: { text: 'Name' },
-}
+} satisfies Columns<OutShop>
 </script>
 
 <template>

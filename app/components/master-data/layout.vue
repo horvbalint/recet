@@ -1,11 +1,11 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
-import type { PreparedQuery } from 'surrealdb'
+import type { BoundQuery } from 'surrealdb'
 
 const props = defineProps<{
   table: string
   columns: Columns<T>
-  getQuery: PreparedQuery
+  getQuery: BoundQuery<[T]>
   name: string
   icon: string
 }>()

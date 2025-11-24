@@ -127,19 +127,6 @@ watch(inputText, () => {
       </div>
     </template>
   </neb-input>
-  <!-- <neb-dropdown ref="dropwdown" full-width>
-    <template #trigger>
-
-    </template>
-
-    <template #content>
-      <div v-if="suggestion" class="dropdown">
-        <neb-button type="link" @click="acceptSuggestion()">
-          {{ suggestion.labelValue }}
-        </neb-button>
-      </div>
-    </template>
-  </neb-dropdown> -->
 </template>
 
 <style scoped>

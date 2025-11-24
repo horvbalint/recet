@@ -89,6 +89,7 @@ const recipe = computed<Recipe | null | undefined>(() => {
     ...cachedRecipe,
     ingredients: [],
     steps: [],
+    portions: 1,
   }
 })
 

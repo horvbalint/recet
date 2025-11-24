@@ -90,7 +90,7 @@ async function deleteList() {
     </div>
   </div>
 
-  <shopping-list-modal v-if="showEditModal" v-model="showEditModal" :initial-data="{ ...list, shop: list.shop?.id }" @change="handleListChange()" />
+  <shopping-list-modal v-if="showEditModal" v-model="showEditModal" :initial-data="{ name: list.name, shop: list.shop?.id }" @change="handleListChange()" />
 </template>
 
 <style scoped>

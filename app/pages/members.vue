@@ -52,11 +52,11 @@ const { data: members, status, refresh } = useAsyncData(async () => {
   return result || []
 }, { watch: [currentHousehold] })
 
-const columns: Columns<Member> = {
+const columns = {
   username: { text: 'Username' },
   email: { text: 'Email' },
   role: { text: 'Role' },
-}
+} satisfies Columns<Member>
 
 // Role options
 const roleOptions = ['guest', 'writer', 'owner']

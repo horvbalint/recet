@@ -2,8 +2,12 @@
 import type { InShop, OutIngredientCategory, OutShop } from '~/db'
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
 
+interface InShopWithCategories extends Omit<InShop, 'categories'> {
+  categories: OutIngredientCategory[]
+}
+
 const props = defineProps<{
-  initialData?: Partial<InShop> | null
+  initialData?: Partial<InShopWithCategories> | null
 }>()
 
 const emit = defineEmits<{

@@ -4,9 +4,9 @@ import type { OutUnit } from '~/db'
 
 const getQuery = computed(() => surql`SELECT * FROM unit WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC`)
 
-const columns: Columns<OutUnit> = {
+const columns = {
   name: { text: 'Name' },
-}
+} satisfies Columns<OutUnit>
 </script>
 
 <template>

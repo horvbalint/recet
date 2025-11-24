@@ -1,15 +1,7 @@
-import type { PreparedQuery, RecordId } from 'surrealdb'
+import type { RecordId } from 'surrealdb'
 
 export const { isMobile } = useAppBreakpoints()
 export const pageHeaderType = computed(() => isMobile.value ? 'section' : 'page')
-
-const decoder = new TextDecoder()
-export function logQuery(query: PreparedQuery, ...params: any[]) {
-  const queryStr = decoder.decode(query.query.encoded)
-
-  // eslint-disable-next-line no-console
-  console.log(...params, queryStr)
-}
 
 export function logOnError(error: Ref<any>) {
   watch(error, (err) => {

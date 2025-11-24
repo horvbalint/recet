@@ -4,10 +4,10 @@ import type { OutMeal } from '~/db'
 
 const getQuery = computed(() => surql`SELECT * FROM meal WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC`)
 
-const columns: Columns<OutMeal> = {
+const columns = {
   name: { text: 'Name' },
   color: { text: 'Color' },
-}
+} satisfies Columns<OutMeal>
 </script>
 
 <template>

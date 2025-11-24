@@ -160,8 +160,8 @@ export default defineNuxtConfig({
         'blurhash',
         'browser-image-resizer',
         '@formkit/drag-and-drop/vue',
-      ]
-    }
+      ],
+    },
   },
 
   devtools: { enabled: true },

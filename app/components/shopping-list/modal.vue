@@ -2,7 +2,7 @@
 import type { InShoppingList, OutShop, OutShoppingList } from '~/db'
 
 const props = defineProps<{
-  initialData?: InShoppingList | null
+  initialData?: Pick<InShoppingList, 'name' | 'shop'> | null
 }>()
 
 const emit = defineEmits<{

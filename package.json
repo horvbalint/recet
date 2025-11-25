@@ -16,21 +16,21 @@
   },
   "dependencies": {
     "@formkit/drag-and-drop": "0.5.3",
-    "@vite-pwa/assets-generator": "1.0.1",
-    "@vue/reactivity": "3.5.22",
-    "blurhash": "^2.0.5",
-    "dayjs": "1.11.18",
+    "@vite-pwa/assets-generator": "1.0.2",
+    "@vue/reactivity": "3.5.25",
+    "blurhash": "2.0.5",
+    "dayjs": "1.11.19",
     "nebula": "github:horvbalint/nebula",
-    "nuxt": "4.0.3",
+    "nuxt": "4.2.1",
     "surreal-ts": "3.0.0",
     "surrealdb": "2.0.0-alpha.10",
-    "vue": "3.5.22",
-    "vue-tsc": "^3.1.1"
+    "vue": "3.5.25",
+    "vue-tsc": "^3.1.5"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "6.0.0",
-    "@nuxtjs/color-mode": "3.5.2",
+    "@antfu/eslint-config": "6.2.0",
+    "@nuxtjs/color-mode": "4.0.0",
     "@vite-pwa/nuxt": "1.0.7",
-    "eslint": "9.38.0"
+    "eslint": "9.39.1"
   }
 }

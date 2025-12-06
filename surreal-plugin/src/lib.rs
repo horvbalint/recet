@@ -33,7 +33,7 @@ fn process_image(buffer: Bytes) -> Result<ImageData> {
 #[derive(Debug, SurrealValue, Deserialize)]
 struct Ingredient {
     name: String,
-    quantity: Option<f32>,
+    amount: Option<f32>,
     unit_string: Option<String>,
     description: Option<String>,
     ingredient: Option<Value>,
@@ -135,7 +135,7 @@ The JSON must match this exact schema:
   "ingredients": [
     {
       "name": string,
-      "quantity": number or null,
+      "amount": number or null,
       "unit_string": string or null,
       "description": string or null
     }
@@ -149,10 +149,10 @@ The JSON must match this exact schema:
 
 Guidelines:
 - For ingredients, separate into components:
-  * "2 cups flour" → name:"flour", quantity:"2", unit:"cups", description:null
-  * "1 large diced onion" → name:"onion", quantity:"1", unit:null, description:"large, diced"
-  * "Salt to taste" → name:"salt", quantity:null, unit:null, description:"to taste"
-  * "3 tbsp chopped fresh parsley" → name:"parsley", quantity:"3", unit:"tbsp", description:"chopped, fresh"
+  * "2 cups flour" → name:"flour", amount:"2", unit_string:"cups", description:null
+  * "1 large diced onion" → name:"onion", amount:"1", unit_string:null, description:"large, diced"
+  * "Salt to taste" → name:"salt", amount:null, unit_string:null, description:"to taste"
+  * "3 tbsp chopped fresh parsley" → name:"parsley", amount:"3", unit_string:"tbsp", description:"chopped, fresh"
 - Use description field for preparation methods (diced, chopped, minced), state (fresh, dried), and special notes (to taste, optional)
 - Extract all step-by-step instructions in order
 - Identify cuisine types (e.g., "Italian", "Mexican", "Asian")

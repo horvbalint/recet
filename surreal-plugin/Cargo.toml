@@ -12,3 +12,6 @@ surrealism = { git = "https://github.com/surrealdb/surrealdb" }
 surrealdb-types = { git = "https://github.com/surrealdb/surrealdb" }
 blurhash = "0.2.3"
 anyhow = "1.0.100"
+serde_json = "1.0.145"
+serde = { version = "1.0.228", features = [ "derive" ] }
+html2text = "0.16.5"

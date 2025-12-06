@@ -40,7 +40,7 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
         shop.{id, name, categories.{id, name}}
       FROM ONLY type::record(shopping_list, ${listId});
       SELECT * FROM ingredient FETCH category;
-      SELECT * FROM unit ORDER BY name ASC;
+      SELECT * FROM unit WITH NOINDEX ORDER BY name ASC;
       SELECT * FROM ingredient_category ORDER BY name ASC;
       SELECT * FROM shop ORDER BY name ASC FETCH categories;
     `)

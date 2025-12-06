@@ -1,11 +1,14 @@
 BEGIN TRANSACTION;
 
+-- DEFINE PARAM OVERWRITE $openAiUrl VALUE 'open-ai-compatible-api-url';
+-- DEFINE PARAM OVERWRITE $openAiToken VALUE 'your-token';
+
 IF $pluginsBucketPath == NONE {
-	throw "Please run `DEFINE PARAM $pluginsBucketPath VALUE 'file:/path/to/the/directory'` with the path to the directory where plugins will be stored.";
+	throw "Please run `DEFINE PARAM OVERWRITE $pluginsBucketPath VALUE 'file:/path/to/the/directory' PERMISSIONS NONE;` with the path to the directory where plugins will be stored.";
 };
 
 IF $recipeImagesBucketPath == NONE {
-	throw "Please run `DEFINE PARAM $recipeImagesBucketPath VALUE 'file:/path/to/the/directory'` with the path to the directory where recipe images will be stored.";
+	throw "Please run `DEFINE PARAM OVERWRITE $recipeImagesBucketPath VALUE 'file:/path/to/the/directory' PERMISSIONS NONE;` with the path to the directory where recipe images will be stored.";
 };
 
 DEFINE ANALYZER OVERWRITE hungarian_analyzer
@@ -125,6 +128,9 @@ DEFINE FIELD OVERWRITE name ON ingredient TYPE string;
 DEFINE FIELD OVERWRITE category ON ingredient TYPE option<record<ingredient_category>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE skip_from_shopping_list ON ingredient TYPE bool DEFAULT false;
 
+DEFINE INDEX OVERWRITE hungarian_search_name ON ingredient FIELDS name FULLTEXT ANALYZER hungarian_analyzer;
+DEFINE INDEX OVERWRITE english_search_name ON ingredient FIELDS name FULLTEXT ANALYZER english_analyzer;
+
 // TABLE: ingredient_category
 fn::define_household_table("ingredient_category");
 DEFINE FIELD OVERWRITE name ON ingredient_category TYPE string;
@@ -140,6 +146,9 @@ DEFINE EVENT OVERWRITE remove_from_shops ON ingredient_category WHEN $event = "D
 // TABLE: unit
 fn::define_household_table("unit");
 DEFINE FIELD OVERWRITE name ON unit TYPE string;
+
+DEFINE INDEX OVERWRITE hungarian_search_name ON unit FIELDS name FULLTEXT ANALYZER hungarian_analyzer;
+DEFINE INDEX OVERWRITE english_search_name ON unit FIELDS name FULLTEXT ANALYZER english_analyzer;
 
 // TABLE: shop
 fn::define_household_table("shop");

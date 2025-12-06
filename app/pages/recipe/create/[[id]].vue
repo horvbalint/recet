@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { RecordId } from 'surrealdb'
 import type { InRecipe, OutCuisine, OutIngredient, OutMeal, OutRecipe, OutRecipeTag, OutUnit } from '~/db'
 
 definePageMeta({
@@ -69,8 +70,8 @@ watchOnce(recipeToEdit, async () => {
 const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, error: masterDataError } = useAsyncData(async () => {
   const [ingredients, units, cuisines, meals, recipeTags] = await db
     .query(surql`
-      SELECT id, name FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-      SELECT id, name FROM unit WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name FROM ingredient WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name FROM unit WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
       SELECT id, name, color, flag FROM cuisine WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
       SELECT id, name, color FROM meal WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
       SELECT id, name, color, icon FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
@@ -236,6 +237,75 @@ function onUnitCreated(unit: OutUnit) {
 }
 
 const isFormValid = ref(false)
+
+interface ImportedRecipe {
+  name: string
+  portions?: string
+  ingredients: {
+    name: string
+    amount?: number
+    unit_string?: string
+    description?: string
+    ingredient?: RecordId<'ingredient'>
+    unit?: RecordId<'unit'>
+  }[]
+  steps: string[]
+  cuisines: string[]
+  cooking_time_minutes?: number
+  tags: string[]
+  image_url?: string
+}
+
+const importModal = ref(false)
+const importedRecipe = ref<ImportedRecipe | null>(null)
+const importUrl = ref('')
+const importing = ref(false)
+
+async function importRecipe() {
+  try {
+    importing.value = true
+
+    const [recipe] = await db
+      .query('mod::recet::scrape_for_recipe($url)', {
+        url: importUrl.value,
+      })
+      .collect<[ImportedRecipe | null]>()
+
+    if (!recipe)
+      throw new Error('No recipe found at the provided URL.')
+
+    formData.value.name = recipe.name
+    formData.value.cooking_time_minutes = recipe.cooking_time_minutes
+    formData.value.ingredients = recipe.ingredients.map(ing => ({
+      amount: ing.amount,
+      unit: ing.unit,
+      description: ing.description,
+      ingredient: ing.ingredient!,
+    }))
+    formData.value.steps = recipe.steps
+
+    console.log(recipe.image_url)
+    if (recipe.image_url) {
+      selectedImage.value = new File([await fetch(recipe.image_url).then(res => res.blob())], 'imported-image')
+      console.log(selectedImage.value)
+    }
+
+    importedRecipe.value = recipe
+    importModal.value = false
+  }
+  catch (err) {
+    console.error(err)
+    useNebToast({ type: 'error', title: 'Import failed!', description: 'Could not import the recipe. Please try again.' })
+  }
+  finally {
+    importing.value = false
+  }
+}
+
+function createImportHint(value: string | number | undefined) {
+  if (value)
+    return `Imported: ${value}`
+}
 </script>
 
 <template>
@@ -248,6 +318,15 @@ const isFormValid = ref(false)
         has-separator
       >
         <template #actions>
+          <neb-button
+            type="secondary"
+            small
+            @click="importModal = true"
+          >
+            <icon name="material-symbols:wand-stars-outline-rounded" />
+            Import from website
+          </neb-button>
+
           <neb-button
             type="primary"
             small
@@ -286,6 +365,7 @@ const isFormValid = ref(false)
                     label="Portion count"
                     placeholder="e.g., 4"
                     type="number"
+                    :hint="createImportHint(importedRecipe?.portions)"
                   />
 
                   <neb-input
@@ -314,6 +394,7 @@ const isFormValid = ref(false)
                   label-key="name"
                   :transform-fun="transformId"
                   use-only-tracked-key
+                  :hint="createImportHint(importedRecipe?.cuisines.join(', '))"
                   @new="handleCreateCuisine"
                 >
                   <template #option="{ option }">
@@ -356,6 +437,7 @@ const isFormValid = ref(false)
                   :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
+                  :hint="createImportHint(importedRecipe?.tags.join(', '))"
                   @new="handleCreateTag"
                 >
                   <template #option="{ option }">
@@ -387,6 +469,7 @@ const isFormValid = ref(false)
                   placeholder="Select ingredient"
                   :transform-fun="transformId"
                   use-only-tracked-key
+                  :hint="createImportHint(importedRecipe?.ingredients[index]?.name)"
                   @new="handleCreateIngredient($event, index)"
                 />
 
@@ -407,6 +490,7 @@ const isFormValid = ref(false)
                   :transform-fun="transformId"
                   use-only-tracked-key
                   allow-empty
+                  :hint="createImportHint(importedRecipe?.ingredients[index]?.unit_string)"
                   @new="handleCreateUnit($event, index)"
                 />
 
@@ -479,6 +563,27 @@ const isFormValid = ref(false)
       @update:model-value="dynamicCreateTable = null"
       @saved="onUnitCreated"
     />
+
+    <neb-modal
+      v-model="importModal"
+      title="Import recipe from website"
+      subtitle="Paste the URL of the recipe you want to import."
+      header-icon="material-symbols:wand-stars-outline-rounded"
+    >
+      <template #content>
+        <neb-input v-model="importUrl" required label="Website URL" />
+      </template>
+
+      <template #actions>
+        <neb-button type="secondary" @click="importModal = false">
+          Cancel
+        </neb-button>
+
+        <neb-button :loading="importing" :disabled="!importUrl || importing" type="primary" @click="importRecipe()">
+          Import
+        </neb-button>
+      </template>
+    </neb-modal>
   </page-layout>
 </template>
 

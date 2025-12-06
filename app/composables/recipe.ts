@@ -182,7 +182,7 @@ export function useRecipeState() {
         SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
         SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
         SELECT id, name, color FROM meal ORDER BY name ASC;
-        SELECT id, name FROM ingredient ORDER BY name ASC;
+        SELECT id, name FROM ingredient WITH NOINDEX ORDER BY name ASC;
       `)
       .collect<[OutCuisine[], OutRecipeTag[], OutMeal[], OutIngredient[]]>()
 

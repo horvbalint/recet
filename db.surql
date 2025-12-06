@@ -109,6 +109,9 @@ fn::define_household_table("meal");
 DEFINE FIELD OVERWRITE name ON meal TYPE string;
 DEFINE FIELD OVERWRITE color ON meal TYPE string;
 
+DEFINE INDEX OVERWRITE hungarian_search_name ON meal FIELDS name FULLTEXT ANALYZER hungarian_analyzer;
+DEFINE INDEX OVERWRITE english_search_name ON meal FIELDS name FULLTEXT ANALYZER english_analyzer;
+
 
 // TABLE: cuisine
 fn::define_household_table("cuisine");
@@ -116,11 +119,17 @@ DEFINE FIELD OVERWRITE name ON cuisine TYPE string;
 DEFINE FIELD OVERWRITE color ON cuisine TYPE string;
 DEFINE FIELD OVERWRITE flag ON cuisine TYPE option<string>;
 
+DEFINE INDEX OVERWRITE hungarian_search_name ON cuisine FIELDS name FULLTEXT ANALYZER hungarian_analyzer;
+DEFINE INDEX OVERWRITE english_search_name ON cuisine FIELDS name FULLTEXT ANALYZER english_analyzer;
+
 // TABLE: recipe_tag
 fn::define_household_table("recipe_tag");
 DEFINE FIELD OVERWRITE name ON recipe_tag TYPE string;  
 DEFINE FIELD OVERWRITE color ON recipe_tag TYPE string;
 DEFINE FIELD OVERWRITE icon ON recipe_tag TYPE option<string>;
+
+DEFINE INDEX OVERWRITE hungarian_search_name ON recipe_tag FIELDS name FULLTEXT ANALYZER hungarian_analyzer;
+DEFINE INDEX OVERWRITE english_search_name ON recipe_tag FIELDS name FULLTEXT ANALYZER english_analyzer;
 
 // TABLE: ingredient
 fn::define_household_table("ingredient");

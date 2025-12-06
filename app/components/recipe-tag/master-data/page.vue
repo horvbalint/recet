@@ -2,7 +2,7 @@
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
 import type { OutRecipeTag } from '~/db'
 
-const getQuery = computed(() => surql`SELECT * FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC`)
+const getQuery = computed(() => surql`SELECT * FROM recipe_tag WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC`)
 const columns = {
   name: { text: 'Name' },
   icon: { text: 'Icon' },

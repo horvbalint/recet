@@ -72,9 +72,9 @@ const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, 
     .query(surql`
       SELECT id, name FROM ingredient WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
       SELECT id, name FROM unit WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-      SELECT id, name, color, flag FROM cuisine WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-      SELECT id, name, color FROM meal WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-      SELECT id, name, color, icon FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color, flag FROM cuisine WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color FROM meal WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color, icon FROM recipe_tag WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
     `)
     .collect<[
     OutIngredient[],
@@ -240,7 +240,7 @@ const isFormValid = ref(false)
 
 interface ImportedRecipe {
   name: string
-  portions?: string
+  portions?: number
   ingredients: {
     name: string
     amount?: number
@@ -250,9 +250,13 @@ interface ImportedRecipe {
     unit?: RecordId<'unit'>
   }[]
   steps: string[]
-  cuisines: string[]
+  cuisine_string?: string
+  cuisine?: RecordId<'cuisine'>
   cooking_time_minutes?: number
-  tags: string[]
+  tags: RecordId<'recipe_tag'>[]
+  tag_strings: string[]
+  meal_strings: string[]
+  meals: RecordId<'meal'>[]
   image_url?: string
 }
 
@@ -275,6 +279,10 @@ async function importRecipe() {
       throw new Error('No recipe found at the provided URL.')
 
     formData.value.name = recipe.name
+    formData.value.meal = recipe.meals
+    formData.value.tags = recipe.tags
+    formData.value.cuisine = recipe.cuisine
+    formData.value.portions = recipe.portions
     formData.value.cooking_time_minutes = recipe.cooking_time_minutes
     formData.value.ingredients = recipe.ingredients.map(ing => ({
       amount: ing.amount,
@@ -284,11 +292,8 @@ async function importRecipe() {
     }))
     formData.value.steps = recipe.steps
 
-    console.log(recipe.image_url)
-    if (recipe.image_url) {
+    if (recipe.image_url)
       selectedImage.value = new File([await fetch(recipe.image_url).then(res => res.blob())], 'imported-image')
-      console.log(selectedImage.value)
-    }
 
     importedRecipe.value = recipe
     importModal.value = false
@@ -365,7 +370,6 @@ function createImportHint(value: string | number | undefined) {
                     label="Portion count"
                     placeholder="e.g., 4"
                     type="number"
-                    :hint="createImportHint(importedRecipe?.portions)"
                   />
 
                   <neb-input
@@ -394,7 +398,7 @@ function createImportHint(value: string | number | undefined) {
                   label-key="name"
                   :transform-fun="transformId"
                   use-only-tracked-key
-                  :hint="createImportHint(importedRecipe?.cuisines.join(', '))"
+                  :hint="createImportHint(importedRecipe?.cuisine_string)"
                   @new="handleCreateCuisine"
                 >
                   <template #option="{ option }">
@@ -416,6 +420,7 @@ function createImportHint(value: string | number | undefined) {
                   :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
+                  :hint="createImportHint(importedRecipe?.meal_strings.join(', '))"
                   @new="handleCreateMeal"
                 >
                   <template #option="{ option }">
@@ -437,7 +442,7 @@ function createImportHint(value: string | number | undefined) {
                   :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
-                  :hint="createImportHint(importedRecipe?.tags.join(', '))"
+                  :hint="createImportHint(importedRecipe?.tag_strings.join(', '))"
                   @new="handleCreateTag"
                 >
                   <template #option="{ option }">

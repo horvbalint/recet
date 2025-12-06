@@ -4,7 +4,7 @@ use anyhow::Result;
 use blurhash::encode;
 use image::{GenericImageView, codecs::jpeg::JpegEncoder, imageops::FilterType};
 use serde::Deserialize;
-use surrealdb_types::{Bytes, SurrealValue, Value, object, vars};
+use surrealdb_types::{Bytes, RecordId, SurrealValue, object, vars};
 use surrealism::{imports::sql_with_vars, sql, surrealism};
 
 #[derive(Debug, SurrealValue)]
@@ -36,19 +36,25 @@ struct Ingredient {
     amount: Option<f32>,
     unit_string: Option<String>,
     description: Option<String>,
-    ingredient: Option<Value>,
-    unit: Option<Value>,
+    ingredient: Option<RecordId>,
+    unit: Option<RecordId>,
 }
 
 #[derive(Debug, SurrealValue, Deserialize)]
 struct RecipeInfo {
     name: Option<String>,
-    portions: Option<String>,
+    portions: Option<i32>,
     ingredients: Vec<Ingredient>,
     steps: Vec<String>,
-    cuisines: Vec<String>,
+    cuisine_string: Option<String>,
+    cuisine: Option<RecordId>,
     cooking_time_minutes: Option<i32>,
-    tags: Vec<String>,
+    tag_strings: Vec<String>,
+    #[serde(default)]
+    tags: Vec<RecordId>,
+    meal_strings: Vec<String>,
+    #[serde(default)]
+    meals: Vec<RecordId>,
     image_url: Option<String>,
 }
 
@@ -106,32 +112,49 @@ fn scrape_for_recipe(url: String) -> Result<RecipeInfo> {
     let mut info: RecipeInfo = serde_json::de::from_str(&response.choices[0].message.content)?;
 
     for info in &mut info.ingredients {
-        info.ingredient = sql_with_vars(
-            "SELECT VALUE id FROM ONLY ingredient WHERE name @@ $name LIMIT 1",
-            vars! {
-                name: info.name.clone()
-            },
-        )?;
+        info.ingredient = find_by_name("ingredient", info.name.clone())?;
 
         if let Some(unit_string) = &info.unit_string {
-            info.unit = sql_with_vars(
-                "SELECT VALUE id FROM ONLY unit WHERE name @@ $name LIMIT 1",
-                vars! {
-                    name: unit_string.clone()
-                },
-            )?;
+            info.unit = find_by_name("unit", unit_string.clone())?;
+        }
+    }
+
+    if let Some(cuisine_string) = &info.cuisine_string {
+        info.cuisine = find_by_name("cuisine", cuisine_string.clone())?;
+    }
+
+    for tag_string in &info.tag_strings {
+        if let Some(tag) = find_by_name("recipe_tag", tag_string.clone())? {
+            info.tags.push(tag);
+        }
+    }
+
+    for meal_string in &info.meal_strings {
+        if let Some(meal) = find_by_name("meal", meal_string.clone())? {
+            info.meals.push(meal);
         }
     }
 
     Ok(info)
 }
 
-const SYSTEM_PROMPT: &str = r#"You are a recipe data extraction assistant. Extract recipe information from HTML content and return ONLY a raw JSON object.
+fn find_by_name(table: &str, name: String) -> Result<Option<RecordId>> {
+    let result: Option<RecordId> = sql_with_vars(
+        format!("SELECT VALUE id FROM ONLY {table} WHERE name @@ $name LIMIT 1"),
+        vars! {
+            name: name
+        },
+    )?;
+
+    Ok(result)
+}
+
+const SYSTEM_PROMPT: &str = r#"You are a recipe data extraction assistant. Extract recipe information from website text content and return ONLY a raw JSON object.
 
 The JSON must match this exact schema:
 {
   "name": string or null,
-  "portions": string or null,
+  "portions": number or null,
   "ingredients": [
     {
       "name": string,
@@ -141,13 +164,15 @@ The JSON must match this exact schema:
     }
   ],
   "steps": [string],
-  "cuisines": [string],
+  "cuisine_string": string or null,
   "cooking_time_minutes": integer or null,
-  "tags": [string],
+  "tag_strings": [string],
+  "meal_strings": [string],
   "image_url": string or null
 }
 
 Guidelines:
+- Keep all text in the language of the source
 - For ingredients, separate into components:
   * "2 cups flour" → name:"flour", amount:"2", unit_string:"cups", description:null
   * "1 large diced onion" → name:"onion", amount:"1", unit_string:null, description:"large, diced"
@@ -155,7 +180,8 @@ Guidelines:
   * "3 tbsp chopped fresh parsley" → name:"parsley", amount:"3", unit_string:"tbsp", description:"chopped, fresh"
 - Use description field for preparation methods (diced, chopped, minced), state (fresh, dried), and special notes (to taste, optional)
 - Extract all step-by-step instructions in order
-- Identify cuisine types (e.g., "Italian", "Mexican", "Asian")
-- Tags should include dietary info (vegetarian, vegan, gluten-free), meal types (breakfast, dessert), and cooking methods (baking, grilling)
+- Identify the cuisine type (e.g., "Italian", "Mexican", "Asian")
+- Identify relevant tags found in the source (e.g., "vegetarian", "gluten-free", "quick")
+- Identify meal types found in the source (e.g., "breakfast", "lunch", "dinner", "dessert")
 - cooking_time_minutes should be total time (prep + cook)
 - Return empty arrays [] for missing list fields, null for missing singular fields"#;

@@ -49,9 +49,11 @@ struct RecipeInfo {
     cuisine_string: Option<String>,
     cuisine: Option<RecordId>,
     cooking_time_minutes: Option<i32>,
+    #[serde(default)]
     tag_strings: Vec<String>,
     #[serde(default)]
     tags: Vec<RecordId>,
+    #[serde(default)]
     meal_strings: Vec<String>,
     #[serde(default)]
     meals: Vec<RecordId>,
@@ -81,19 +83,18 @@ fn scrape_for_recipe(url: String) -> Result<RecipeInfo> {
             url: url
         },
     )?;
-    let open_ai_url: String = sql("$openAiUrl")?;
-    let open_ai_token: String = sql("$openAiToken")?;
-
     let text = html2text::from_read(html.as_bytes(), usize::MAX)?;
 
+    let ai_model: String = sql("$openAiModel")?;
+
     let response: AiResult = sql_with_vars(
-        "http::post($open_ai_url, $body, {
+        "http::post($openAiBaseUrl + '/v1/chat/completions', $body, {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + $open_ai_token,
+            'Authorization': 'Bearer ' + $openAiToken,
         })",
         vars! {
             body: object! {
-                model: "deepseek-chat",
+                model: ai_model,
                 messages: vec![
                     object! { role: "system", content: SYSTEM_PROMPT },
                     object! { role: "user", content: text },
@@ -104,8 +105,6 @@ fn scrape_for_recipe(url: String) -> Result<RecipeInfo> {
                 },
             },
             system_prompt: SYSTEM_PROMPT,
-            open_ai_url: open_ai_url,
-            open_ai_token: open_ai_token
         },
     )?;
 

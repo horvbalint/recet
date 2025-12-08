@@ -1,7 +1,13 @@
 BEGIN TRANSACTION;
 
--- DEFINE PARAM OVERWRITE $openAiUrl VALUE 'open-ai-compatible-api-url';
+-- For AI integration set the following parameters:
+-- DEFINE PARAM OVERWRITE $openAiBaseUrl VALUE 'open-ai-compatible-api-url';
+-- DEFINE PARAM OVERWRITE $openAiModel VALUE 'name-of-the-model';
 -- DEFINE PARAM OVERWRITE $openAiToken VALUE 'your-token';
+
+-- The following parameters are required:
+-- DEFINE PARAM OVERWRITE $pluginsBucketPath VALUE 'file:/path/to/the/directory';
+-- DEFINE PARAM OVERWRITE $recipeImagesBucketPath VALUE 'file:/path/to/the/directory';
 
 IF $pluginsBucketPath == NONE {
 	throw "Please run `DEFINE PARAM OVERWRITE $pluginsBucketPath VALUE 'file:/path/to/the/directory' PERMISSIONS NONE;` with the path to the directory where plugins will be stored.";

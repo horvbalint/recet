@@ -16,7 +16,7 @@ export const isCurrHouseholdEditor = computed(() => ['owner', 'writer'].includes
 export const isCurrHouseholdViewer = computed(() => ['owner', 'writer', 'guest'].includes(currHouseholdRole.value || ''))
 
 export async function signUp(email: string, username: string, password: string) {
-  const { token } = await db.signup({
+  const { access } = await db.signup({
     access: 'user',
     variables: {
       email,
@@ -25,11 +25,11 @@ export async function signUp(email: string, username: string, password: string) 
     },
   })
 
-  localStorage.setItem('recet_token', token)
+  localStorage.setItem('recet_token', access)
 }
 
 export async function signIn(email: string, password: string) {
-  const { token } = await db.signin({
+  const { access } = await db.signin({
     access: 'user',
     variables: {
       email,
@@ -37,7 +37,7 @@ export async function signIn(email: string, password: string) {
     },
   })
 
-  localStorage.setItem('recet_token', token)
+  localStorage.setItem('recet_token', access)
 }
 
 export function logout() {

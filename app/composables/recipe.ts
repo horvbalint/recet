@@ -1,5 +1,5 @@
 import type { BoundQuery, RecordId } from 'surrealdb'
-import type { OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
+import type { InMealRuleConditions } from '~/db'
 import type { Recipe } from '~/pages/index.vue'
 
 // VIEW TRANSITION
@@ -61,18 +61,9 @@ const pageIndex = ref(0)
 let firstPageQueriedAt = new Date()
 const recipes = ref<Recipe[]>([])
 const recipeCount = ref<number | null>(null)
-const filterData = ref<{
-  cuisenes: OutCuisine[]
-  tags: OutRecipeTag[]
-  meals: OutMeal[]
-  ingredients: OutIngredient[]
-}>()
 
 const searchTerm = ref('')
-const selectedCuisines = ref<OutCuisine['id'][]>([])
-const selectedTags = ref<OutRecipeTag['id'][]>([])
-const selectedMeals = ref<OutMeal['id'][]>([])
-const selectedIngredients = ref<OutIngredient['id'][]>([])
+const filterConditions = ref<InMealRuleConditions>(createEmptyMealRuleConditions())
 
 function constructWhereClause(query: BoundQuery) {
   query.append(surql` WHERE household = ${currentHousehold.value!.id} && created_at <= ${firstPageQueriedAt}`)
@@ -80,14 +71,63 @@ function constructWhereClause(query: BoundQuery) {
   if (searchTerm.value)
     query.append(surql` && name @@ ${searchTerm.value}`)
 
-  if (selectedCuisines.value.length)
-    query.append(surql` && cuisine IN ${selectedCuisines.value}`)
-  if (selectedTags.value.length)
-    query.append(surql` && tags.intersect(${selectedTags.value}).len() > 0`)
-  if (selectedMeals.value.length)
-    query.append(surql` && meal.intersect(${selectedMeals.value}).len() > 0`)
-  if (selectedIngredients.value.length)
-    query.append(surql` && (ingredients.ingredient || []).intersect(${selectedIngredients.value}).len() > 0`)
+  const inc = filterConditions.value.include
+  const exc = filterConditions.value.exclude
+
+  const hasIncMeals = inc.meals.items.length > 0
+  const hasIncTags = inc.tags.items.length > 0
+  const hasIncCuisines = inc.cuisines.items.length > 0
+  const hasIncIngredients = inc.ingredients.items.length > 0
+  const hasAnyInclude = hasIncMeals || hasIncTags || hasIncCuisines || hasIncIngredients
+
+  const include_operator = filterConditions.value.include_operator === 'and' ? surql` && ` : surql` || `
+
+  if (hasAnyInclude) {
+    query.append(surql` && (`)
+
+    if (hasIncMeals) {
+      query.append(include_operator)
+
+      if (inc.meals.operator === 'and')
+        query.append(surql`${inc.meals.items}.all(|$v| $v IN meal)`)
+      else
+        query.append(surql`${inc.meals.items}.any(|$v| $v IN meal)`)
+    }
+
+    if (hasIncTags) {
+      query.append(include_operator)
+
+      if (inc.tags.operator === 'and')
+        query.append(surql`${inc.tags.items}.all(|$v| $v IN tags)`)
+      else
+        query.append(surql`${inc.tags.items}.any(|$v| $v IN tags)`)
+    }
+
+    if (hasIncCuisines) {
+      query.append(include_operator)
+      query.append(surql`cuisine IN ${inc.cuisines.items}`)
+    }
+
+    if (hasIncIngredients) {
+      query.append(include_operator)
+
+      if (inc.ingredients.operator === 'and')
+        query.append(surql`${inc.ingredients.items}.all(|$v| $v IN (ingredients.ingredient || []))`)
+      else
+        query.append(surql`${inc.ingredients.items}.any(|$v| $v IN (ingredients.ingredient || []))`)
+    }
+
+    query.append(surql`)`)
+  }
+
+  if (exc.meals.length)
+    query.append(surql` && meal.intersect(${exc.meals}).is_empty()`)
+  if (exc.tags.length)
+    query.append(surql` && tags.intersect(${exc.tags}).is_empty()`)
+  if (exc.cuisines.length)
+    query.append(surql` && cuisine NOT IN ${exc.cuisines}`)
+  if (exc.ingredients.length)
+    query.append(surql` && (ingredients.ingredient || []).intersect(${exc.ingredients}).is_empty()`)
 
   return query
 }
@@ -140,7 +180,7 @@ function constructRecipeQuery() {
   return query
 }
 
-const conditionWatchSources = [currentHousehold, searchTerm, selectedCuisines, selectedIngredients, selectedMeals, selectedTags]
+const conditionWatchSources = [currentHousehold, searchTerm, filterConditions]
 
 export function clearRecipeCache() {
   pageIndex.value = 0
@@ -148,6 +188,8 @@ export function clearRecipeCache() {
   recipeCount.value = null
   firstPageQueriedAt = new Date()
 }
+
+const refreshTrigger = ref(0)
 
 export function useRecipeState() {
   const { data, status, error, refresh } = useAsyncData('recipes', async () => {
@@ -160,7 +202,7 @@ export function useRecipeState() {
     ])
 
     return { recipeChunks: recipes, recipeCount: count }
-  }, { immediate: false, watch: [...conditionWatchSources, pageIndex] })
+  }, { immediate: false, watch: [pageIndex, refreshTrigger] })
 
   if (recipeCount.value === null)
     refresh()
@@ -172,40 +214,16 @@ export function useRecipeState() {
 
   watch(conditionWatchSources, () => {
     clearRecipeCache()
+    refreshTrigger.value++
   }, {
     flush: 'sync',
+    deep: true,
   })
-
-  const { data: filterDataTemp, status: filterDataStatus, refresh: queryFilterData } = useAsyncData('filter-data', async () => {
-    const [cuisenes, tags, meals, ingredients] = await db
-      .query(surql`
-        SELECT id, name, color, flag FROM cuisine WITH NOINDEX ORDER BY name ASC;
-        SELECT id, name, color, icon FROM recipe_tag WITH NOINDEX ORDER BY name ASC;
-        SELECT id, name, color FROM meal WITH NOINDEX ORDER BY name ASC;
-        SELECT id, name FROM ingredient WITH NOINDEX ORDER BY name ASC;
-      `)
-      .collect<[OutCuisine[], OutRecipeTag[], OutMeal[], OutIngredient[]]>()
-
-    return { cuisenes, tags, meals, ingredients }
-  }, {
-    immediate: false,
-  })
-  watch(filterDataTemp, () => filterData.value = filterDataTemp.value)
 
   return {
     filter: {
-      data: {
-        data: filterData,
-        status: filterDataStatus,
-        refresh: queryFilterData,
-      },
-      conditions: {
-        searchTerm,
-        selectedCuisines,
-        selectedTags,
-        selectedMeals,
-        selectedIngredients,
-      },
+      searchTerm,
+      conditions: filterConditions,
     },
     recipes: {
       data: {

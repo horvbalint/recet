@@ -45,26 +45,17 @@ const {
     refresh,
   },
   filter: {
-    conditions: {
-      searchTerm,
-      selectedCuisines,
-      selectedTags,
-      selectedMeals,
-      selectedIngredients,
-    },
-    data: {
-      data: filterData,
-      status: filterDataStatus,
-      refresh: queryFilterData,
-    },
+    searchTerm,
+    conditions: filterConditions,
   },
 } = useRecipeState()
 
-const conditionCount = computed(() => selectedCuisines.value.length + selectedTags.value.length + selectedMeals.value.length + selectedIngredients.value.length)
+const conditionCount = useConditionCount(filterConditions)
 const showFilter = ref(!!conditionCount.value)
 
+const { data: filterData, status: filterStatus, refresh: queryFilterData } = useFilterData()
 async function toggleFilter() {
-  if (!showFilter.value && !filterData.value)
+  if (!showFilter.value)
     await queryFilterData()
 
   showFilter.value = !showFilter.value
@@ -115,8 +106,8 @@ onBeforeUnmount(() => {
 
           <neb-button
             :type="conditionCount ? 'secondary' : 'secondary-neutral'"
-            :disabled="filterDataStatus === 'pending'"
-            :loading="filterDataStatus === 'pending'"
+            :disabled="filterStatus === 'pending'"
+            :loading="filterStatus === 'pending'"
             small
             @click="toggleFilter()"
           >
@@ -126,77 +117,10 @@ onBeforeUnmount(() => {
           </neb-button>
         </div>
 
-        <div v-if="filterData" v-neb-expand="showFilter" class="filter-row">
-          <neb-select
-            v-model="selectedCuisines"
-            placeholder="Filter by Cuisine"
-            :options="filterData.cuisenes"
-            label-key="name"
-            track-by-key="id"
-            :transform-fun="transformId"
-            use-only-tracked-key
-            multiple
-            leading-icon="material-symbols:public"
-          >
-            <template #option="{ option }">
-              <cuisine-badge :cuisine="option" />
-            </template>
-
-            <template #selection="{ selected }">
-              <cuisine-badge v-for="cuisine in selected" :key="cuisine.trackValue.toString()" small :cuisine="cuisine.option" />
-            </template>
-          </neb-select>
-
-          <neb-select
-            v-model="selectedTags"
-            placeholder="Filter by Tags"
-            :options="filterData.tags"
-            label-key="name"
-            track-by-key="id"
-            :transform-fun="transformId"
-            use-only-tracked-key
-            multiple
-            leading-icon="material-symbols:tag-rounded"
-          >
-            <template #option="{ option }">
-              <recipe-tag-badge :tag="option" />
-            </template>
-
-            <template #selection="{ selected }">
-              <recipe-tag-badge v-for="tag in selected" :key="tag.trackValue.toString()" small :tag="tag.option" />
-            </template>
-          </neb-select>
-
-          <neb-select
-            v-model="selectedMeals"
-            placeholder="Filter by Meal"
-            :options="filterData.meals"
-            label-key="name"
-            track-by-key="id"
-            :transform-fun="transformId"
-            use-only-tracked-key
-            multiple
-            leading-icon="material-symbols:restaurant-rounded"
-          >
-            <template #option="{ option }">
-              <meal-badge :meal="option" />
-            </template>
-
-            <template #selection="{ selected }">
-              <meal-badge v-for="meal in selected" :key="meal.trackValue.toString()" small :meal="meal.option" />
-            </template>
-          </neb-select>
-
-          <neb-select
-            v-model="selectedIngredients"
-            placeholder="Filter by Ingredient"
-            :options="filterData.ingredients"
-            label-key="name"
-            track-by-key="id"
-            :transform-fun="transformId"
-            use-only-tracked-key
-            multiple
-            leading-icon="material-symbols:grocery"
+        <div v-neb-expand="showFilter" class="filter-row">
+          <recipe-filter
+            v-model="filterConditions"
+            :filter-data="filterData"
           />
         </div>
       </div>
@@ -271,13 +195,6 @@ onBeforeUnmount(() => {
 
 .filter-row {
   width: 100%;
-  display: flex;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-
-  & > * {
-    flex: 1;
-  }
 }
 
 .recipe-grid {
@@ -289,12 +206,6 @@ onBeforeUnmount(() => {
 @media (--tablet-viewport) {
   .filter-span {
     display: none;
-  }
-
-  .filter-row {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    gap: var(--space-2);
   }
 
   .recipe-grid {

@@ -210,6 +210,7 @@ DEFINE FIELD OVERWRITE items.*.marked ON shopping_list TYPE option<bool>;
 
 // TABLE: meal_plan
 fn::define_household_table("meal_plan");
+DEFINE FIELD OVERWRITE household ON meal_rule TYPE record<household>;
 DEFINE FIELD OVERWRITE date ON meal_plan TYPE datetime;
 DEFINE FIELD OVERWRITE meals ON meal_plan TYPE object;
 FOR $meal IN ["breakfast", "lunch", "dinner", "snack"] {
@@ -221,24 +222,25 @@ FOR $meal IN ["breakfast", "lunch", "dinner", "snack"] {
 
 fn::define_household_table("meal_rule");
 DEFINE FIELD OVERWRITE name ON meal_rule TYPE string;
-DEFINE FIELD OVERWRITE conditions ON meal_rule TYPE {
-	operator: "and" | "or",
-	categories: array<record<meal_category>>,
-	tags: array<record<recipe_tag>>,
-	cuisines: array<record<cuisine>>,
-	rules: array<{
-		operator: "and" | "or",
-		categories: array<record<meal_category>>,
-		tags: array<record<recipe_tag>>,
-		cuisines: array<record<cuisine>>,
-		rules: array<{
-			operator: "and" | "or",
-			categories: array<record<meal_category>>,
-			tags: array<record<recipe_tag>>,
-			cuisines: array<record<cuisine>>,
-		}>
-	}>
-};
+DEFINE FIELD OVERWRITE household ON meal_rule TYPE record<household>;
+DEFINE FIELD OVERWRITE include_operator ON meal_rule TYPE "and" | "or";
+DEFINE FIELD OVERWRITE include ON meal_rule TYPE object;
+DEFINE FIELD OVERWRITE include.meals ON meal_rule TYPE object;
+DEFINE FIELD OVERWRITE include.meals.operator ON meal_rule TYPE "and" | "or";
+DEFINE FIELD OVERWRITE include.meals.items ON meal_rule TYPE array<record<meal>> ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE include.tags ON meal_rule TYPE object;
+DEFINE FIELD OVERWRITE include.tags.operator ON meal_rule TYPE "and" | "or";
+DEFINE FIELD OVERWRITE include.tags.items ON meal_rule TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE include.cuisines ON meal_rule TYPE object;
+DEFINE FIELD OVERWRITE include.cuisines.items ON meal_rule TYPE array<record<cuisine>> ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE include.ingredients ON meal_rule TYPE object;
+DEFINE FIELD OVERWRITE include.ingredients.operator ON meal_rule TYPE "and" | "or";
+DEFINE FIELD OVERWRITE include.ingredients.items ON meal_rule TYPE array<record<ingredient>> ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE exclude ON meal_rule TYPE object;
+DEFINE FIELD OVERWRITE exclude.meals ON meal_rule TYPE array<record<meal>> ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE exclude.tags ON meal_rule TYPE array<record<recipe_tag>> ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE exclude.cuisines ON meal_rule TYPE array<record<cuisine>> ASSERT $value.all(|$v| household = $v.household);
+DEFINE FIELD OVERWRITE exclude.ingredients ON meal_rule TYPE array<record<ingredient>> ASSERT $value.all(|$v| household = $v.household);
 
 DEFINE BUCKET OVERWRITE recipe_images BACKEND $recipeImagesBucketPath PERMISSIONS WHERE
 	IF $action = 'get' {

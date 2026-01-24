@@ -75,6 +75,57 @@ export type OutMeal = {
   name: string,
 }
 
+export type MealRuleFilterGroup<T> = {
+  operator: 'and' | 'or',
+  items: T[],
+}
+
+export type InMealRuleConditions = {
+  include_operator: 'and' | 'or',
+  include: {
+    meals: MealRuleFilterGroup<Required<InMeal>['id']>,
+    tags: MealRuleFilterGroup<Required<InRecipeTag>['id']>,
+    cuisines: MealRuleFilterGroup<Required<InCuisine>['id']>,
+    ingredients: MealRuleFilterGroup<Required<InIngredient>['id']>,
+  },
+  exclude: {
+    meals: Array<Required<InMeal>['id']>,
+    tags: Array<Required<InRecipeTag>['id']>,
+    cuisines: Array<Required<InCuisine>['id']>,
+    ingredients: Array<Required<InIngredient>['id']>,
+  },
+}
+
+export type OutMealRuleConditions = {
+  include_operator: 'and' | 'or',
+  include: {
+    meals: MealRuleFilterGroup<OutMeal>,
+    tags: MealRuleFilterGroup<OutRecipeTag>,
+    cuisines: MealRuleFilterGroup<OutCuisine>,
+    ingredients: MealRuleFilterGroup<OutIngredient>,
+  },
+  exclude: {
+    meals: OutMeal[],
+    tags: OutRecipeTag[],
+    cuisines: OutCuisine[],
+    ingredients: OutIngredient[],
+  },
+}
+
+export type InMealRule = {
+  id?: RecordId<"meal_rule">,
+  household: Required<InHousehold>['id'],
+  name: string,
+} & InMealRuleConditions
+
+export type OutMealRule = {
+  id: RecordId<"meal_rule">,
+  household: OutHousehold,
+  name: string,
+  created_at: string,
+  updated_at: string,
+} & OutMealRuleConditions
+
 export type InMealPlan = {
   id?: RecordId<"meal_plan">,
   household: Required<InHousehold>['id'],

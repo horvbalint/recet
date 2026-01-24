@@ -222,7 +222,6 @@ FOR $meal IN ["breakfast", "lunch", "dinner", "snack"] {
 
 fn::define_household_table("meal_rule");
 DEFINE FIELD OVERWRITE name ON meal_rule TYPE string;
-DEFINE FIELD OVERWRITE household ON meal_rule TYPE record<household>;
 DEFINE FIELD OVERWRITE include_operator ON meal_rule TYPE "and" | "or";
 DEFINE FIELD OVERWRITE include ON meal_rule TYPE object;
 DEFINE FIELD OVERWRITE include.meals ON meal_rule TYPE object;

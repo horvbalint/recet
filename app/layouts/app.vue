@@ -23,7 +23,6 @@ const navigationGroups = computed(() => {
     {
       title: 'Data',
       items: [
-        { id: 'meal-rules', name: 'Meal rules', path: '/meal-rules', icon: 'material-symbols:rule-rounded' },
         { id: 'master-data', name: 'Master Data', path: '/master-data', icon: 'material-symbols:category-outline-rounded' },
       ],
     },

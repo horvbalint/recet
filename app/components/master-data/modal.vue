@@ -3,10 +3,12 @@ const props = withDefaults(defineProps<{
   table: string
   name: string
   icon: string
+  maxWidth?: string
   initialData?: Partial<T> | null
   transformBeforeCreate?: (data: T) => any
   transformBeforeEdit?: (data: T) => any
 }>(), {
+  maxWidth: '500px',
   mode: 'create',
   transformBeforeCreate: (data: T) => data,
   transformBeforeEdit: (data: T) => data,
@@ -85,7 +87,7 @@ function handleCancel() {
     v-model="modelValue"
     :title="title"
     :header-icon="icon"
-    max-width="500px"
+    :max-width
     :close-on-background-click="false"
   >
     <template #content>

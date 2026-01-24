@@ -5,7 +5,7 @@ definePageMeta({
 
 const route = useRoute()
 
-type Table = 'unit' | 'meal' | 'cuisine' | 'recipe_tag' | 'ingredient' | 'ingredient_category' | 'shop'
+type Table = 'unit' | 'meal' | 'cuisine' | 'recipe_tag' | 'ingredient' | 'ingredient_category' | 'shop' | 'meal_rule'
 const activeTable = ref<Table>(route.query.table as Table || 'unit')
 
 const tabs = {
@@ -16,6 +16,7 @@ const tabs = {
   ingredient_category: { text: 'Categories', icon: 'material-symbols:category-outline-rounded' },
   shop: { text: 'Shops', icon: 'material-symbols:store-outline' },
   ingredient: { text: 'Ingredients', icon: 'material-symbols:grocery' },
+  meal_rule: { text: 'Meal Rules', icon: 'material-symbols:rule-rounded' },
 }
 
 watch(activeTable, () => navigateTo({ query: { table: activeTable.value } }))
@@ -42,6 +43,7 @@ watch(activeTable, () => navigateTo({ query: { table: activeTable.value } }))
       <ingredient-category-master-data-page v-if="activeTable === 'ingredient_category'" />
       <shop-master-data-page v-if="activeTable === 'shop'" />
       <ingredient-master-data-page v-if="activeTable === 'ingredient'" />
+      <meal-rule-master-data-page v-if="activeTable === 'meal_rule'" />
     </div>
   </page-layout>
 </template>

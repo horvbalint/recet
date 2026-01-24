@@ -85,7 +85,7 @@ export type InMealRuleConditions = {
   include: {
     meals: MealRuleFilterGroup<Required<InMeal>['id']>,
     tags: MealRuleFilterGroup<Required<InRecipeTag>['id']>,
-    cuisines: MealRuleFilterGroup<Required<InCuisine>['id']>,
+    cuisines: { items: Required<InCuisine>['id'][] },
     ingredients: MealRuleFilterGroup<Required<InIngredient>['id']>,
   },
   exclude: {
@@ -101,7 +101,7 @@ export type OutMealRuleConditions = {
   include: {
     meals: MealRuleFilterGroup<OutMeal>,
     tags: MealRuleFilterGroup<OutRecipeTag>,
-    cuisines: MealRuleFilterGroup<OutCuisine>,
+    cuisines: {items: OutCuisine[] },
     ingredients: MealRuleFilterGroup<OutIngredient>,
   },
   exclude: {

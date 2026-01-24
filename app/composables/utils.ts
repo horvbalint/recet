@@ -21,7 +21,7 @@ export function createEmptyMealRuleConditions(): InMealRuleConditions {
     include: {
       meals: { operator: 'or', items: [] },
       tags: { operator: 'or', items: [] },
-      cuisines: { operator: 'or', items: [] },
+      cuisines: { items: [] },
       ingredients: { operator: 'or', items: [] },
     },
     exclude: {

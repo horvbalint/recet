@@ -25,7 +25,6 @@ watch(advancedMode, (isAdvanced) => {
     modelValue.value.include_operator = 'and'
     modelValue.value.include.meals.operator = 'or'
     modelValue.value.include.tags.operator = 'or'
-    modelValue.value.include.cuisines.operator = 'or'
     modelValue.value.include.ingredients.operator = 'or'
 
     if (modelValue.value.exclude.meals.length)
@@ -292,7 +291,7 @@ watch(hasExcludeFilters, (has) => {
 }
 
 .filter-section.simple {
-  background-color: transparent;
+  background: none;
   border-width: 0px;
   padding: 0;
 }
@@ -379,6 +378,10 @@ watch(hasExcludeFilters, (has) => {
   .filter-section {
     background-color: var(--neutral-color-900);
     border-color: var(--neutral-color-700);
+
+    &.simple {
+      background: none;
+    }
   }
 
   .filter-section.exclude {

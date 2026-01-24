@@ -1,4 +1,4 @@
-import type { InMealRuleConditions, OutCuisine, OutIngredient, OutMeal, OutRecipeTag } from '~/db'
+import type { InMealRuleConditions, OutCuisine, OutIngredient, OutMeal, OutMealRuleConditions, OutRecipeTag } from '~/db'
 
 export function useFilterData() {
   return useAsyncData('recipe-filter-data', async () => {
@@ -18,15 +18,17 @@ export function useFilterData() {
   })
 }
 
+export function calcConditionCount(conditions: InMealRuleConditions | OutMealRuleConditions) {
+  return conditions.include.meals.items.length
+    + conditions.include.tags.items.length
+    + conditions.include.cuisines.items.length
+    + conditions.include.ingredients.items.length
+    + conditions.exclude.meals.length
+    + conditions.exclude.tags.length
+    + conditions.exclude.cuisines.length
+    + conditions.exclude.ingredients.length
+}
+
 export function useConditionCount(conditions: Ref<InMealRuleConditions>) {
-  return computed(() => {
-    return conditions.value.include.meals.items.length
-      + conditions.value.include.tags.items.length
-      + conditions.value.include.cuisines.items.length
-      + conditions.value.include.ingredients.items.length
-      + conditions.value.exclude.meals.length
-      + conditions.value.exclude.tags.length
-      + conditions.value.exclude.cuisines.length
-      + conditions.value.exclude.ingredients.length
-  })
+  return computed(() => calcConditionCount(conditions.value))
 }

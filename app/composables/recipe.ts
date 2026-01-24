@@ -80,10 +80,12 @@ function constructWhereClause(query: BoundQuery) {
   const hasIncIngredients = inc.ingredients.items.length > 0
   const hasAnyInclude = hasIncMeals || hasIncTags || hasIncCuisines || hasIncIngredients
 
-  const include_operator = filterConditions.value.include_operator === 'and' ? surql` && ` : surql` || `
-
   if (hasAnyInclude) {
-    query.append(surql` && (`)
+    const include_operator = filterConditions.value.include_operator === 'and' ? surql` && ` : surql` || `
+    if (filterConditions.value.include_operator === 'and')
+      query.append(surql` && (true`)
+    else
+      query.append(surql` && (false`)
 
     if (hasIncMeals) {
       query.append(include_operator)

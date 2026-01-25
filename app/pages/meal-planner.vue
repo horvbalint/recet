@@ -567,6 +567,20 @@ header {
     white-space: nowrap;
   }
 }
+.meal-edit-item {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  flex-wrap: wrap;
+
+  & > :first-child {
+    flex: 1;
+  }
+
+  & > :last-child {
+    width: 100px;
+  }
+}
 
 .dark-mode {
   .calendar {
@@ -694,6 +708,11 @@ header {
     color: var(--neutral-color-400);
     font-style: italic;
   }
+  .meal-edit-item {
+    & > :last-child {
+      width: 100%;
+    }
+  }
 
   .dark-mode {
     .day-card {
@@ -717,20 +736,6 @@ header {
     .meal-title {
       color: var(--neutral-color-300);
     }
-  }
-}
-
-.meal-edit-item {
-  display: flex;
-  gap: var(--space-3);
-  align-items: flex-start;
-
-  & > :first-child {
-    flex: 1;
-  }
-
-  & > :last-child {
-    width: 100px;
   }
 }
 </style>

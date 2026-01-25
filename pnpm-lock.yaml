@@ -25,7 +25,7 @@ importers:
         version: 1.11.19
       nebula:
         specifier: github:horvbalint/nebula
-        version: https://codeload.github.com/horvbalint/nebula/tar.gz/67ac34dbb2d369608b09e20dd06b69ca5a089b07(@floating-ui/dom@1.7.4)(@tiptap/core@3.17.1(@tiptap/pm@3.11.0))(@vue/compiler-dom@3.5.27)(@vue/compiler-sfc@3.5.27)(db0@0.3.4)(ioredis@5.9.2)(jiti@2.6.1)(magicast@0.5.1)(nuxt@4.3.0(@parcel/watcher@2.5.6)(@vue/compiler-sfc@3.5.27)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.9.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rollup@4.56.0)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2))(vue-tsc@3.2.3(typescript@5.9.3))(yaml@2.8.2))(prettier@3.8.1)(rollup@4.56.0)(vite@7.3.1(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2))
+        version: https://codeload.github.com/horvbalint/nebula/tar.gz/f1c4adedd605895d1b9204db0cd32b79c39000f1(@floating-ui/dom@1.7.4)(@tiptap/core@3.17.1(@tiptap/pm@3.11.0))(@vue/compiler-dom@3.5.27)(@vue/compiler-sfc@3.5.27)(db0@0.3.4)(ioredis@5.9.2)(jiti@2.6.1)(magicast@0.5.1)(nuxt@4.3.0(@parcel/watcher@2.5.6)(@vue/compiler-sfc@3.5.27)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.9.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rollup@4.56.0)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2))(vue-tsc@3.2.3(typescript@5.9.3))(yaml@2.8.2))(prettier@3.8.1)(rollup@4.56.0)(vite@7.3.1(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2))
       nuxt:
         specifier: 4.3.0
         version: 4.3.0(@parcel/watcher@2.5.6)(@vue/compiler-sfc@3.5.27)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.9.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rollup@4.56.0)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2))(vue-tsc@3.2.3(typescript@5.9.3))(yaml@2.8.2)
@@ -5283,8 +5283,8 @@ packages:
     resolution: {integrity: sha512-kKHJhxwpR/Okycz4HhQKKlhWe4ASEfPgkSWNmKFHd7+ezuQlxkA5cM3+XkBPvm1gmHen3w53qsYAv+8GwRrBlg==}
     engines: {node: '>=18'}
 
-  nebula@https://codeload.github.com/horvbalint/nebula/tar.gz/67ac34dbb2d369608b09e20dd06b69ca5a089b07:
-    resolution: {tarball: https://codeload.github.com/horvbalint/nebula/tar.gz/67ac34dbb2d369608b09e20dd06b69ca5a089b07}
+  nebula@https://codeload.github.com/horvbalint/nebula/tar.gz/f1c4adedd605895d1b9204db0cd32b79c39000f1:
+    resolution: {tarball: https://codeload.github.com/horvbalint/nebula/tar.gz/f1c4adedd605895d1b9204db0cd32b79c39000f1}
     version: 0.0.1
 
   nitropack@2.13.1:
@@ -13018,7 +13018,7 @@ snapshots:
 
   natural-orderby@5.0.0: {}
 
-  nebula@https://codeload.github.com/horvbalint/nebula/tar.gz/67ac34dbb2d369608b09e20dd06b69ca5a089b07(@floating-ui/dom@1.7.4)(@tiptap/core@3.17.1(@tiptap/pm@3.11.0))(@vue/compiler-dom@3.5.27)(@vue/compiler-sfc@3.5.27)(db0@0.3.4)(ioredis@5.9.2)(jiti@2.6.1)(magicast@0.5.1)(nuxt@4.3.0(@parcel/watcher@2.5.6)(@vue/compiler-sfc@3.5.27)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.9.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rollup@4.56.0)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2))(vue-tsc@3.2.3(typescript@5.9.3))(yaml@2.8.2))(prettier@3.8.1)(rollup@4.56.0)(vite@7.3.1(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2)):
+  nebula@https://codeload.github.com/horvbalint/nebula/tar.gz/f1c4adedd605895d1b9204db0cd32b79c39000f1(@floating-ui/dom@1.7.4)(@tiptap/core@3.17.1(@tiptap/pm@3.11.0))(@vue/compiler-dom@3.5.27)(@vue/compiler-sfc@3.5.27)(db0@0.3.4)(ioredis@5.9.2)(jiti@2.6.1)(magicast@0.5.1)(nuxt@4.3.0(@parcel/watcher@2.5.6)(@vue/compiler-sfc@3.5.27)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.9.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rollup@4.56.0)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2))(vue-tsc@3.2.3(typescript@5.9.3))(yaml@2.8.2))(prettier@3.8.1)(rollup@4.56.0)(vite@7.3.1(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(yaml@2.8.2)):
     dependencies:
       '@antfu/eslint-config': 7.2.0(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.0.2(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       '@csstools/postcss-global-data': 4.0.0(postcss@8.5.6)

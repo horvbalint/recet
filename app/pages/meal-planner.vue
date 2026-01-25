@@ -461,8 +461,8 @@ async function saveDayMeals() {
 .desktop-view {
   height: 100%;
   display: grid;
-  grid-template-columns: 50px repeat(7, 1fr);
-  grid-template-rows: auto repeat(4, 1fr);
+  grid-template-columns: 50px repeat(7, minmax(0, 1fr));
+  grid-template-rows: auto repeat(4, minmax(0, 1fr));
   gap: var(--space-1);
   min-height: 500px;
 }
@@ -515,9 +515,6 @@ header {
   padding: var(--space-2);
   border: 1px solid var(--neutral-color-200);
   border-radius: var(--radius-small);
-  min-height: 80px;
-  min-height: 0;
-  min-width: 0;
   transition:
     background-color 0.15s ease,
     border-color 0.15s ease;

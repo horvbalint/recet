@@ -277,7 +277,7 @@ async function saveDayMeals() {
         </neb-button>
       </div>
 
-      <div class="week desktop-view">
+      <div class="desktop-view">
         <div />
 
         <header v-for="day in week" :key="day.toString()">
@@ -464,7 +464,6 @@ async function saveDayMeals() {
   grid-template-columns: 50px repeat(7, minmax(0, 1fr));
   grid-template-rows: auto repeat(4, minmax(0, 1fr));
   gap: var(--space-1);
-  min-height: 500px;
 }
 
 .mobile-view {

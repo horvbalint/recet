@@ -6,7 +6,7 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
-  saved: []
+  saved: [item: any]
 }>()
 
 const modelValue = defineModel<boolean>({ required: true })
@@ -50,7 +50,7 @@ watch(modelValue, () => {
     :transform-before-create="transformBeforeSave"
     :transform-before-edit="transformBeforeSave"
     max-width="none"
-    @saved="$emit('saved')"
+    @saved="$emit('saved', $event)"
   >
     <template #form="{ data }">
       <neb-input

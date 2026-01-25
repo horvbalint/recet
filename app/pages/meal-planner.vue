@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RecordId } from 'surrealdb'
-import type { OutMealPlan, OutMealRule, OutRecipe } from '~/db'
+import type { InMealRule, OutMealPlan, OutMealRule, OutRecipe } from '~/db'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
@@ -84,7 +84,11 @@ window.addEventListener('mouseup', () => {
 
 const overWriteExistinMeals = ref(false)
 const selectedRule = ref<OutMealRule | null>(null)
-const { data: rules } = useAsyncData(async () => {
+const createRuleModal = ref(false)
+const createRuleInitialName = ref('')
+const singleDayRuleMode = ref<{ day: dayjs.Dayjs, meal: Meal } | null>(null)
+
+const { data: rules, refresh: refreshRules } = useAsyncData(async () => {
   const [rules] = await db
     .query(`SELECT * FROM meal_rule WHERE household = ${currentHousehold.value?.id} ORDER BY name ASC`)
     .collect<[OutMealRule[]]>()
@@ -92,11 +96,25 @@ const { data: rules } = useAsyncData(async () => {
   return rules
 })
 
+function handleCreateRule(searchTerm: string) {
+  createRuleInitialName.value = searchTerm
+  createRuleModal.value = true
+}
+
+function onRuleCreated(rule: OutMealRule) {
+  selectedRule.value = rule
+  refreshRules()
+}
+
 async function applyRule() {
-  const startDay = selection.value!.start.isBefore(selection.value!.curr)
-    ? selection.value!.start
-    : selection.value!.curr
-  const dayCount = Math.abs(selection.value!.start.diff(selection.value!.curr, 'day')) + 1
+  const isSingleDayMode = singleDayRuleMode.value !== null
+  const startDay = isSingleDayMode
+    ? singleDayRuleMode.value!.day
+    : (selection.value!.start.isBefore(selection.value!.curr) ? selection.value!.start : selection.value!.curr)
+  const dayCount = isSingleDayMode
+    ? 1
+    : Math.abs(selection.value!.start.diff(selection.value!.curr, 'day')) + 1
+  const meal = isSingleDayMode ? singleDayRuleMode.value!.meal : selection.value!.meal
 
   const selectedDays = Array.from({ length: dayCount }).map((_, i) => startDay.add(i, 'day'))
 
@@ -122,7 +140,7 @@ async function applyRule() {
       : surql`+= {recipe: ${enoughRecipes[i]!.id}}`
 
     const query = surql`UPSERT meal_plan SET meals.`
-    query.append(mealDict[selection.value!.meal])
+    query.append(mealDict[meal])
     query.append(recipeOperation)
     query.append(surql`, date = ${day.toDate()}, household = ${currentHousehold.value?.id} WHERE household = ${currentHousehold.value?.id}  && date = ${day.toDate()}`)
 
@@ -134,6 +152,7 @@ async function applyRule() {
   ruleModal.value = false
   overWriteExistinMeals.value = false
   selectedRule.value = null
+  singleDayRuleMode.value = null
 
   useNebToast({ type: 'success', title: 'Meal plan updated', description: 'The selected meal planning rule has been applied successfully.' })
   refresh()
@@ -185,6 +204,17 @@ watch(dayEditModal, () => {
     editingMeal.value = null
     editingMeals.value = []
   }
+})
+
+function openRuleModalForSingleDay() {
+  singleDayRuleMode.value = { day: editingDay.value!, meal: editingMeal.value! }
+  dayEditModal.value = false
+  ruleModal.value = true
+}
+
+watch(singleDayRuleMode, () => {
+  if (!ruleModal.value)
+    singleDayRuleMode.value = null
 })
 
 const formValid = ref(false)
@@ -274,10 +304,10 @@ async function saveDayMeals() {
                 :key="`${meal}-${day.toString()}-${recipe.recipe.id}`"
                 :title="recipe.recipe.name"
               >
-                <div class="recipe-item">
+                <nuxt-link :to="`/recipe/${recipe.recipe.id.id}`" class="recipe-item" @click.stop>
                   <span class="recipe-name">{{ recipe.recipe.name }}</span>
                   <span class="recipe-servings">{{ recipe.servings || 1 }}×</span>
-                </div>
+                </nuxt-link>
               </neb-tooltip>
             </template>
           </div>
@@ -289,16 +319,18 @@ async function saveDayMeals() {
   <neb-modal
     v-model="ruleModal"
     title="Select a rule"
-    subtitle="Choose a meal planning rule to apply to the selected days"
+    :subtitle="singleDayRuleMode ? 'Choose a meal planning rule to generate a recipe' : 'Choose a meal planning rule to apply to the selected days'"
     header-icon="material-symbols:rule-rounded"
   >
     <template #content>
       <neb-select
         v-model="selectedRule"
         :options="rules!"
-        :label="`Select a rule for ${selection!.meal}`"
+        :label="`Select a rule for ${singleDayRuleMode?.meal ?? selection?.meal}`"
         label-key="name"
         track-by-key="id"
+        :on-new="handleCreateRule"
+        @new="handleCreateRule($event)"
       />
 
       <neb-checkbox v-model="overWriteExistinMeals">
@@ -353,11 +385,23 @@ async function saveDayMeals() {
     </template>
 
     <template #actions>
+      <neb-button type="secondary" @click="openRuleModalForSingleDay()">
+        <icon name="material-symbols:rule-rounded" />
+        Generate by Rule
+      </neb-button>
+
       <neb-button type="primary" :disabled="!formValid || savingDayEdit" :loading="savingDayEdit" @click="saveDayMeals()">
         Save
       </neb-button>
     </template>
   </neb-modal>
+
+  <meal-rule-master-data-modal
+    v-if="createRuleModal"
+    v-model="createRuleModal"
+    :initial-data="{ name: createRuleInitialName, ...createEmptyMealRuleConditions() } as Partial<InMealRule>"
+    @saved="onRuleCreated"
+  />
 </template>
 
 <style scoped>
@@ -467,6 +511,7 @@ header {
   border-radius: var(--radius-small);
   font-size: var(--text-xs);
   transition: all 0.15s ease;
+  text-decoration: none;
 
   &:hover {
     background-color: var(--primary-color-100);

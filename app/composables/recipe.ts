@@ -1,5 +1,5 @@
 import type { BoundQuery, RecordId } from 'surrealdb'
-import type { InMealRuleConditions } from '~/db'
+import type { InMealRuleConditions, OutMealRuleConditions } from '~/db'
 import type { Recipe } from '~/pages/index.vue'
 
 // VIEW TRANSITION
@@ -65,7 +65,7 @@ const recipeCount = ref<number | null>(null)
 const searchTerm = ref('')
 const filterConditions = ref<InMealRuleConditions>(createEmptyMealRuleConditions())
 
-export function constructWhereClause(query: BoundQuery, conditions: InMealRuleConditions = filterConditions.value) {
+export function constructWhereClause(query: BoundQuery, conditions: InMealRuleConditions | OutMealRuleConditions = filterConditions.value) {
   query.append(surql` WHERE household = ${currentHousehold.value!.id} && created_at <= ${firstPageQueriedAt}`)
 
   if (searchTerm.value)

@@ -12,6 +12,7 @@
 
 <style scoped>
 .main-area-content {
+  height: 100%;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -29,6 +30,7 @@
   margin: 0 auto;
   padding: 0 var(--space-6) var(--space-6);
   width: 100%;
+  flex: 1;
 }
 
 @media (--tablet-viewport) {

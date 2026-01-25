@@ -2,10 +2,6 @@
 import type { RecordId } from 'surrealdb'
 import type { OutShoppingList } from '~/db'
 
-definePageMeta({
-  layout: 'app',
-})
-
 const router = useRouter()
 
 const { data: shoppingLists, status, refresh, error } = useAsyncData('shopping-lists', async () => {

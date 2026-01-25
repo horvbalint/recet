@@ -2,10 +2,6 @@
 import type { RecordId } from 'surrealdb'
 import type { OutIngredient, OutIngredientCategory, OutRecipe, OutShop, OutShoppingList, OutUnit } from '~/db'
 
-definePageMeta({
-  layout: 'app',
-})
-
 const route = useRoute()
 const listId = route.params.id as string
 

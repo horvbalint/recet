@@ -1,8 +1,4 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: 'empty',
-})
-
 const formData = ref({
   username: '',
   email: '',

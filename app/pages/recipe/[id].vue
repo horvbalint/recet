@@ -2,10 +2,6 @@
 import type { Menu } from 'nebula/components/overlays/neb-menu.vue'
 import type { RecordId } from 'surrealdb'
 
-definePageMeta({
-  layout: 'app',
-})
-
 onBeforeRouteLeave((to, _, next) => {
   if (to.path !== '/')
     return next()

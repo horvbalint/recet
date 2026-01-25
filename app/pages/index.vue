@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import type { RecordId } from 'surrealdb'
 
-definePageMeta({
-  layout: 'app',
-})
-
 export interface Recipe {
   id: RecordId<'recipe'>
   name: string

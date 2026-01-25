@@ -65,14 +65,14 @@ const recipeCount = ref<number | null>(null)
 const searchTerm = ref('')
 const filterConditions = ref<InMealRuleConditions>(createEmptyMealRuleConditions())
 
-function constructWhereClause(query: BoundQuery) {
+export function constructWhereClause(query: BoundQuery, conditions: InMealRuleConditions = filterConditions.value) {
   query.append(surql` WHERE household = ${currentHousehold.value!.id} && created_at <= ${firstPageQueriedAt}`)
 
   if (searchTerm.value)
     query.append(surql` && name @@ ${searchTerm.value}`)
 
-  const inc = filterConditions.value.include
-  const exc = filterConditions.value.exclude
+  const inc = conditions.include
+  const exc = conditions.exclude
 
   const hasIncMeals = inc.meals.items.length > 0
   const hasIncTags = inc.tags.items.length > 0
@@ -81,8 +81,8 @@ function constructWhereClause(query: BoundQuery) {
   const hasAnyInclude = hasIncMeals || hasIncTags || hasIncCuisines || hasIncIngredients
 
   if (hasAnyInclude) {
-    const include_operator = filterConditions.value.include_operator === 'and' ? surql` && ` : surql` || `
-    if (filterConditions.value.include_operator === 'and')
+    const include_operator = conditions.include_operator === 'and' ? surql` && ` : surql` || `
+    if (conditions.include_operator === 'and')
       query.append(surql` && (true`)
     else
       query.append(surql` && (false`)

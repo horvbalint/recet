@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import type { InHousehold, OutHousehold } from '~/db'
 
-definePageMeta({
-  layout: 'app',
-})
-
 watch(isCurrHouseholdOwner, () => {
   if (!isCurrHouseholdOwner.value)
     navigateTo('/')

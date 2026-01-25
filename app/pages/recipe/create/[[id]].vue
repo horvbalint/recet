@@ -2,10 +2,6 @@
 import type { RecordId } from 'surrealdb'
 import type { InRecipe, OutCuisine, OutIngredient, OutMeal, OutRecipe, OutRecipeTag, OutUnit } from '~/db'
 
-definePageMeta({
-  layout: 'app',
-})
-
 const formData = ref<Partial<InRecipe>>({
   name: '',
   ingredients: [],

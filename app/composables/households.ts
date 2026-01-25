@@ -1,5 +1,8 @@
 import type { AsyncData } from '#app'
 import type { OutHousehold } from '~/db'
+import dayjs from 'dayjs'
+import 'dayjs/locale/en'
+import 'dayjs/locale/hu'
 
 export const householdQuery = ref<Awaited<AsyncData<OutHousehold[], any>> | null>(null)
 
@@ -27,3 +30,7 @@ export function switchHousehold(household: OutHousehold) {
   currentHousehold.value = household
   localStorage.setItem('currentHousehold', household.id.toString())
 }
+
+watch(currentHousehold, () => {
+  dayjs.locale(currentHousehold.value?.language || 'en')
+})

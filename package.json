@@ -16,19 +16,23 @@
   },
   "dependencies": {
     "@formkit/drag-and-drop": "0.5.3",
+    "@fullcalendar/core": "^6.1.20",
+    "@fullcalendar/daygrid": "^6.1.20",
+    "@fullcalendar/interaction": "^6.1.20",
+    "@fullcalendar/vue3": "^6.1.20",
     "@vite-pwa/assets-generator": "1.0.2",
     "@vue/reactivity": "3.5.25",
     "blurhash": "2.0.5",
     "dayjs": "1.11.19",
     "nebula": "github:horvbalint/nebula",
-    "nuxt": "4.2.1",
+    "nuxt": "4.3.0",
     "surreal-ts": "3.0.0",
     "surrealdb": "2.0.0-alpha.16",
     "vue": "3.5.25",
     "vue-tsc": "^3.1.5"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "6.2.0",
+    "@antfu/eslint-config": "7.2.0",
     "@nuxtjs/color-mode": "4.0.0",
     "@vite-pwa/nuxt": "1.0.7",
     "eslint": "9.39.1"

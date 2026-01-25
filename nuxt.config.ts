@@ -7,8 +7,14 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      surrealDbUrl: 'ws://localhost:8000/rpc',
+      surrealDbUrl: 'http://localhost:8000',
     },
+  },
+
+  imports: {
+    dirs: [
+      '~/composables',
+    ],
   },
 
   app: {
@@ -20,17 +26,20 @@ export default defineNuxtConfig({
   routeRules: {
     '**': {
       appMiddleware: ['auth', 'household'],
+      appLayout: 'app',
     },
     '/create-first-household': {
       appMiddleware: {
         household: false,
       },
+      appLayout: 'empty',
     },
     '/auth/**': {
       appMiddleware: {
         auth: false,
         household: false,
       },
+      appLayout: 'empty',
     },
   },
 

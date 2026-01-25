@@ -1,8 +1,4 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: 'empty',
-})
-
 const householdName = ref('')
 const isCreating = ref(false)
 

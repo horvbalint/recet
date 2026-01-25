@@ -266,18 +266,18 @@ async function saveDayMeals() {
 
     <div class="calendar">
       <div class="actions">
-        <neb-button type="secondary" small @click="shownWeek = shownWeek.subtract(1, 'week')">
-          Previous
+        <neb-button type="tertiary-neutral" small @click="shownWeek = shownWeek.subtract(1, 'week')">
+          <icon name="material-symbols:chevron-left-rounded" />
         </neb-button>
 
         <span class="week-label">{{ week[0]!.format('YYYY, MMM D') }} - {{ week[6]!.format('MMM D') }}</span>
 
-        <neb-button type="secondary" small @click="shownWeek = shownWeek.add(1, 'week')">
-          Next
+        <neb-button type="tertiary-neutral" small @click="shownWeek = shownWeek.add(1, 'week')">
+          <icon name="material-symbols:chevron-right-rounded" />
         </neb-button>
       </div>
 
-      <div class="week">
+      <div class="week desktop-view">
         <div />
 
         <header v-for="day in week" :key="day.toString()">
@@ -312,6 +312,38 @@ async function saveDayMeals() {
             </template>
           </div>
         </template>
+      </div>
+
+      <div class="mobile-view">
+        <div v-for="day in week" :key="day.toString()" class="day-card">
+          <header class="day-card-header">
+            <span class="day-name">{{ day.format('ddd') }}</span>
+            <span class="day-number">{{ day.format('D') }}</span>
+          </header>
+
+          <div class="day-card-meals">
+            <div v-for="meal in meals" :key="`mobile-${meal}-${day.toString()}`" class="day-card-meal" @click="openDayEditModal(day, meal)">
+              <span class="meal-title">{{ meal }}</span>
+
+              <div class="meal-recipes">
+                <template v-if="plansByDay?.[day.format('YYYY-MM-DD')]?.meals[meal]?.length">
+                  <nuxt-link
+                    v-for="recipe in plansByDay[day.format('YYYY-MM-DD')]!.meals[meal]"
+                    :key="`mobile-${meal}-${day.toString()}-${recipe.recipe.id}`"
+                    :to="`/recipe/${recipe.recipe.id.id}`"
+                    class="recipe-item"
+                    @click.stop
+                  >
+                    <span class="recipe-name">{{ recipe.recipe.name }}</span>
+                    <span class="recipe-servings">{{ recipe.servings || 1 }}×</span>
+                  </nuxt-link>
+                </template>
+
+                <span v-else class="no-recipes">No recipes</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </page-layout>
@@ -380,16 +412,17 @@ async function saveDayMeals() {
               />
             </div>
           </template>
+
+          <template #actions>
+            <neb-button type="tertiary-neutral" @click="openRuleModalForSingleDay()">
+              Add by rule
+            </neb-button>
+          </template>
         </neb-form-list>
       </neb-validator>
     </template>
 
     <template #actions>
-      <neb-button type="secondary" @click="openRuleModalForSingleDay()">
-        <icon name="material-symbols:rule-rounded" />
-        Generate by Rule
-      </neb-button>
-
       <neb-button type="primary" :disabled="!formValid || savingDayEdit" :loading="savingDayEdit" @click="saveDayMeals()">
         Save
       </neb-button>
@@ -399,7 +432,7 @@ async function saveDayMeals() {
   <meal-rule-master-data-modal
     v-if="createRuleModal"
     v-model="createRuleModal"
-    :initial-data="{ name: createRuleInitialName, ...createEmptyMealRuleConditions() } as Partial<InMealRule>"
+    :initial-data="{ name: createRuleInitialName, ...createEmptyMealRuleConditions() }"
     @saved="onRuleCreated"
   />
 </template>
@@ -410,31 +443,32 @@ async function saveDayMeals() {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-6);
-  border-radius: var(--radius-large);
-  border: 1px solid var(--neutral-color-200);
   user-select: none;
 }
 
 .actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: var(--space-8);
   align-items: center;
 }
 
 .week-label {
   font-size: var(--text-lg);
   font-weight: 600;
-  color: var(--text-color);
 }
 
-.week {
+.desktop-view {
   height: 100%;
   display: grid;
   grid-template-columns: 50px repeat(7, 1fr);
   grid-template-rows: auto repeat(4, 1fr);
   gap: var(--space-1);
   min-height: 500px;
+}
+
+.mobile-view {
+  display: none;
 }
 
 .meal-label {
@@ -447,7 +481,7 @@ async function saveDayMeals() {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   text-transform: uppercase;
-  color: var(--text-color-muted);
+  color: var(--neutral-color-700);
   padding: var(--space-2) 0;
 }
 
@@ -459,7 +493,7 @@ header {
   gap: 2px;
   padding: var(--space-2) 0;
   font-size: var(--text-xs);
-  color: var(--text-color-muted);
+  color: var(--neutral-color-700);
 
   .day-name {
     text-transform: uppercase;
@@ -471,7 +505,6 @@ header {
   .day-number {
     font-size: var(--text-lg);
     font-weight: 600;
-    color: var(--text-color);
   }
 }
 
@@ -483,7 +516,8 @@ header {
   border: 1px solid var(--neutral-color-200);
   border-radius: var(--radius-small);
   min-height: 80px;
-  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
   transition:
     background-color 0.15s ease,
     border-color 0.15s ease;
@@ -508,7 +542,7 @@ header {
   padding: var(--space-1);
   background-color: var(--primary-color-50);
   border: 1px solid var(--primary-color-200);
-  border-radius: var(--radius-small);
+  border-radius: var(--radius-default);
   font-size: var(--text-xs);
   transition: all 0.15s ease;
   text-decoration: none;
@@ -541,6 +575,14 @@ header {
 .dark-mode {
   .calendar {
     border-color: var(--neutral-color-800);
+  }
+
+  .meal-label {
+    color: var(--neutral-color-300);
+  }
+
+  header {
+    color: var(--neutral-color-300);
   }
 
   .meal {
@@ -578,13 +620,107 @@ header {
 }
 
 @media (--tablet-viewport) {
-  .week {
-    grid-template-columns: 60px repeat(7, 1fr);
-    min-height: 400px;
+  .desktop-view {
+    display: none;
   }
 
-  .meal-label {
+  .mobile-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .day-card {
+    border: 1px solid var(--neutral-color-200);
+    border-radius: var(--radius-large);
+    overflow: hidden;
+  }
+
+  .day-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    background-color: var(--neutral-color-50);
+    border-bottom: 1px solid var(--neutral-color-200);
+    color: var(--neutral-color-700);
+
+    .day-name {
+      text-transform: uppercase;
+      font-weight: 600;
+      font-size: var(--text-xs);
+      letter-spacing: 0.05em;
+    }
+
+    .day-number {
+      font-size: var(--text-lg);
+      font-weight: 700;
+    }
+  }
+
+  .day-card-meals {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .day-card-meal {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--neutral-color-100);
+    }
+
+    &:hover {
+      background-color: var(--neutral-color-50);
+    }
+  }
+
+  .meal-title {
+    text-transform: capitalize;
+    font-weight: 600;
     font-size: var(--text-xs);
+    color: var(--neutral-color-700);
+  }
+
+  .meal-recipes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .no-recipes {
+    font-size: var(--text-xs);
+    color: var(--neutral-color-400);
+    font-style: italic;
+  }
+
+  .dark-mode {
+    .day-card {
+      border-color: var(--neutral-color-700);
+    }
+    .day-card-header {
+      color: var(--neutral-color-300);
+      background-color: var(--neutral-color-900);
+      border-color: var(--neutral-color-700);
+    }
+    .day-card-meal {
+      border-color: var(--neutral-color-700);
+
+      &:hover {
+        background-color: var(--neutral-color-800);
+      }
+      &:not(:last-child) {
+        border-color: var(--neutral-color-800);
+      }
+    }
+    .meal-title {
+      color: var(--neutral-color-300);
+    }
   }
 }
 

@@ -137,7 +137,7 @@ function update() {
             @click="isMobileMenuOpen = true"
           >
             <icon name="material-symbols:menu-rounded" />
-            <div v-if="true" class="indicator-dot" />
+            <div v-if="$pwa?.needRefresh || $pwa?.showInstallPrompt" class="indicator-dot" />
           </neb-button>
         </header>
 

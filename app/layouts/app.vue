@@ -137,9 +137,7 @@ function update() {
             @click="isMobileMenuOpen = true"
           >
             <icon name="material-symbols:menu-rounded" />
-            <neb-badge v-if="$pwa?.needRefresh || $pwa?.showInstallPrompt" color="warning" small>
-              1
-            </neb-badge>
+            <div v-if="true" class="indicator-dot" />
           </neb-button>
         </header>
 
@@ -313,6 +311,18 @@ function update() {
 
   .mobile-menu-button {
     display: flex;
+    position: relative;
+
+    .indicator-dot {
+      position: absolute;
+      top: 9px;
+      right: 10px;
+      width: 10px;
+      height: 10px;
+      border: 2px solid white;
+      background: var(--primary-color);
+      border-radius: 50%;
+    }
   }
 
   .mobile-backdrop {
@@ -331,6 +341,12 @@ function update() {
     background: var(--neutral-color-950);
     border-color: var(--neutral-color-800);
     box-shadow: none;
+  }
+
+  .mobile-menu-button {
+    .indicator-dot {
+      border: 2px solid var(--neutral-color-900);
+    }
   }
 
   .sidebar-header {

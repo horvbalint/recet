@@ -35,7 +35,9 @@ async function handleCardClick() {
 <template>
   <div class="recipe-card" @click="handleCardClick()">
     <neb-state-content :status="status" :error-description="error?.message">
-      <recipe-image :recipe="recipe!" :width-px="400" :height-px="200" />
+      <recipe-image :recipe="recipe!" :width-px="400" :height-px="200">
+        <slot name="header-action" />
+      </recipe-image>
 
       <div class="recipe-content">
         <div class="recipe-content-inner-wrapper">

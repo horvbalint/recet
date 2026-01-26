@@ -24,11 +24,12 @@ const { data: plansByDay, refresh } = useAsyncData(async () => {
   const [plans] = await db
     .query(surql`
       SELECT
+        id,
         date,
-        meals.breakfast.{recipe.{id, name}, servings},
-        meals.lunch.{recipe.{id, name}, servings},
-        meals.dinner.{recipe.{id, name}, servings},
-        meals.snack.{recipe.{id, name}, servings}
+        meals.breakfast.{recipe.{id, name}, servings, state},
+        meals.lunch.{recipe.{id, name}, servings, state},
+        meals.dinner.{recipe.{id, name}, servings, state},
+        meals.snack.{recipe.{id, name}, servings, state}
       FROM meal_plan
       WHERE household = ${currentHousehold.value?.id} && date >= ${week.value[0]!.toDate()} && date <= ${week.value[6]!.toDate()} ORDER BY date ASC
     `)
@@ -129,7 +130,7 @@ async function applyRule() {
       UPSERT
         meal_plan
       SET
-        meals.${raw(selection.value!.meal)} ${raw(mealsOperator)} ${raw(arrayStart)}{ recipe: ${enoughRecipes[i]!.id} }${raw(arrayEnd)},
+        meals.${raw(selection.value!.meal)} ${raw(mealsOperator)} ${raw(arrayStart)}{ recipe: ${enoughRecipes[i]!.id}, servings: 1, state: 'todo' }${raw(arrayEnd)},
         household = ${currentHousehold.value?.id},
         date = ${day.toDate()}
       WHERE
@@ -242,6 +243,22 @@ async function saveDayMeals() {
     savingDayEdit.value = false
   }
 }
+
+type RecipeState = OutMealPlan['meals']['breakfast'][number]['state']
+
+async function updateRecipeState(day: dayjs.Dayjs, meal: Meal, recipeIndex: number, state: RecipeState) {
+  const dayKey = day.format('YYYY-MM-DD')
+  const mealPlan = plansByDay.value![dayKey]!
+
+  try {
+    await db.query(surql`UPDATE ${mealPlan.id} SET meals.${raw(meal)}[${raw(recipeIndex.toString())}].state = ${state}`)
+    refresh()
+  }
+  catch (error) {
+    console.error(error)
+    useNebToast({ type: 'error', title: 'Update failed', description: 'Could not update the recipe state.' })
+  }
+}
 </script>
 
 <template>
@@ -271,7 +288,7 @@ async function saveDayMeals() {
       <div class="desktop-view">
         <div />
 
-        <header v-for="day in week" :key="day.toString()">
+        <header v-for="day in week" :key="day.toString()" :class="{ today: day.isSame(dayjs(), 'day') }">
           <span class="day-name">{{ day.format('ddd') }}</span>
           <span class="day-number">{{ day.format('D') }}</span>
         </header>
@@ -284,18 +301,22 @@ async function saveDayMeals() {
           <div
             v-for="day in week"
             :key="`${meal}-${day.toString()}`"
-            :class="{ selected: selection?.meal === meal && day.isBetween(selection.start, selection.curr, 'day', '[]') }"
+            :class="{
+              selected: selection?.meal === meal && day.isBetween(selection.start, selection.curr, 'day', '[]'),
+              today: day.isSame(dayjs(), 'day'),
+            }"
             class="meal"
             @mousedown="startSelection(day, meal)"
             @mouseover="updateSelection(day)"
           >
             <template v-if="plansByDay?.[day.format('YYYY-MM-DD')]">
               <meal-planner-recipe-pill
-                v-for="recipe in plansByDay[day.format('YYYY-MM-DD')]!.meals[meal]"
+                v-for="(recipe, recipeIndex) in plansByDay[day.format('YYYY-MM-DD')]!.meals[meal]"
                 :key="`${meal}-${day.toString()}-${recipe.recipe.id}`"
                 :recipe
                 @mousedown.stop
                 @click.stop
+                @update-state="updateRecipeState(day, meal, recipeIndex, $event)"
               />
             </template>
           </div>
@@ -316,11 +337,12 @@ async function saveDayMeals() {
               <div class="meal-recipes">
                 <template v-if="plansByDay?.[day.format('YYYY-MM-DD')]?.meals[meal]?.length">
                   <meal-planner-recipe-pill
-                    v-for="recipe in plansByDay[day.format('YYYY-MM-DD')]!.meals[meal]"
+                    v-for="(recipe, recipeIndex) in plansByDay[day.format('YYYY-MM-DD')]!.meals[meal]"
                     :key="`${meal}-${day.toString()}-${recipe.recipe.id}`"
                     :recipe
                     @mousedown.stop
                     @click.stop
+                    @update-state="updateRecipeState(day, meal, recipeIndex, $event)"
                   />
                 </template>
 
@@ -372,7 +394,7 @@ async function saveDayMeals() {
       <neb-validator v-model="formValid">
         <neb-form-list
           v-model="editingMeals"
-          :factory="() => ({ recipe: null, servings: 1 })"
+          :factory="() => ({ recipe: null, servings: 1, state: 'todo' })"
         >
           <template #default="{ item }">
             <div class="meal-edit-item">
@@ -479,6 +501,10 @@ header {
   font-size: var(--text-xs);
   color: var(--neutral-color-700);
 
+  &.today {
+    color: var(--primary-color-600);
+  }
+
   .day-name {
     text-transform: uppercase;
     font-weight: 500;
@@ -513,6 +539,9 @@ header {
     background-color: var(--primary-color-100);
     border-color: var(--primary-color-300);
   }
+  &.today {
+    border-color: var(--primary-color-300);
+  }
 }
 
 .meal-edit-item {
@@ -541,6 +570,10 @@ header {
 
   header {
     color: var(--neutral-color-300);
+
+    &.today {
+      color: var(--primary-color-500);
+    }
   }
 
   .meal {
@@ -553,6 +586,10 @@ header {
 
     &.selected {
       background-color: var(--primary-color-900);
+      border-color: var(--primary-color-700);
+    }
+
+    &.today {
       border-color: var(--primary-color-700);
     }
   }

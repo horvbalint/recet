@@ -134,42 +134,24 @@ export interface OutMealPlan {
     breakfast: Array<{
       recipe: OutRecipe
       servings?: number
-      rule?: OutMealRule
+      state: 'todo' | 'prepared' | 'done' | 'served'
     }>
     lunch: Array<{
       recipe: OutRecipe
       servings?: number
-      rule?: OutMealRule
+      state: 'todo' | 'prepared' | 'done' | 'served'
     }>
     dinner: Array<{
       recipe: OutRecipe
       servings?: number
-      rule?: OutMealRule
+      state: 'todo' | 'prepared' | 'done' | 'served'
     }>
     snack: Array<{
       recipe: OutRecipe
       servings?: number
-      rule?: OutMealRule
+      state: 'todo' | 'prepared' | 'done' | 'served'
     }>
   }
-}
-
-export interface InMealPlanDay {
-  id?: RecordId<'meal_plan_day'>
-  breakfast: Required<InMealPlan>['id']
-  dinner: Required<InMealPlan>['id']
-  household: Required<InHousehold>['id']
-  lunch: Required<InMealPlan>['id']
-  other: Required<InMealPlan>['id']
-}
-
-export interface OutMealPlanDay {
-  id: RecordId<'meal_plan_day'>
-  breakfast: OutMealPlan
-  dinner: OutMealPlan
-  household: OutHousehold
-  lunch: OutMealPlan
-  other: OutMealPlan
 }
 
 export interface InMember {
@@ -324,32 +306,6 @@ export interface OutUser {
   password: string
   updated_at: string
   username: string
-}
-
-export interface InWeeklyPlan {
-  id?: RecordId<'weekly_plan'>
-  friday: Required<InMealPlanDay>['id']
-  household: Required<InHousehold>['id']
-  monday: Required<InMealPlanDay>['id']
-  name: string
-  saturday: Required<InMealPlanDay>['id']
-  sunday: Required<InMealPlanDay>['id']
-  thursday: Required<InMealPlanDay>['id']
-  tuesday: Required<InMealPlanDay>['id']
-  wednesday: Required<InMealPlanDay>['id']
-}
-
-export interface OutWeeklyPlan {
-  id: RecordId<'weekly_plan'>
-  friday: OutMealPlanDay
-  household: OutHousehold
-  monday: OutMealPlanDay
-  name: string
-  saturday: OutMealPlanDay
-  sunday: OutMealPlanDay
-  thursday: OutMealPlanDay
-  tuesday: OutMealPlanDay
-  wednesday: OutMealPlanDay
 }
 
 // ---------- TABLE META STRUCTURE ----------

@@ -216,8 +216,8 @@ DEFINE FIELD OVERWRITE meals ON meal_plan TYPE object;
 FOR $meal IN ["breakfast", "lunch", "dinner", "snack"] {
 	DEFINE FIELD OVERWRITE "meals." + $meal ON meal_plan TYPE array<object> DEFAULT [];
 	DEFINE FIELD OVERWRITE "meals." + $meal + ".*.recipe" ON meal_plan TYPE record<recipe> ASSERT household = $value.household;
-	DEFINE FIELD OVERWRITE "meals." + $meal + ".*.servings" ON meal_plan TYPE option<number> DEFAULT 1 ASSERT $value > 0;
-	DEFINE FIELD OVERWRITE "meals." + $meal + ".*.rule" ON meal_plan TYPE option<record<meal_rule>> ASSERT household = $value.household;
+	DEFINE FIELD OVERWRITE "meals." + $meal + ".*.servings" ON meal_plan TYPE number DEFAULT 1 ASSERT $value > 0;
+	DEFINE FIELD OVERWRITE "meals." + $meal + ".*.state" ON meal_plan TYPE 'todo' | 'prepared' | 'done' | 'served' DEFAULT 'todo';
 };
 
 fn::define_household_table("meal_rule");

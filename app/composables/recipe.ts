@@ -1,6 +1,7 @@
-import type { BoundQuery, RecordId } from 'surrealdb'
+import type { ExprLike, RecordId } from 'surrealdb'
 import type { InMealRuleConditions, OutMealRuleConditions } from '~/db'
 import type { Recipe } from '~/pages/index.vue'
+import { and, containsAll, containsAny, eq, inside, lte, matches, not, or, raw } from 'surrealdb'
 
 // VIEW TRANSITION
 const cachedRecipe = ref<Recipe | null>(null)
@@ -65,11 +66,14 @@ const recipeCount = ref<number | null>(null)
 const searchTerm = ref('')
 const filterConditions = ref<InMealRuleConditions>(createEmptyMealRuleConditions())
 
-export function constructWhereClause(query: BoundQuery, conditions: InMealRuleConditions | OutMealRuleConditions = filterConditions.value) {
-  query.append(surql` WHERE household = ${currentHousehold.value!.id} && created_at <= ${firstPageQueriedAt}`)
+export function constructWhereConditions(conditions: InMealRuleConditions): ExprLike {
+  const query_conditions = [
+    eq('household', currentHousehold.value!.id),
+    lte('created_at', firstPageQueriedAt),
+  ]
 
   if (searchTerm.value)
-    query.append(surql` && name @@ ${searchTerm.value}`)
+    query_conditions.push(matches('name', searchTerm.value))
 
   const inc = conditions.include
   const exc = conditions.exclude
@@ -81,82 +85,71 @@ export function constructWhereClause(query: BoundQuery, conditions: InMealRuleCo
   const hasAnyInclude = hasIncMeals || hasIncTags || hasIncCuisines || hasIncIngredients
 
   if (hasAnyInclude) {
-    const include_operator = conditions.include_operator === 'and' ? surql` && ` : surql` || `
-    if (conditions.include_operator === 'and')
-      query.append(surql` && (true`)
-    else
-      query.append(surql` && (false`)
+    const filter_conditions = []
 
     if (hasIncMeals) {
-      query.append(include_operator)
-
       if (inc.meals.operator === 'and')
-        query.append(surql`${inc.meals.items}.all(|$v| $v IN meal)`)
+        filter_conditions.push(containsAll('meal', inc.meals.items))
       else
-        query.append(surql`${inc.meals.items}.any(|$v| $v IN meal)`)
+        filter_conditions.push(containsAny('meal', inc.meals.items))
     }
 
     if (hasIncTags) {
-      query.append(include_operator)
-
       if (inc.tags.operator === 'and')
-        query.append(surql`${inc.tags.items}.all(|$v| $v IN tags)`)
+        filter_conditions.push(containsAll('tags', inc.tags.items))
       else
-        query.append(surql`${inc.tags.items}.any(|$v| $v IN tags)`)
+        filter_conditions.push(containsAny('tags', inc.tags.items))
     }
 
-    if (hasIncCuisines) {
-      query.append(include_operator)
-      query.append(surql`cuisine IN ${inc.cuisines.items}`)
-    }
+    if (hasIncCuisines)
+      filter_conditions.push(inside('cuisine', inc.cuisines.items))
 
     if (hasIncIngredients) {
-      query.append(include_operator)
-
       if (inc.ingredients.operator === 'and')
-        query.append(surql`${inc.ingredients.items}.all(|$v| $v IN (ingredients.ingredient || []))`)
+        filter_conditions.push(containsAll('ingredients.ingredient', inc.ingredients.items))
       else
-        query.append(surql`${inc.ingredients.items}.any(|$v| $v IN (ingredients.ingredient || []))`)
+        filter_conditions.push(containsAny('ingredients.ingredient', inc.ingredients.items))
     }
 
-    query.append(surql`)`)
+    if (conditions.include_operator === 'and')
+      query_conditions.push(and(...filter_conditions))
+    else
+      query_conditions.push(or(...filter_conditions))
   }
 
   if (exc.meals.length)
-    query.append(surql` && meal.intersect(${exc.meals}).is_empty()`)
+    query_conditions.push(not(containsAny('meal', exc.meals)))
   if (exc.tags.length)
-    query.append(surql` && tags.intersect(${exc.tags}).is_empty()`)
+    query_conditions.push(not(containsAny('tags', exc.tags)))
   if (exc.cuisines.length)
-    query.append(surql` && cuisine NOT IN ${exc.cuisines}`)
+    query_conditions.push(not(inside('cuisine', exc.cuisines)))
   if (exc.ingredients.length)
-    query.append(surql` && (ingredients.ingredient || []).intersect(${exc.ingredients}).is_empty()`)
+    query_conditions.push(not(containsAny('ingredients.ingredient', exc.ingredients)))
 
-  return query
+  return and(...query_conditions)
 }
 
 function constructCountQuery() {
-  const query = surql`SELECT VALUE count() FROM ONLY recipe`
-  constructWhereClause(query)
-  query.append(surql` GROUP ALL`)
-
-  return query
+  const whereConditions = constructWhereConditions(filterConditions.value)
+  return surql`SELECT VALUE count() FROM ONLY recipe WHERE ${whereConditions} GROUP ALL`
 }
 
+export const fieldsNeededForRecipeCard = `
+  id,
+  name,
+  created_at,
+  image_blur_hash,
+  cooking_time_minutes,
+  author.{username},
+  ingredients.len(),
+  steps.len(),
+  cuisine.{name, color, flag},
+  tags.{name, color, icon},
+  meal.{name, color}
+`
+
 function constructRecipeQuery() {
-  const query = surql`
-    SELECT
-      id,
-      name,
-      created_at,
-      image_blur_hash,
-      cooking_time_minutes,
-      author.{username},
-      ingredients.len(),
-      steps.len(),
-      cuisine.{name, color, flag},
-      tags.{name, color, icon},
-      meal.{name, color}
-  `
+  const query = surql`SELECT ${raw(fieldsNeededForRecipeCard)} `
 
   if (searchTerm.value)
     query.append(surql`,search::score(0) as score FROM recipe`)
@@ -170,7 +163,8 @@ function constructRecipeQuery() {
       query.append(surql` WITH INDEX english_search_name`)
   }
 
-  constructWhereClause(query)
+  const whereConditions = constructWhereConditions(filterConditions.value)
+  query.append(surql` WHERE ${whereConditions}`)
 
   if (searchTerm.value)
     query.append(surql` ORDER BY score, created_at DESC`)

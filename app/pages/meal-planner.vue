@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import { and, eq, raw, Table } from 'surrealdb'
 
 dayjs.extend(isSameOrBefore)
 dayjs.extend(isSameOrAfter)
@@ -67,8 +68,8 @@ watch(ruleModal, () => {
     selection.value = null
 })
 
-window.addEventListener('mouseup', () => {
-  if (!selection.value)
+window.addEventListener('click', () => {
+  if (!selection.value || ruleModal.value)
     return
 
   isDragging.value = false
@@ -86,7 +87,6 @@ const overWriteExistinMeals = ref(false)
 const selectedRule = ref<OutMealRule | null>(null)
 const createRuleModal = ref(false)
 const createRuleInitialName = ref('')
-const singleDayRuleMode = ref<{ day: dayjs.Dayjs, meal: Meal } | null>(null)
 
 const { data: rules, refresh: refreshRules } = useAsyncData(async () => {
   const [rules] = await db
@@ -101,50 +101,41 @@ function handleCreateRule(searchTerm: string) {
   createRuleModal.value = true
 }
 
-function onRuleCreated(rule: OutMealRule) {
+async function onRuleCreated(rule: OutMealRule) {
+  await refreshRules()
   selectedRule.value = rule
-  refreshRules()
 }
 
 async function applyRule() {
-  const isSingleDayMode = singleDayRuleMode.value !== null
-  const startDay = isSingleDayMode
-    ? singleDayRuleMode.value!.day
-    : (selection.value!.start.isBefore(selection.value!.curr) ? selection.value!.start : selection.value!.curr)
-  const dayCount = isSingleDayMode
-    ? 1
-    : Math.abs(selection.value!.start.diff(selection.value!.curr, 'day')) + 1
-  const meal = isSingleDayMode ? singleDayRuleMode.value!.meal : selection.value!.meal
+  const startDay = selection.value!.start.isBefore(selection.value!.curr) ? selection.value!.start : selection.value!.curr
+  const dayCount = Math.abs(selection.value!.start.diff(selection.value!.curr, 'day')) + 1
 
   const selectedDays = Array.from({ length: dayCount }).map((_, i) => startDay.add(i, 'day'))
 
-  const query = surql`SELECT id FROM recipe`
-  constructWhereClause(query, selectedRule.value!)
-  query.append(surql`ORDER BY rand() LIMIT ${dayCount}`)
+  const whereConditions = constructWhereConditions(selectedRule.value!)
+  const query = surql`SELECT id FROM recipe WHERE ${whereConditions} ORDER BY rand() LIMIT ${dayCount}`
 
   const [recipes] = await db.query(query).collect<[Pick<OutRecipe, 'id'>[]]>()
   const enoughRecipes = recipes.length >= dayCount
     ? recipes
     : [...recipes, ...Array.from({ length: dayCount - recipes.length }).map((_, i) => recipes[i % recipes.length])]
 
-  const mealDict = {
-    breakfast: surql`breakfast`,
-    lunch: surql`lunch`,
-    dinner: surql`dinner`,
-    snack: surql`snack`,
-  }
-
   const promises = selectedDays.map((day, i) => {
-    const recipeOperation = overWriteExistinMeals.value
-      ? surql`= [{recipe: ${enoughRecipes[i]!.id}}]`
-      : surql`+= {recipe: ${enoughRecipes[i]!.id}}`
+    const mealsOperator = overWriteExistinMeals.value ? '=' : '+='
+    const arrayStart = overWriteExistinMeals.value ? '[' : ``
+    const arrayEnd = overWriteExistinMeals.value ? ']' : ``
 
-    const query = surql`UPSERT meal_plan SET meals.`
-    query.append(mealDict[meal])
-    query.append(recipeOperation)
-    query.append(surql`, date = ${day.toDate()}, household = ${currentHousehold.value?.id} WHERE household = ${currentHousehold.value?.id}  && date = ${day.toDate()}`)
-
-    return db.query(query)
+    return db.query(surql`
+      UPSERT
+        meal_plan
+      SET
+        meals.${raw(selection.value!.meal)} ${raw(mealsOperator)} ${raw(arrayStart)}{ recipe: ${enoughRecipes[i]!.id} }${raw(arrayEnd)},
+        household = ${currentHousehold.value?.id},
+        date = ${day.toDate()}
+      WHERE
+        household = ${currentHousehold.value?.id}
+        && date = ${day.toDate()}
+    `)
   })
 
   await Promise.all(promises)
@@ -152,7 +143,7 @@ async function applyRule() {
   ruleModal.value = false
   overWriteExistinMeals.value = false
   selectedRule.value = null
-  singleDayRuleMode.value = null
+  selection.value = null
 
   useNebToast({ type: 'success', title: 'Meal plan updated', description: 'The selected meal planning rule has been applied successfully.' })
   refresh()
@@ -207,15 +198,14 @@ watch(dayEditModal, () => {
 })
 
 function openRuleModalForSingleDay() {
-  singleDayRuleMode.value = { day: editingDay.value!, meal: editingMeal.value! }
+  selection.value = {
+    start: editingDay.value!,
+    curr: editingDay.value!,
+    meal: editingMeal.value!,
+  }
   dayEditModal.value = false
   ruleModal.value = true
 }
-
-watch(singleDayRuleMode, () => {
-  if (!ruleModal.value)
-    singleDayRuleMode.value = null
-})
 
 const formValid = ref(false)
 const savingDayEdit = ref(false)
@@ -226,18 +216,19 @@ async function saveDayMeals() {
   savingDayEdit.value = true
 
   try {
-    const mealDict = {
-      breakfast: surql`breakfast`,
-      lunch: surql`lunch`,
-      dinner: surql`dinner`,
-      snack: surql`snack`,
-    }
-
-    const query = surql`UPSERT meal_plan SET meals.`
-    query.append(mealDict[editingMeal.value])
-    query.append(surql` = ${editingMeals.value}, household = ${currentHousehold.value?.id}, date = ${editingDay.value.toDate()} WHERE household = ${currentHousehold.value?.id} && date = ${editingDay.value.toDate()}`)
-
-    await db.query(query)
+    await db
+      .upsert(new Table('meal_plan'))
+      .merge({
+        meals: {
+          [editingMeal.value]: editingMeals.value,
+        },
+        household: currentHousehold.value?.id,
+        date: editingDay.value.toDate(),
+      })
+      .where(and(
+        eq('household', currentHousehold.value?.id),
+        eq('date', editingDay.value.toDate()),
+      ))
 
     dayEditModal.value = false
     useNebToast({ type: 'success', title: 'Meals saved', description: 'Your meal plan has been updated.' })
@@ -299,16 +290,13 @@ async function saveDayMeals() {
             @mouseover="updateSelection(day)"
           >
             <template v-if="plansByDay?.[day.format('YYYY-MM-DD')]">
-              <neb-tooltip
+              <meal-planner-recipe-pill
                 v-for="recipe in plansByDay[day.format('YYYY-MM-DD')]!.meals[meal]"
                 :key="`${meal}-${day.toString()}-${recipe.recipe.id}`"
-                :title="recipe.recipe.name"
-              >
-                <nuxt-link :to="`/recipe/${recipe.recipe.id.id}`" class="recipe-item" @click.stop>
-                  <span class="recipe-name">{{ recipe.recipe.name }}</span>
-                  <span class="recipe-servings">{{ recipe.servings || 1 }}×</span>
-                </nuxt-link>
-              </neb-tooltip>
+                :recipe
+                @mousedown.stop
+                @click.stop
+              />
             </template>
           </div>
         </template>
@@ -327,16 +315,13 @@ async function saveDayMeals() {
 
               <div class="meal-recipes">
                 <template v-if="plansByDay?.[day.format('YYYY-MM-DD')]?.meals[meal]?.length">
-                  <nuxt-link
+                  <meal-planner-recipe-pill
                     v-for="recipe in plansByDay[day.format('YYYY-MM-DD')]!.meals[meal]"
-                    :key="`mobile-${meal}-${day.toString()}-${recipe.recipe.id}`"
-                    :to="`/recipe/${recipe.recipe.id.id}`"
-                    class="recipe-item"
+                    :key="`${meal}-${day.toString()}-${recipe.recipe.id}`"
+                    :recipe
+                    @mousedown.stop
                     @click.stop
-                  >
-                    <span class="recipe-name">{{ recipe.recipe.name }}</span>
-                    <span class="recipe-servings">{{ recipe.servings || 1 }}×</span>
-                  </nuxt-link>
+                  />
                 </template>
 
                 <span v-else class="no-recipes">No recipes</span>
@@ -351,14 +336,14 @@ async function saveDayMeals() {
   <neb-modal
     v-model="ruleModal"
     title="Select a rule"
-    :subtitle="singleDayRuleMode ? 'Choose a meal planning rule to generate a recipe' : 'Choose a meal planning rule to apply to the selected days'"
+    subtitle="Choose a meal planning rule to apply to the selected days"
     header-icon="material-symbols:rule-rounded"
   >
     <template #content>
       <neb-select
         v-model="selectedRule"
         :options="rules!"
-        :label="`Select a rule for ${singleDayRuleMode?.meal ?? selection?.meal}`"
+        :label="`Select a rule for ${selection?.meal}`"
         label-key="name"
         track-by-key="id"
         :on-new="handleCreateRule"
@@ -530,43 +515,6 @@ header {
   }
 }
 
-.recipe-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-1);
-  background-color: var(--primary-color-50);
-  border: 1px solid var(--primary-color-200);
-  border-radius: var(--radius-default);
-  font-size: var(--text-xs);
-  transition: all 0.15s ease;
-  text-decoration: none;
-
-  &:hover {
-    background-color: var(--primary-color-100);
-    border-color: var(--primary-color-300);
-  }
-
-  .recipe-name {
-    flex: 1;
-    color: var(--primary-color-700);
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .recipe-servings {
-    color: var(--primary-color-600);
-    font-weight: 600;
-    font-size: var(--text-2xs);
-    padding: 2px 4px;
-    background-color: var(--primary-color-100);
-    border-radius: var(--radius-small);
-    white-space: nowrap;
-  }
-}
 .meal-edit-item {
   display: flex;
   gap: var(--space-3);
@@ -608,25 +556,6 @@ header {
       border-color: var(--primary-color-700);
     }
   }
-
-  .recipe-item {
-    background-color: var(--primary-color-900);
-    border-color: var(--primary-color-800);
-
-    &:hover {
-      background-color: var(--primary-color-800);
-      border-color: var(--primary-color-700);
-    }
-
-    .recipe-name {
-      color: var(--primary-color-200);
-    }
-
-    .recipe-servings {
-      color: var(--primary-color-300);
-      background-color: var(--primary-color-800);
-    }
-  }
 }
 
 @media (--tablet-viewport) {
@@ -643,7 +572,6 @@ header {
   .day-card {
     border: 1px solid var(--neutral-color-200);
     border-radius: var(--radius-large);
-    overflow: hidden;
   }
 
   .day-card-header {

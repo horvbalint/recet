@@ -1,58 +1,79 @@
 <script setup lang="ts">
 import type { Recipe } from '~/pages/index.vue'
+import { raw } from 'surrealdb'
 
 const props = defineProps<{
-  recipe: Recipe
+  recipeId?: Recipe['id']
+  recipe?: Recipe
 }>()
 
+if (!props.recipeId && !props.recipe)
+  throw new Error('Either recipeId or recipe prop must be provided to RecipeCard component.')
+
+const recipeId = props.recipeId || props.recipe!.id
+
+const { data: recipe, status, error } = useAsyncData(`recipe-card-${recipeId}`, async () => {
+  if (props.recipe)
+    return props.recipe
+
+  const [recipe] = await db.query<[Recipe]>(surql`SELECT ${raw(fieldsNeededForRecipeCard)} FROM ONLY ${recipeId}`)
+  return recipe
+}, {
+  getCachedData(key, nuxt) {
+    return nuxt.payload.data[key]
+  },
+})
+
 async function handleCardClick() {
-  setCachedRecipe(props.recipe)
+  setCachedRecipe(recipe.value!)
 
   await nextTick()
-  startTransitionThen(() => navigateTo(`/recipe/${props.recipe.id.id}`))
+  startTransitionThen(() => navigateTo(`/recipe/${recipeId.id}`))
 }
 </script>
 
 <template>
   <div class="recipe-card" @click="handleCardClick()">
-    <recipe-image :recipe="recipe" :width-px="400" :height-px="200" />
+    <neb-state-content :status="status" :error-description="error?.message">
+      <recipe-image :recipe="recipe!" :width-px="400" :height-px="200" />
 
-    <div class="recipe-content">
-      <div class="recipe-content-inner-wrapper">
-        <div class="recipe-header">
-          <h3 class="recipe-title">
-            {{ recipe.name }}
-          </h3>
+      <div class="recipe-content">
+        <div class="recipe-content-inner-wrapper">
+          <div class="recipe-header">
+            <h3 class="recipe-title">
+              {{ recipe!.name }}
+            </h3>
+          </div>
+
+          <div class="recipe-meta">
+            <div class="meta-item">
+              <icon name="material-symbols:grocery" />
+              <span>{{ recipe!.ingredients }} ingredients</span>
+            </div>
+
+            <div class="meta-item">
+              <icon name="material-symbols:format-list-numbered-rounded" />
+              <span>{{ recipe!.steps }} steps</span>
+            </div>
+
+            <div v-if="recipe!.cooking_time_minutes" class="meta-item">
+              <icon name="material-symbols:schedule-outline-rounded" />
+              <span>{{ recipe!.cooking_time_minutes }} min</span>
+            </div>
+          </div>
         </div>
 
-        <div class="recipe-meta">
-          <div class="meta-item">
-            <icon name="material-symbols:grocery" />
-            <span>{{ recipe.ingredients }} ingredients</span>
+        <div class="recipe-content-inner-wrapper">
+          <div v-if="recipe!.tags?.length" class="recipe-tags">
+            <recipe-tag-badge v-for="tag in recipe!.tags" :key="tag.name" :tag />
           </div>
 
-          <div class="meta-item">
-            <icon name="material-symbols:format-list-numbered-rounded" />
-            <span>{{ recipe.steps }} steps</span>
-          </div>
-
-          <div v-if="recipe.cooking_time_minutes" class="meta-item">
-            <icon name="material-symbols:schedule-outline-rounded" />
-            <span>{{ recipe.cooking_time_minutes }} min</span>
+          <div v-if="recipe!.meal?.length" class="meal-types">
+            <meal-badge v-for="meal in recipe!.meal" :key="meal.name" small :meal />
           </div>
         </div>
       </div>
-
-      <div class="recipe-content-inner-wrapper">
-        <div v-if="recipe.tags?.length" class="recipe-tags">
-          <recipe-tag-badge v-for="tag in recipe.tags" :key="tag.name" :tag />
-        </div>
-
-        <div v-if="recipe.meal?.length" class="meal-types">
-          <meal-badge v-for="meal in recipe.meal" :key="meal.name" small :meal />
-        </div>
-      </div>
-    </div>
+    </neb-state-content>
   </div>
 </template>
 

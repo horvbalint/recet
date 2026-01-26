@@ -154,7 +154,7 @@ onBeforeUnmount(() => {
           <recipe-card
             v-for="recipe in recipes"
             :key="recipe.id.id.toString()"
-            :recipe
+            :recipe="recipe"
           />
         </div>
 

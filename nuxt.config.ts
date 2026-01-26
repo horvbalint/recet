@@ -93,6 +93,16 @@ export default defineNuxtConfig({
             type: 'image/png',
           }],
         },
+        {
+          name: 'Meal planner',
+          description: 'Plan for the days to come',
+          url: '/meal-planner',
+          icons: [{
+            src: 'icons/meal-planner.png',
+            sizes: '192x192',
+            type: 'image/png',
+          }],
+        },
       ],
       icons: [
         {

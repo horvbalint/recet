@@ -161,8 +161,9 @@ const { data: recipes } = useAsyncData(async () => {
 })
 
 interface MealItem {
-  recipe: RecordId<'recipe'> | null
+  recipe: RecordId<'recipe'>
   servings: number
+  state: OutMealPlan['meals']['breakfast'][number]['state']
 }
 
 const dayEditModal = ref(false)
@@ -180,7 +181,8 @@ function openDayEditModal(day: dayjs.Dayjs, meal: Meal) {
   if (existingPlan?.meals[meal]?.length) {
     editingMeals.value = existingPlan.meals[meal].map(item => ({
       recipe: item.recipe.id,
-      servings: item.servings ?? 1,
+      servings: item.servings,
+      state: item.state,
     }))
   }
   else {
@@ -408,6 +410,7 @@ async function updateRecipeState(day: dayjs.Dayjs, meal: Meal, recipeIndex: numb
                 :transform-fun="transformId"
                 use-only-tracked-key
                 required
+                :allow-empty="false"
               />
 
               <neb-input

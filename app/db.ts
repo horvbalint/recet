@@ -133,22 +133,22 @@ export interface OutMealPlan {
   meals: {
     breakfast: Array<{
       recipe: OutRecipe
-      servings?: number
+      servings: number
       state: 'todo' | 'prepared' | 'done' | 'served'
     }>
     lunch: Array<{
       recipe: OutRecipe
-      servings?: number
+      servings: number
       state: 'todo' | 'prepared' | 'done' | 'served'
     }>
     dinner: Array<{
       recipe: OutRecipe
-      servings?: number
+      servings: number
       state: 'todo' | 'prepared' | 'done' | 'served'
     }>
     snack: Array<{
       recipe: OutRecipe
-      servings?: number
+      servings: number
       state: 'todo' | 'prepared' | 'done' | 'served'
     }>
   }

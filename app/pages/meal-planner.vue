@@ -325,8 +325,8 @@ async function updateRecipeState(day: dayjs.Dayjs, meal: Meal, recipeIndex: numb
 
       <div class="mobile-view">
         <div v-for="day in week" :key="day.toString()" class="day-card">
-          <header class="day-card-header">
-            <span class="day-name">{{ day.format('ddd') }}</span>
+          <header class="day-card-header" :class="{ today: day.isSame(dayjs(), 'day') }">
+            <span class="day-name">{{ day.format('dddd') }}</span>
             <span class="day-number">{{ day.format('D') }}</span>
           </header>
 
@@ -618,7 +618,12 @@ header {
     padding: var(--space-3);
     background-color: var(--neutral-color-50);
     border-bottom: 1px solid var(--neutral-color-200);
+    border-radius: var(--radius-large) var(--radius-large) 0 0;
     color: var(--neutral-color-700);
+
+    &.today {
+      background: var(--primary-color-50);
+    }
 
     .day-name {
       text-transform: uppercase;

@@ -30,10 +30,18 @@ async function handleCardClick() {
   await nextTick()
   startTransitionThen(() => navigateTo(`/recipe/${recipeId.id}`))
 }
+
+function handleMiddleClick() {
+  navigateTo(`/recipe/${recipeId.id}`, {
+    open: {
+      target: '_blank',
+    },
+  })
+}
 </script>
 
 <template>
-  <div class="recipe-card" @click="handleCardClick()">
+  <div class="recipe-card" @click="handleCardClick()" @click.middle="handleMiddleClick()">
     <neb-state-content :status="status" :error-description="error?.message">
       <recipe-image :recipe="recipe!" :width-px="400" :height-px="200">
         <slot name="header-action" />

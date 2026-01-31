@@ -48,21 +48,19 @@ function cycleState() {
     </template>
 
     <template #content="{ isOpen }">
-      <nuxt-link :to="`/recipe/${props.recipe.recipe.id.id}`" class="recipe-card">
-        <recipe-card v-if="isOpen" :recipe-id="props.recipe.recipe.id">
-          <template #header-action>
-            <div class="state-badge-wrapper">
-              <neb-badge
-                :color="stateColors[props.recipe.state]"
-                class="state-badge"
-                @click.stop.prevent="cycleState()"
-              >
-                {{ stateLabels[props.recipe.state] }}
-              </neb-badge>
-            </div>
-          </template>
-        </recipe-card>
-      </nuxt-link>
+      <recipe-card v-if="isOpen" :recipe-id="props.recipe.recipe.id" class="recipe-card">
+        <template #header-action>
+          <div class="state-badge-wrapper">
+            <neb-badge
+              :color="stateColors[props.recipe.state]"
+              class="state-badge"
+              @click.stop.prevent="cycleState()"
+            >
+              {{ stateLabels[props.recipe.state] }}
+            </neb-badge>
+          </div>
+        </template>
+      </recipe-card>
     </template>
   </neb-dropdown>
 </template>

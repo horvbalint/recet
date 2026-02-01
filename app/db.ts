@@ -154,6 +154,34 @@ export interface OutMealPlan {
   }
 }
 
+export interface InMealPlan {
+  id?: RecordId<'meal_plan'>
+  household: Required<InHousehold>['id']
+  date: Date | string
+  meals: {
+    breakfast: Array<{
+      recipe: Required<InRecipe>['id']
+      servings: number
+      state: 'todo' | 'prepared' | 'done' | 'served'
+    }>
+    lunch: Array<{
+      recipe: Required<InRecipe>['id']
+      servings: number
+      state: 'todo' | 'prepared' | 'done' | 'served'
+    }>
+    dinner: Array<{
+      recipe: Required<InRecipe>['id']
+      servings: number
+      state: 'todo' | 'prepared' | 'done' | 'served'
+    }>
+    snack: Array<{
+      recipe: Required<InRecipe>['id']
+      servings: number
+      state: 'todo' | 'prepared' | 'done' | 'served'
+    }>
+  }
+}
+
 export interface InMember {
   id?: RecordId<'member'>
   in: Required<InUser>['id']

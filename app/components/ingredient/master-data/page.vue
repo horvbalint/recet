@@ -1,13 +1,23 @@
 <script setup lang="ts">
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
-import type { OutIngredient } from '~/db'
+import type { OutIngredient, OutIngredientCategory } from '~/db'
+
+interface OutIngredientWithCategory extends OutIngredient {
+  category?: OutIngredientCategory
+}
 
 const getQuery = computed(() => surql`SELECT * FROM ingredient WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH category`)
 
 const columns = {
-  name: { text: 'Name' },
-  category: { text: 'Category' },
-} satisfies Columns<OutIngredient>
+  name: {
+    text: 'Name',
+  },
+  category: {
+    text: 'Category',
+    formatFunction: category => category?.name || '-',
+    sortFunction: (a, b) => a.formatted.category.localeCompare(b.formatted.category),
+  },
+} satisfies Columns<OutIngredientWithCategory>
 </script>
 
 <template>

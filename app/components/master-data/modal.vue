@@ -51,6 +51,7 @@ async function handleSubmit() {
       const [result] = await db
         .query(surql`CREATE ONLY type::table(${props.table}) CONTENT ${{
           ...props.transformBeforeCreate(formData.value),
+          searchScore: undefined,
           household: currentHousehold.value!.id,
         }}`)
         .collect<[T]>()
@@ -61,7 +62,11 @@ async function handleSubmit() {
     }
     else {
       const [result] = await db
-        .query(surql`UPDATE ONLY ${formData.value.id} MERGE ${props.transformBeforeEdit(formData.value)} RETURN AFTER`)
+        .query(surql`UPDATE ONLY ${formData.value.id} MERGE ${{
+          ...props.transformBeforeEdit(formData.value),
+          searchScore: undefined,
+          household: currentHousehold.value!.id,
+        }} RETURN AFTER`)
         .collect<[T]>()
 
       useNebToast({ type: 'success', title: `${props.name} updated!`, description: `The ${props.name} was updated successfully.` })

@@ -34,7 +34,7 @@ function updateState(state: MealState) {
 function cycleState() {
   const currentIndex = stateOptions.indexOf(props.recipe.state)
   const nextIndex = (currentIndex + 1) % stateOptions.length
-  updateState(stateOptions[nextIndex])
+  updateState(stateOptions[nextIndex]!)
 }
 </script>
 

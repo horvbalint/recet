@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import type { RecordId } from 'surrealdb'
+import type { Dayjs } from 'dayjs'
+import type { BoundQuery, RecordId } from 'surrealdb'
 import type { OutMealPlan, OutMealRule, OutRecipe } from '~/db'
-import { dragAndDrop, dropOrSwap } from '@formkit/drag-and-drop'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import Sortable from 'sortablejs'
 import { and, eq, raw, Table } from 'surrealdb'
 
 dayjs.extend(isSameOrBefore)
@@ -250,45 +251,9 @@ async function updateRecipeState(day: dayjs.Dayjs, meal: Meal, recipeIndex: numb
   }
 }
 
-function setUpDragAndDrop(el: HTMLElement | undefined, day: dayjs.Dayjs, meal: Meal) {
-  if (!el)
-    return
-
-  const dayKey = day.format('YYYY-MM-DD')
-  if (!plansByDay.value?.[dayKey])
-    return
-
-  dragAndDrop({
-    parent: el,
-    getValues() {
-      return plansByDay.value![dayKey]!.meals[meal]
-    },
-    async setValues(values) {
-      try {
-        plansByDay.value![dayKey]!.meals[meal] = values
-
-        await upsertMealPlan(day, meal, values.map(item => ({
-          recipe: item.recipe.id,
-          servings: item.servings,
-          state: item.state,
-        })))
-      }
-      catch (err) {
-        console.error(err)
-        useNebToast({ type: 'error', title: 'Update failed', description: 'Could not update the meal plan.' })
-      }
-    },
-    config: {
-      plugins: [dropOrSwap()],
-      sortable: false,
-      group: meal,
-    },
-  })
-}
-
-const upsertingMealPlans = ref<Record<string, Record<Meal, boolean>>>({})
+const updatingMealPlans = ref<Record<string, Record<Meal, boolean>>>({})
 watch(week, () => {
-  upsertingMealPlans.value = Object.fromEntries(
+  updatingMealPlans.value = Object.fromEntries(
     week.value.map(day => [
       day.format('YYYY-MM-DD'),
       Object.fromEntries(meals.map(meal => [meal, false])) as Record<Meal, boolean>,
@@ -296,9 +261,79 @@ watch(week, () => {
   )
 }, { immediate: true })
 
+let dragStartedAt: null | { day: Dayjs, meal: Meal } = null
+function setUpDragAndDrop(el: HTMLElement | undefined, day: dayjs.Dayjs, meal: Meal) {
+  if (!el)
+    return
+
+  const _ = new Sortable(el, {
+    onChoose() {
+      dragStartedAt = { day, meal }
+    },
+    async onAdd(event) {
+      updatePlansOnDragEnd(day, meal, event)
+    },
+    async onUpdate(event) {
+      updatePlansOnDragEnd(day, meal, event)
+    },
+    group: 'recipe',
+  })
+}
+
+async function updatePlansOnDragEnd(
+  day: Dayjs,
+  meal: Meal,
+  event: Sortable.SortableEvent,
+) {
+  const dayKey = day.format('YYYY-MM-DD')
+  const dragStartDateKey = dragStartedAt!.day.format('YYYY-MM-DD')
+
+  try {
+    updatingMealPlans.value[dragStartDateKey]![dragStartedAt!.meal] = true
+    updatingMealPlans.value[dayKey]![meal] = true
+
+    const [removedItem] = plansByDay.value![dragStartDateKey]!.meals[dragStartedAt!.meal].splice(event.oldIndex!, 1)
+    plansByDay.value![dayKey]!.meals[meal].splice(event.newIndex!, 0, removedItem!)
+
+    const query = createUpsertMealPlanQuery(dragStartedAt!.day, dragStartedAt!.meal)
+      .append(createUpsertMealPlanQuery(day, meal))
+
+    await db.query(query)
+  }
+
+  catch (err) {
+    useNebToast({ type: 'error', title: 'Move failed', description: 'Could not move the recipe. Please try again.' })
+    console.error(err)
+  }
+  finally {
+    updatingMealPlans.value[dragStartDateKey]![dragStartedAt!.meal] = false
+    updatingMealPlans.value[dayKey]![meal] = false
+    dragStartedAt = null
+  }
+}
+
+function createUpsertMealPlanQuery(day: dayjs.Dayjs, meal: Meal): BoundQuery {
+  const dayKey = day.format('YYYY-MM-DD')
+
+  return surql`
+    UPSERT meal_plan MERGE ${{
+      meals: {
+        [meal]: plansByDay.value![dayKey]!.meals[meal].map(r => ({
+          recipe: r.recipe.id,
+          servings: r.servings,
+          state: r.state,
+        })),
+      },
+      household: currentHousehold.value!.id,
+      date: day.toDate(),
+    }}
+    WHERE household = ${currentHousehold.value!.id} && date = ${day.toDate()};
+  `
+}
+
 async function upsertMealPlan(day: dayjs.Dayjs, meal: Meal, recipes: MealItem[]) {
   const dayKey = day.format('YYYY-MM-DD')
-  upsertingMealPlans.value[dayKey]![meal] = true
+  updatingMealPlans.value[dayKey]![meal] = true
 
   await db
     .upsert(new Table('meal_plan'))
@@ -313,7 +348,7 @@ async function upsertMealPlan(day: dayjs.Dayjs, meal: Meal, recipes: MealItem[])
       eq('household', currentHousehold.value?.id),
       eq('date', day.toDate()),
     ))
-    .finally(() => upsertingMealPlans.value[dayKey]![meal] = false)
+    .finally(() => updatingMealPlans.value[dayKey]![meal] = false)
 }
 
 const formValid = ref(false)
@@ -321,7 +356,7 @@ const savingDayEdit = computed(() => {
   if (!editingDay.value || !editingMeal.value)
     return false
   else
-    return upsertingMealPlans.value[editingDay.value.format('YYYY-MM-DD')]![editingMeal.value]
+    return updatingMealPlans.value[editingDay.value.format('YYYY-MM-DD')]![editingMeal.value]
 })
 async function saveDayMeals() {
   try {
@@ -383,7 +418,7 @@ async function saveDayMeals() {
             :class="{
               selected: selection?.meal === meal && day.isBetween(selection.start, selection.curr, 'day', '[]'),
               today: day.isSame(dayjs(), 'day'),
-              saving: upsertingMealPlans[day.format('YYYY-MM-DD')]![meal],
+              saving: updatingMealPlans[day.format('YYYY-MM-DD')]![meal],
             }"
             class="meal"
             @mousedown="startSelection(day, meal)"

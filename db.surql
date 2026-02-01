@@ -220,6 +220,8 @@ FOR $meal IN ["breakfast", "lunch", "dinner", "snack"] {
 	DEFINE FIELD OVERWRITE "meals." + $meal + ".*.state" ON meal_plan TYPE 'todo' | 'prepared' | 'done' | 'served' DEFAULT 'todo';
 };
 
+DEFINE INDEX date_unique ON meal_plan FIELDS household, date UNIQUE;
+
 fn::define_household_table("meal_rule");
 DEFINE FIELD OVERWRITE name ON meal_rule TYPE string;
 DEFINE FIELD OVERWRITE include_operator ON meal_rule TYPE "and" | "or";

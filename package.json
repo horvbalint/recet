@@ -22,6 +22,7 @@
     "dayjs": "1.11.19",
     "nebula": "github:horvbalint/nebula",
     "nuxt": "4.3.0",
+    "sortablejs": "^1.15.6",
     "surreal-ts": "3.0.0",
     "surrealdb": "2.0.0-alpha.16",
     "vue": "3.5.25",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "7.2.0",
     "@nuxtjs/color-mode": "4.0.0",
+    "@types/sortablejs": "^1.15.9",
     "@vite-pwa/nuxt": "1.0.7",
     "eslint": "9.39.1"
   }

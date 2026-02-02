@@ -51,7 +51,6 @@ async function handleSubmit() {
       const [result] = await db
         .query(surql`CREATE ONLY type::table(${props.table}) CONTENT ${{
           ...props.transformBeforeCreate(formData.value),
-          searchScore: undefined,
           household: currentHousehold.value!.id,
         }}`)
         .collect<[T]>()

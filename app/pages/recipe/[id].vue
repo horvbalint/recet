@@ -61,13 +61,13 @@ const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncDat
         cuisine.{name, color, flag},
         tags.{name, color, icon},
         meal.{name, color},
-        ingredients.map(|$i| {
-          amount: $i.amount,
-          ingredient: $i.ingredient.name,
-          unit: $i.unit.name,
-          description: $i.description,
-          skip_from_shopping_list: $i.ingredient.skip_from_shopping_list
-        })
+        ingredients.{
+          amount,
+          ingredient: ingredient.name,
+          unit: unit.name,
+          description,
+          skip_from_shopping_list: ingredient.skip_from_shopping_list
+        }
       FROM ONLY
         type::record('recipe', ${recipeId})
     `)

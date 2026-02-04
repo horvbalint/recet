@@ -25,15 +25,23 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
     .query(surql`
       SELECT
         *,
-        items.map(|$i| {
-          item: $i.item.{id, name, category.{id, name}} || $i.item,
-          amount: $i.amount,
-          unit: $i.unit.{id, name},
-          recipe: $i.recipe.{id, name},
-          category: $i.category.{id, name},
-          marked: $i.marked,
-        }),
-        shop.{id, name, categories.{id, name}}
+        items.{
+          item: item.{
+            id,
+            name,
+            category.{id, name}
+          } || item,
+          amount,
+          unit.{id, name},
+          recipe.{id, name},
+          category.{id, name},
+          marked
+        },
+        shop.{
+          id,
+          name,
+          categories.{id, name}
+        }
       FROM ONLY type::record(shopping_list, ${listId});
       SELECT * FROM ingredient FETCH category;
       SELECT * FROM unit WITH NOINDEX ORDER BY name ASC;

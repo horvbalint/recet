@@ -456,6 +456,8 @@ async function saveDayMeals() {
                     v-for="(recipe, recipeIndex) in plansByDay[day.format('YYYY-MM-DD')]!.meals[meal]"
                     :key="`${meal}-${day.toString()}-${recipe.recipe.id}`"
                     :recipe
+                    @mousedown.stop
+                    @click.stop
                     @update-state="updateRecipeState(day, meal, recipeIndex, $event)"
                   />
                 </template>

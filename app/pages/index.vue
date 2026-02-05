@@ -26,7 +26,7 @@ export interface Recipe {
     color: string
   }[]
   created_at: string
-  updated_at: string
+  public: boolean
 }
 
 const {

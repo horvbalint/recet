@@ -41,6 +41,13 @@ export default defineNuxtConfig({
       },
       appLayout: 'empty',
     },
+    '/recipe/public/**': {
+      appMiddleware: {
+        auth: false,
+        household: false,
+      },
+      appLayout: 'empty',
+    },
   },
 
   css: [

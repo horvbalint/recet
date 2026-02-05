@@ -29,48 +29,36 @@ DEFINE ANALYZER OVERWRITE english_analyzer
 DEFINE BUCKET OVERWRITE plugins BACKEND $pluginsBucketPath PERMISSIONS NONE;
 DEFINE MODULE OVERWRITE mod::recet AS f"plugins:/recet.surli";
 
-// TABLE: user
-DEFINE TABLE OVERWRITE user SCHEMAFULL PERMISSIONS
-	FOR select FULL
-	FOR update WHERE id = $auth.id
-	FOR create, delete NONE;
-
-DEFINE FIELD OVERWRITE email ON user TYPE string ASSERT string::is_email($value) PERMISSIONS
-	FOR select WHERE id = $auth.id || id IN ($auth.id -> member -> household <- member <- user);
-DEFINE FIELD OVERWRITE username ON user TYPE string;
-DEFINE FIELD OVERWRITE password ON user TYPE string PERMISSIONS NONE;
-DEFINE FIELD OVERWRITE created_at ON user TYPE datetime DEFAULT time::now();
-DEFINE FIELD OVERWRITE updated_at ON user TYPE datetime VALUE time::now() PERMISSIONS NONE;
-
-DEFINE INDEX OVERWRITE email_unique ON user FIELDS email UNIQUE;
-DEFINE INDEX OVERWRITE username_unique ON user FIELDS username UNIQUE;
-
-// Define user authentication
 DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
 	SIGNUP ( CREATE user SET email = $email, username = $username, password = crypto::argon2::generate($password) )
 	SIGNIN ( SELECT * FROM ONLY user WHERE email = $email && crypto::argon2::compare(password, $password))
 	DURATION FOR TOKEN 8h, FOR SESSION 12h
 ;
 
+DEFINE ACCESS OVERWRITE guest ON DATABASE TYPE RECORD
+	SIGNIN user:guest
+	DURATION FOR TOKEN 1m, FOR SESSION 1m
+;
+
 DEFINE FUNCTION OVERWRITE fn::can_read_household($household: record<household>) {
-	RETURN fn::users_role_in_household($household) != NONE;
+	RETURN $access = 'user' && fn::users_role_in_household($household) != NONE;
 };
 
 DEFINE FUNCTION OVERWRITE fn::can_write_household($household: record<household>) {
-	RETURN fn::users_role_in_household($household) IN ["owner", "writer"];
+	RETURN $access = 'user' && fn::users_role_in_household($household) IN ["owner", "writer"];
 };
 
 DEFINE FUNCTION OVERWRITE fn::is_household_owner($household: record<household>) {
-	RETURN fn::users_role_in_household($household) == "owner";
+	RETURN $access = 'user' && fn::users_role_in_household($household) == "owner";
 };
 
 DEFINE FUNCTION OVERWRITE fn::users_role_in_household($household: record<household>) {
-	RETURN SELECT VALUE role FROM ONLY member WHERE in = $auth.id && out = $household;
+	RETURN SELECT VALUE role FROM ONLY member WHERE in = $auth && out = $household;
 };
 
 DEFINE FUNCTION OVERWRITE fn::define_household_table($name: string) {
 	DEFINE TABLE OVERWRITE $name SCHEMAFULL PERMISSIONS
-		for select WHERE fn::can_read_household(household)
+		for select WHERE fn::can_read_household(household) || public || $parent.public
 		for create, delete, update WHERE fn::can_write_household(household);
 
 	DEFINE FIELD OVERWRITE household ON $name TYPE record<household>;
@@ -81,6 +69,22 @@ DEFINE FUNCTION OVERWRITE fn::define_meta_fields($table: string) {
 	DEFINE FIELD OVERWRITE created_at ON $table TYPE datetime DEFAULT time::now();
 	DEFINE FIELD OVERWRITE updated_at ON $table TYPE datetime VALUE time::now();
 };
+
+// TABLE: user
+DEFINE TABLE OVERWRITE user SCHEMAFULL PERMISSIONS
+	FOR select WHERE $access = 'user' || $parent.public
+	FOR update WHERE id = $auth
+	FOR create, delete NONE;
+
+DEFINE FIELD OVERWRITE email ON user TYPE string ASSERT string::is_email($value) PERMISSIONS
+	FOR select WHERE id = $auth || id IN ($auth -> member -> household <- member <- user);
+DEFINE FIELD OVERWRITE username ON user TYPE string;
+DEFINE FIELD OVERWRITE password ON user TYPE string PERMISSIONS NONE;
+DEFINE FIELD OVERWRITE created_at ON user TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at ON user TYPE datetime VALUE time::now() PERMISSIONS NONE;
+
+DEFINE INDEX OVERWRITE email_unique ON user FIELDS email UNIQUE;
+DEFINE INDEX OVERWRITE username_unique ON user FIELDS username UNIQUE;
 
 // TABLE: recipe
 fn::define_household_table("recipe");
@@ -93,13 +97,14 @@ DEFINE FIELD OVERWRITE ingredients.*.description ON recipe TYPE option<string>;
 DEFINE FIELD OVERWRITE portions ON recipe TYPE option<number> ASSERT $value > 0; 
 DEFINE FIELD OVERWRITE steps ON recipe TYPE array<string> DEFAULT [];
 DEFINE FIELD OVERWRITE cooking_time_minutes ON recipe TYPE option<number> ASSERT $value >= 0;
-DEFINE FIELD OVERWRITE author ON recipe TYPE record<user> VALUE author || $auth.id;
+DEFINE FIELD OVERWRITE author ON recipe TYPE record<user> VALUE author || $auth;
 DEFINE FIELD OVERWRITE household ON recipe TYPE record<household>;
 DEFINE FIELD OVERWRITE tags ON recipe TYPE array<record<recipe_tag>> DEFAULT [] ASSERT $value.all(|$v| household = $v.household);
 DEFINE FIELD OVERWRITE cuisine ON recipe TYPE option<record<cuisine>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE meal ON recipe TYPE array<record<meal>> DEFAULT [] ASSERT $value.all(|$v| household = $v.household);
 DEFINE FIELD OVERWRITE image_blur_hash ON recipe TYPE option<string> ASSERT image != NONE;
 DEFINE FIELD OVERWRITE image ON recipe TYPE option<file>;
+DEFINE FIELD OVERWRITE public ON recipe TYPE bool DEFAULT false;
 
 DEFINE INDEX OVERWRITE hungarian_search_name ON recipe FIELDS name FULLTEXT ANALYZER hungarian_analyzer;
 DEFINE INDEX OVERWRITE english_search_name ON recipe FIELDS name FULLTEXT ANALYZER english_analyzer;
@@ -172,7 +177,7 @@ DEFINE FIELD OVERWRITE categories ON shop TYPE array<record<ingredient_category>
 
 // TABLE: household
 DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
-	for create FULL
+	for create WHERE $access = 'user'
 	for select WHERE fn::can_read_household(id)
 	for delete, update WHERE fn::is_household_owner(id);
 DEFINE FIELD OVERWRITE name ON household TYPE string;
@@ -220,7 +225,7 @@ FOR $meal IN ["breakfast", "lunch", "dinner", "snack"] {
 	DEFINE FIELD OVERWRITE "meals." + $meal + ".*.state" ON meal_plan TYPE 'todo' | 'prepared' | 'done' | 'served' DEFAULT 'todo';
 };
 
-DEFINE INDEX date_unique ON meal_plan FIELDS household, date UNIQUE;
+DEFINE INDEX OVERWRITE date_unique ON meal_plan FIELDS household, date UNIQUE;
 
 fn::define_household_table("meal_rule");
 DEFINE FIELD OVERWRITE name ON meal_rule TYPE string;
@@ -245,8 +250,8 @@ DEFINE FIELD OVERWRITE exclude.ingredients ON meal_rule TYPE array<record<ingred
 
 DEFINE BUCKET OVERWRITE recipe_images BACKEND $recipeImagesBucketPath PERMISSIONS WHERE
 	IF $action = 'get' {
-		LET $household = SELECT VALUE household FROM ONLY recipe WHERE image = $file;
-		fn::can_read_household($household)
+		LET $recipe = SELECT household, public FROM ONLY recipe WHERE image = $file;
+		fn::can_read_household($recipe.household) || $recipe.public
 	}
 	ELSE IF $action = 'put' {
 		LET $household = SELECT VALUE household FROM ONLY type::record("recipe", file::key($file).slice(1..));

@@ -214,6 +214,7 @@ export interface InRecipe {
   meal?: Array<Required<InMeal>['id']>
   name: string
   portions?: number | undefined
+  public?: boolean
   steps?: Array<string>
   tags?: Array<Required<InRecipeTag>['id']>
   updated_at: Date | string
@@ -237,6 +238,7 @@ export interface OutRecipe {
   meal: Array<OutMeal>
   name: string
   portions?: number | undefined
+  public: boolean
   steps: Array<string>
   tags: Array<OutRecipeTag>
   updated_at: string

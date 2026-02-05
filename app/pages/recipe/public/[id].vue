@@ -2,16 +2,14 @@
 const route = useRoute()
 const recipeId = route.params.id as string
 
-onBeforeRouteLeave((to, _, next) => {
-  if (to.path !== '/')
-    return next()
-
-  startTransitionThen(next)
+await db.signin({
+  access: 'guest',
+  variables: {},
 })
 </script>
 
 <template>
   <page-layout>
-    <recipe-page :recipe-id="recipeId" />
+    <recipe-page :recipe-id="recipeId" guest />
   </page-layout>
 </template>

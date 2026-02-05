@@ -1,6 +1,6 @@
 <template>
   <main class="main-area-content">
-    <div class="content-header-area">
+    <div v-if="$slots['content-header']" class="content-header-area">
       <slot name="content-header" />
     </div>
 

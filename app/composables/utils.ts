@@ -8,7 +8,7 @@ export function logOnError(error: Ref<any>) {
   watch(error, (err) => {
     if (err)
       console.error(err)
-  })
+  }, { immediate: true })
 }
 
 export function transformId<T extends string>(id: RecordId<T>) {

@@ -1,7 +1,13 @@
 import type { ExprLike, RecordId } from 'surrealdb'
-import type { InMealRuleConditions, OutMealRuleConditions } from '~/db'
+import type { InMealRuleConditions } from '~/db'
 import type { Recipe } from '~/pages/index.vue'
 import { and, containsAll, containsAny, eq, inside, lte, matches, not, or, raw } from 'surrealdb'
+
+export function copyPublicUrl(recipeId: RecordId<'recipe'>['id']) {
+  const publicUrl = `${window.location.origin}/recipe/public/${recipeId}`
+  navigator.clipboard.writeText(publicUrl)
+  useNebToast({ type: 'success', title: 'Link copied to clipboard!', description: 'Share this link with anyone to let them view the recipe.' })
+}
 
 // VIEW TRANSITION
 const cachedRecipe = ref<Recipe | null>(null)
@@ -145,7 +151,8 @@ export const fieldsNeededForRecipeCard = `
   steps.len(),
   cuisine.{name, color, flag},
   tags.{name, color, icon},
-  meal.{name, color}
+  meal.{name, color},
+  public
 `
 
 function constructRecipeQuery() {

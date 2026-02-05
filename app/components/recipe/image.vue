@@ -10,16 +10,18 @@ const props = defineProps<{
       name: string
       color: string
     }
+    public?: boolean
   }
   widthPx: number
   heightPx: number
 }>()
 
-const { data: imageUrl, refresh } = useAsyncData(`recipe-image-${props.recipe.id.id}`, () => {
+const { data: imageUrl, refresh, error } = useAsyncData(`recipe-image-${props.recipe.id.id}`, () => {
   return getRecipeImageUrl(props.recipe.id)
 }, {
   immediate: false,
 })
+logOnError(error)
 
 const imageWrapper = useTemplateRef('image-wrapper')
 onMounted(() => {
@@ -68,8 +70,14 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
       <icon name="material-symbols:restaurant-rounded" />
     </div>
 
-    <div v-if="recipe.cuisine" class="cuisine-badge">
-      <cuisine-badge :cuisine="recipe.cuisine" />
+    <div class="info-badges">
+      <cuisine-badge v-if="recipe.cuisine" :cuisine="recipe.cuisine" />
+
+      <neb-tooltip v-if="recipe.public" title="Public recipe" text="This recipe is public and can be viewed by anyone with its public link.">
+        <neb-button type="secondary-neutral" small @click.stop="copyPublicUrl(recipe.id.id)">
+          <icon name="material-symbols:public" />
+        </neb-button>
+      </neb-tooltip>
     </div>
 
     <slot />
@@ -80,7 +88,6 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
 .recipe-image {
   position: relative;
   height: v-bind(heightString);
-  overflow: hidden;
   view-transition-name: v-bind('viewTransitions.image');
 
   img {
@@ -109,10 +116,20 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   }
 }
 
-.cuisine-badge {
+.info-badges {
   position: absolute;
   top: var(--space-4);
   right: var(--space-4);
+  display: flex;
+  gap: var(--space-1);
+  /* flex-direction: column;
+  gap: var(--space-1);
+  align-items: flex-end; */
+
+  .icon {
+    font-size: 20px !important;
+    margin: -4px;
+  }
 }
 
 .dark-mode {

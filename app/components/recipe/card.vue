@@ -118,12 +118,6 @@ function handleMiddleClick() {
   color: var(--neutral-color-400);
 }
 
-.cuisine-badge {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
-}
-
 .recipe-content {
   padding: var(--space-5);
   display: flex;

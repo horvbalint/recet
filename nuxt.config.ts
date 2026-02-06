@@ -41,10 +41,11 @@ export default defineNuxtConfig({
       },
       appLayout: 'empty',
     },
-    '/recipe/public/**': {
+    '/public/recipe/*': {
       appMiddleware: {
-        auth: false,
-        household: false,
+        'auth': false,
+        'household': false,
+        'guest-auth': true,
       },
       appLayout: 'empty',
     },

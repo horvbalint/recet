@@ -37,7 +37,7 @@ DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
 
 DEFINE ACCESS OVERWRITE recipe_guest ON DATABASE TYPE RECORD
 	SIGNIN (SELECT * FROM ONLY recipe WHERE id = type::record('recipe', $recipe_id) && public = true)
-	DURATION FOR TOKEN 1m, FOR SESSION 1m
+	DURATION FOR TOKEN 5m, FOR SESSION 5m
 ;
 
 DEFINE FUNCTION OVERWRITE fn::can_read_household($household: record<household>) {
@@ -57,7 +57,7 @@ DEFINE FUNCTION OVERWRITE fn::users_role_in_household($household: record<househo
 };
 
 DEFINE FUNCTION OVERWRITE fn::has_guest_access($id: record, $parent_id: option<record>) {
-	RETURN $access = 'recipe_guest' && id = $auth || $parent_id = $auth
+	RETURN $access = 'recipe_guest' && $id = $auth || $parent_id = $auth
 };
 
 DEFINE FUNCTION OVERWRITE fn::define_household_table($name: string) {

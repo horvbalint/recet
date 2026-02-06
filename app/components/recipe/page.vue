@@ -250,207 +250,205 @@ watch(currentHousehold, async () => await navigateTo('/'))
 </script>
 
 <template>
-  <page-layout>
-    <div class="recipe-detail">
-      <neb-state-content :status :refresh error-title="Failed to load recipe" :error-description="error?.message">
-        <neb-empty-state
-          v-if="!recipe"
-          icon="material-symbols:menu-book-2-outline-rounded"
-          title="Recipe not found"
-          description="The recipe you're looking for doesn't exist or has been removed"
-        >
-          <neb-button v-if="!props.guest" @click="navigateTo('/')">
-            <icon name="material-symbols:arrow-back-rounded" />
-            Back to Recipes
-          </neb-button>
-        </neb-empty-state>
+  <div class="recipe-detail">
+    <neb-state-content :status :refresh error-title="Failed to load recipe" :error-description="error?.message">
+      <neb-empty-state
+        v-if="!recipe"
+        icon="material-symbols:menu-book-2-outline-rounded"
+        title="Recipe not found"
+        description="The recipe you're looking for doesn't exist or has been removed"
+      >
+        <neb-button v-if="!props.guest" @click="navigateTo('/')">
+          <icon name="material-symbols:arrow-back-rounded" />
+          Back to Recipes
+        </neb-button>
+      </neb-empty-state>
 
-        <template v-else>
-          <header>
-            <div class="recipe-hero">
-              <recipe-image class="recipe-image" :recipe :width-px="600" :height-px="400">
-                <div v-if="!props.guest" class="recipe-actions">
-                  <neb-button type="secondary-neutral" small :disabled="inProgress" :loading="inProgress" @click="editRecipe()">
-                    <icon name="material-symbols:edit-outline-rounded" />
-                  </neb-button>
+      <template v-else>
+        <header>
+          <div class="recipe-hero">
+            <recipe-image class="recipe-image" :recipe :width-px="600" :height-px="400">
+              <div v-if="!props.guest" class="recipe-actions">
+                <neb-button type="secondary-neutral" small :disabled="inProgress" :loading="inProgress" @click="editRecipe()">
+                  <icon name="material-symbols:edit-outline-rounded" />
+                </neb-button>
 
-                  <neb-menu :menus>
-                    <template #trigger="{ toggle }">
-                      <neb-button type="secondary-neutral" small :disabled="inProgress" :loading="inProgress" @click="toggle()">
-                        <icon name="material-symbols:more-horiz" />
-                      </neb-button>
-                    </template>
-                  </neb-menu>
-                </div>
-              </recipe-image>
+                <neb-menu :menus>
+                  <template #trigger="{ toggle }">
+                    <neb-button type="secondary-neutral" small :disabled="inProgress" :loading="inProgress" @click="toggle()">
+                      <icon name="material-symbols:more-horiz" />
+                    </neb-button>
+                  </template>
+                </neb-menu>
+              </div>
+            </recipe-image>
 
-              <div class="recipe-info">
-                <neb-content-header
-                  type="page"
-                  :title="recipe.name"
-                />
+            <div class="recipe-info">
+              <neb-content-header
+                type="page"
+                :title="recipe.name"
+              />
 
-                <div class="recipe-meta">
-                  <div class="meta-item">
-                    <icon name="material-symbols:grocery" />
-                    <span>{{ recipe.ingredients?.length || 0 }} ingredients</span>
-                  </div>
-
-                  <div class="meta-item">
-                    <icon name="material-symbols:format-list-numbered-rounded" />
-                    <span>{{ recipe.steps?.length || 0 }} steps</span>
-                  </div>
-
-                  <div v-if="recipe.cooking_time_minutes" class="meta-item">
-                    <icon name="material-symbols:schedule-outline-rounded" />
-                    <span>{{ recipe.cooking_time_minutes }} min</span>
-                  </div>
+              <div class="recipe-meta">
+                <div class="meta-item">
+                  <icon name="material-symbols:grocery" />
+                  <span>{{ recipe.ingredients?.length || 0 }} ingredients</span>
                 </div>
 
-                <div class="recipe-author">
-                  <neb-avatar-card
-                    :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '40px' }"
-                    :title="`By ${recipe.author?.username || 'Unknown'}`"
-                    :text="`Created on ${new Date(recipe.created_at).toLocaleDateString()}`"
-                  />
+                <div class="meta-item">
+                  <icon name="material-symbols:format-list-numbered-rounded" />
+                  <span>{{ recipe.steps?.length || 0 }} steps</span>
                 </div>
 
-                <div v-if="recipe.tags?.length" class="recipe-tags">
-                  <recipe-tag-badge v-for="tag in recipe.tags" :key="tag.name" :tag />
-                </div>
-
-                <div v-if="recipe.meal?.length" class="meal-types">
-                  <meal-badge v-for="meal in recipe.meal" :key="meal.name" :meal />
+                <div v-if="recipe.cooking_time_minutes" class="meta-item">
+                  <icon name="material-symbols:schedule-outline-rounded" />
+                  <span>{{ recipe.cooking_time_minutes }} min</span>
                 </div>
               </div>
+
+              <div class="recipe-author">
+                <neb-avatar-card
+                  :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '40px' }"
+                  :title="`By ${recipe.author?.username || 'Unknown'}`"
+                  :text="`Created on ${new Date(recipe.created_at).toLocaleDateString()}`"
+                />
+              </div>
+
+              <div v-if="recipe.tags?.length" class="recipe-tags">
+                <recipe-tag-badge v-for="tag in recipe.tags" :key="tag.name" :tag />
+              </div>
+
+              <div v-if="recipe.meal?.length" class="meal-types">
+                <meal-badge v-for="meal in recipe.meal" :key="meal.name" :meal />
+              </div>
             </div>
-          </header>
+          </div>
+        </header>
 
-          <neb-state-content :status="queryStatus" :refresh :error-description="error?.message">
-            <main class="recipe-content">
-              <section class="ingredients-section">
-                <neb-content-header
-                  title="Ingredients"
-                  type="page"
-                  has-separator
-                >
-                  <template v-if="!props.guest" #actions>
-                    <neb-dropdown :floating-options="{ placement: 'bottom-end' }">
-                      <template #trigger="{ toggle }">
-                        <neb-button type="tertiary-neutral" small :disabled="isAddingToList" :loading="isAddingToList" @click="toggle()">
-                          <icon name="material-symbols:more-vert" />
-                        </neb-button>
-                      </template>
+        <neb-state-content :status="queryStatus" :refresh :error-description="error?.message">
+          <main class="recipe-content">
+            <section class="ingredients-section">
+              <neb-content-header
+                title="Ingredients"
+                type="page"
+                has-separator
+              >
+                <template v-if="!props.guest" #actions>
+                  <neb-dropdown :floating-options="{ placement: 'bottom-end' }">
+                    <template #trigger="{ toggle }">
+                      <neb-button type="tertiary-neutral" small :disabled="isAddingToList" :loading="isAddingToList" @click="toggle()">
+                        <icon name="material-symbols:more-vert" />
+                      </neb-button>
+                    </template>
 
-                      <template #content="{ close }">
-                        <div class="ingredients-dropdown">
-                          <neb-content-header v-if="portions" title="Portions:" type="paragraph" has-separator>
-                            <template #actions>
-                              <div class="portion-controls">
-                                <neb-button small square type="tertiary-neutral" @click="decrementPortions()">
-                                  <icon name="material-symbols:remove-rounded" />
-                                </neb-button>
+                    <template #content="{ close }">
+                      <div class="ingredients-dropdown">
+                        <neb-content-header v-if="portions" title="Portions:" type="paragraph" has-separator>
+                          <template #actions>
+                            <div class="portion-controls">
+                              <neb-button small square type="tertiary-neutral" @click="decrementPortions()">
+                                <icon name="material-symbols:remove-rounded" />
+                              </neb-button>
 
-                                {{ portions }}
+                              {{ portions }}
 
-                                <neb-button small square type="tertiary-neutral" @click="incrementPortions()">
-                                  <icon name="material-symbols:add-rounded" />
-                                </neb-button>
-                              </div>
-                            </template>
-                          </neb-content-header>
-
-                          <div class="add-to-list-wrapper">
-                            <neb-content-header
-                              :title="checkedIngredients.length ? `Add to shopping list (${checkedIngredients.length}):` : 'Add to shopping list:'"
-                              type="paragraph"
-                            />
-
-                            <div class="list-buttons">
-                              <neb-button
-                                v-for="list in shoppingLists!"
-                                :key="list.id.id.toString()"
-                                small
-                                type="tertiary-neutral"
-                                full-width
-                                @click="addToShoppingList(list.id); close()"
-                              >
-                                <icon name="material-symbols:shopping-cart-outline-rounded" />
-                                <span>{{ list.name }}</span>
+                              <neb-button small square type="tertiary-neutral" @click="incrementPortions()">
+                                <icon name="material-symbols:add-rounded" />
                               </neb-button>
                             </div>
+                          </template>
+                        </neb-content-header>
+
+                        <div class="add-to-list-wrapper">
+                          <neb-content-header
+                            :title="checkedIngredients.length ? `Add to shopping list (${checkedIngredients.length}):` : 'Add to shopping list:'"
+                            type="paragraph"
+                          />
+
+                          <div class="list-buttons">
+                            <neb-button
+                              v-for="list in shoppingLists!"
+                              :key="list.id.id.toString()"
+                              small
+                              type="tertiary-neutral"
+                              full-width
+                              @click="addToShoppingList(list.id); close()"
+                            >
+                              <icon name="material-symbols:shopping-cart-outline-rounded" />
+                              <span>{{ list.name }}</span>
+                            </neb-button>
                           </div>
                         </div>
-                      </template>
-                    </neb-dropdown>
-                  </template>
-                </neb-content-header>
+                      </div>
+                    </template>
+                  </neb-dropdown>
+                </template>
+              </neb-content-header>
 
-                <div v-if="recipe.ingredients?.length" class="ingredients-list">
-                  <neb-checkbox
-                    v-for="(ingredient, index) in recipe.ingredients"
-                    :key="index"
-                    v-model="checkedIngredients"
-                    :value="index"
-                    class="ingredient-item"
-                  >
-                    <div class="ingredient-inner">
-                      <div class="ingredient-content">
-                        <div class="ingredient-details">
-                          <span v-if="ingredient.amount" class="ingredient-amount">{{ roundNumberIfNeeded(ingredient.amount * portionRatio) }}</span>
-                          <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
-                          <span class="ingredient-name">{{ ingredient.ingredient }}</span>
-                        </div>
-
-                        <div v-if="ingredient.description" class="ingredient-description">
-                          {{ ingredient.description }}
-                        </div>
+              <div v-if="recipe.ingredients?.length" class="ingredients-list">
+                <neb-checkbox
+                  v-for="(ingredient, index) in recipe.ingredients"
+                  :key="index"
+                  v-model="checkedIngredients"
+                  :value="index"
+                  class="ingredient-item"
+                >
+                  <div class="ingredient-inner">
+                    <div class="ingredient-content">
+                      <div class="ingredient-details">
+                        <span v-if="ingredient.amount" class="ingredient-amount">{{ roundNumberIfNeeded(ingredient.amount * portionRatio) }}</span>
+                        <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
+                        <span class="ingredient-name">{{ ingredient.ingredient }}</span>
                       </div>
 
-                      <neb-tooltip
-                        v-if="ingredient.skip_from_shopping_list && !props.guest"
-                        title="This ingredient will be skipped from being added to shopping lists"
-                      >
-                        <icon name="material-symbols:receipt-long-off-outline-rounded" />
-                      </neb-tooltip>
+                      <div v-if="ingredient.description" class="ingredient-description">
+                        {{ ingredient.description }}
+                      </div>
                     </div>
-                  </neb-checkbox>
-                </div>
 
-                <p v-else class="empty-message">
-                  No ingredients listed for this recipe.
-                </p>
-              </section>
+                    <neb-tooltip
+                      v-if="ingredient.skip_from_shopping_list && !props.guest"
+                      title="This ingredient will be skipped from being added to shopping lists"
+                    >
+                      <icon name="material-symbols:receipt-long-off-outline-rounded" />
+                    </neb-tooltip>
+                  </div>
+                </neb-checkbox>
+              </div>
 
-              <section class="instructions-section">
-                <neb-content-header
-                  title="Instructions"
-                  type="page"
-                  has-separator
-                />
-                <div v-if="recipe.steps?.length" class="steps-list">
-                  <neb-checkbox
-                    v-for="(step, index) in recipe.steps"
-                    :key="index"
-                    align="top"
-                    class="step-item"
-                  >
-                    <p class="step-description">
-                      {{ step }}
-                    </p>
-                  </neb-checkbox>
-                </div>
+              <p v-else class="empty-message">
+                No ingredients listed for this recipe.
+              </p>
+            </section>
 
-                <p v-else class="empty-message">
-                  No instructions provided for this recipe.
-                </p>
-              </section>
-            </main>
-          </neb-state-content>
-        </template>
-      </neb-state-content>
-    </div>
-  </page-layout>
+            <section class="instructions-section">
+              <neb-content-header
+                title="Instructions"
+                type="page"
+                has-separator
+              />
+              <div v-if="recipe.steps?.length" class="steps-list">
+                <neb-checkbox
+                  v-for="(step, index) in recipe.steps"
+                  :key="index"
+                  align="top"
+                  class="step-item"
+                >
+                  <p class="step-description">
+                    {{ step }}
+                  </p>
+                </neb-checkbox>
+              </div>
+
+              <p v-else class="empty-message">
+                No instructions provided for this recipe.
+              </p>
+            </section>
+          </main>
+        </neb-state-content>
+      </template>
+    </neb-state-content>
+  </div>
 </template>
 
 <style scoped>
@@ -700,6 +698,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
   font-weight: normal;
   color: var(--neutral-color-700);
   user-select: text;
+  word-break: break-word;
   cursor: text;
 }
 

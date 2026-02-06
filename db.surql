@@ -35,8 +35,8 @@ DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
 	DURATION FOR TOKEN 8h, FOR SESSION 12h
 ;
 
-DEFINE ACCESS OVERWRITE guest ON DATABASE TYPE RECORD
-	SIGNIN user:guest
+DEFINE ACCESS OVERWRITE recipe_guest ON DATABASE TYPE RECORD
+	SIGNIN (SELECT * FROM ONLY recipe WHERE id = type::record('recipe', $recipe_id) && public = true)
 	DURATION FOR TOKEN 1m, FOR SESSION 1m
 ;
 
@@ -56,9 +56,13 @@ DEFINE FUNCTION OVERWRITE fn::users_role_in_household($household: record<househo
 	RETURN SELECT VALUE role FROM ONLY member WHERE in = $auth && out = $household;
 };
 
+DEFINE FUNCTION OVERWRITE fn::has_guest_access($id: record, $parent_id: option<record>) {
+	RETURN $access = 'recipe_guest' && id = $auth || $parent_id = $auth
+};
+
 DEFINE FUNCTION OVERWRITE fn::define_household_table($name: string) {
 	DEFINE TABLE OVERWRITE $name SCHEMAFULL PERMISSIONS
-		for select WHERE fn::can_read_household(household) || public || $parent.public
+		for select WHERE fn::can_read_household(household) || fn::has_guest_access(id, $parent.id)
 		for create, delete, update WHERE fn::can_write_household(household);
 
 	DEFINE FIELD OVERWRITE household ON $name TYPE record<household>;
@@ -72,7 +76,7 @@ DEFINE FUNCTION OVERWRITE fn::define_meta_fields($table: string) {
 
 // TABLE: user
 DEFINE TABLE OVERWRITE user SCHEMAFULL PERMISSIONS
-	FOR select WHERE $access = 'user' || $parent.public
+	FOR select WHERE $access = 'user' || fn::has_guest_access(id, $parent.id)
 	FOR update WHERE id = $auth
 	FOR create, delete NONE;
 
@@ -250,8 +254,8 @@ DEFINE FIELD OVERWRITE exclude.ingredients ON meal_rule TYPE array<record<ingred
 
 DEFINE BUCKET OVERWRITE recipe_images BACKEND $recipeImagesBucketPath PERMISSIONS WHERE
 	IF $action = 'get' {
-		LET $recipe = SELECT household, public FROM ONLY recipe WHERE image = $file;
-		fn::can_read_household($recipe.household) || $recipe.public
+		LET $recipe = SELECT household, id FROM ONLY recipe WHERE image = $file;
+		fn::can_read_household($recipe.household) || fn::has_guest_access($recipe.id)
 	}
 	ELSE IF $action = 'put' {
 		LET $household = SELECT VALUE household FROM ONLY type::record("recipe", file::key($file).slice(1..));

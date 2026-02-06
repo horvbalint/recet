@@ -3,8 +3,10 @@ const route = useRoute()
 const recipeId = route.params.id as string
 
 await db.signin({
-  access: 'guest',
-  variables: {},
+  access: 'recipe_guest',
+  variables: {
+    recipe_id: recipeId,
+  },
 })
 </script>
 

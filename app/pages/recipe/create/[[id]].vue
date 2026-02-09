@@ -257,18 +257,25 @@ interface ImportedRecipe {
 }
 
 const importModal = ref(false)
+const importSourceType = ref<'url' | 'text'>('url')
+const importOptions = [
+  { text: 'From URL', value: 'url' },
+  { text: 'From text', value: 'text' },
+]
 const importedRecipe = ref<ImportedRecipe | null>(null)
-const importUrl = ref('')
+const importSource = ref('')
 const importing = ref(false)
+
+watch(importSourceType, () => {
+  importSource.value = ''
+})
 
 async function importRecipe() {
   try {
     importing.value = true
 
     const [recipe] = await db
-      .query('mod::recet::scrape_for_recipe($url)', {
-        url: importUrl.value,
-      })
+      .query(surql`mod::recet::scrape_for_recipe(${importSourceType.value}, ${importSource.value})`)
       .collect<[ImportedRecipe | null]>()
 
     if (!recipe)
@@ -325,7 +332,7 @@ function createImportHint(value: string | number | undefined) {
             @click="importModal = true"
           >
             <icon name="material-symbols:wand-stars-outline-rounded" />
-            Import from website
+            Import recipe
           </neb-button>
 
           <neb-button
@@ -567,12 +574,20 @@ function createImportHint(value: string | number | undefined) {
 
     <neb-modal
       v-model="importModal"
-      title="Import recipe from website"
-      subtitle="Paste the URL of the recipe you want to import."
+      title="Import recipe"
       header-icon="material-symbols:wand-stars-outline-rounded"
+      min-width="600px"
     >
       <template #content>
-        <neb-input v-model="importUrl" required label="Website URL" />
+        <neb-radio-group v-model="importSourceType" small :options="importOptions" />
+
+        <neb-input v-if="importSourceType === 'url'" v-model="importSource" required label="Website URL" />
+        <neb-textarea
+          v-else
+          v-model="importSource"
+          required label="Recipe Text"
+          placeholder="Paste the recipe text here."
+        />
       </template>
 
       <template #actions>
@@ -580,7 +595,7 @@ function createImportHint(value: string | number | undefined) {
           Cancel
         </neb-button>
 
-        <neb-button :loading="importing" :disabled="!importUrl || importing" type="primary" @click="importRecipe()">
+        <neb-button :loading="importing" :disabled="!importSource || importing" type="primary" @click="importRecipe()">
           Import
         </neb-button>
       </template>

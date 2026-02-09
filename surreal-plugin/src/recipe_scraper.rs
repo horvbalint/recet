@@ -6,14 +6,20 @@ use surrealdb_types::{RecordId, SurrealValue, object, vars};
 use surrealism::{imports::sql_with_vars, sql, surrealism};
 
 #[surrealism]
-fn scrape_for_recipe(url: String) -> Result<RecipeInfo> {
-    let html: String = sql_with_vars(
-        "http::get($url)",
-        vars! {
-            url: url
-        },
-    )?;
-    let text = html2text::from_read(html.as_bytes(), usize::MAX)?;
+fn scrape_for_recipe(source_type: String, source_text: String) -> Result<RecipeInfo> {
+    let text = if source_type == "text" {
+        source_text
+    } else if source_type == "url" {
+        let html: String = sql_with_vars(
+            "http::get($url)",
+            vars! {
+                url: source_text
+            },
+        )?;
+        html2text::from_read(html.as_bytes(), usize::MAX)?
+    } else {
+        return Err(anyhow::anyhow!("Invalid source type"));
+    };
 
     let ai_model: String = sql("$openAiModel")?;
 
@@ -142,7 +148,6 @@ The JSON must match this exact schema:
   "cooking_time_minutes": integer or null,
   "tag_strings": [string],
   "meal_strings": [string],
-  "image_url": string or null
 }
 
 Guidelines:

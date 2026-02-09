@@ -179,6 +179,8 @@ async function togglePublic() {
       .collect()
 
     recipe.value!.public = !recipe.value!.public
+    clearRecipeCache()
+
     useNebToast({
       type: 'success',
       title: recipe.value!.public ? 'Recipe is now public' : 'Recipe is now private',

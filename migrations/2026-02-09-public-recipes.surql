@@ -1,0 +1,1 @@
+UPDATE recipe SET public = false;

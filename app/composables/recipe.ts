@@ -159,9 +159,9 @@ function constructRecipeQuery() {
   const query = surql`SELECT ${raw(fieldsNeededForRecipeCard)} `
 
   if (searchTerm.value)
-    query.append(surql`,search::score(0) as score FROM recipe`)
-  else
-    query.append(surql`FROM recipe`)
+    query.append(surql`,search::score(0) as score`)
+
+  query.append(surql`FROM recipe`)
 
   if (searchTerm.value) {
     if (currentHousehold.value!.language === 'hu')
@@ -183,16 +183,17 @@ function constructRecipeQuery() {
   return query
 }
 
-const conditionWatchSources = [currentHousehold, searchTerm, filterConditions]
-
 export function clearRecipeCache() {
   pageIndex.value = 0
   recipes.value = []
   recipeCount.value = null
   firstPageQueriedAt = new Date()
-}
 
-const refreshTrigger = ref(0)
+  const cachedRequests = useNuxtApp().payload.data
+  const cardKeys = Object.keys(cachedRequests).filter(key => key.startsWith('recipe-card-'))
+  for (const key of cardKeys)
+    delete cachedRequests[key]
+}
 
 export function useRecipeState() {
   const { data, status, error, refresh } = useAsyncData('recipes', async () => {
@@ -205,7 +206,7 @@ export function useRecipeState() {
     ])
 
     return { recipeChunks: recipes, recipeCount: count }
-  }, { immediate: false, watch: [pageIndex, refreshTrigger] })
+  }, { immediate: false, watch: [pageIndex] })
 
   if (recipeCount.value === null)
     refresh()
@@ -213,11 +214,13 @@ export function useRecipeState() {
   watch(data, () => {
     recipes.value.push(...data.value?.recipeChunks || [])
     recipeCount.value = data.value?.recipeCount || 0
+  }, {
+    flush: 'sync',
   })
 
-  watch(conditionWatchSources, () => {
+  watch([currentHousehold, searchTerm, filterConditions], () => {
     clearRecipeCache()
-    refreshTrigger.value++
+    refresh()
   }, {
     flush: 'sync',
     deep: true,

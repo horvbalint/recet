@@ -24,7 +24,7 @@ fn process_image(buffer: Bytes) -> Result<ImageData> {
     image.write_with_encoder(JpegEncoder::new_with_quality(&mut cursor, 80))?;
 
     Ok(ImageData {
-        bytes: Bytes::new(jpeg_bytes),
+        bytes: Bytes::from(jpeg_bytes),
         blurhash,
     })
 }

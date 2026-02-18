@@ -199,7 +199,7 @@ DEFINE EVENT OVERWRITE relate_owner ON household WHEN $event = "CREATE" THEN (
 
 // TABLE: member
 DEFINE TABLE OVERWRITE member SCHEMAFULL TYPE RELATION FROM user TO household PERMISSIONS
-	FOR select WHERE fn::can_read_household(out)
+	FOR select WHERE in = $auth
 	FOR create, update, delete WHERE fn::is_household_owner(out);
 DEFINE FIELD OVERWRITE role ON member TYPE "owner" | "writer" | "guest";
 

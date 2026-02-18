@@ -10,8 +10,8 @@ I plan to create the following modules:
 - Master data managment ✅
 - Recipes ✅
 - Shopping lists ✅
-- Meal planner 👷
-- Recipe import from (social) websites ❌
+- Meal planner ✅
+- Recipe import from websites or text ✅
 - Recipe AI ❌
 
 ## Polish
@@ -31,9 +31,11 @@ I plan to create the following modules:
  |---------|---------|
  | ![A screenshot showing the recipes page](/public/screenshots/recipes-mobile.png?raw=true "The reipces page") | ![A screenshot showing the recipes page](/public/screenshots/recipe-mobile.png?raw=true "The reipces page") |
 
-## Is it ready?
-No, well not yet. Besides some modules not being ready yet, SurrealDB currently does not provide every feature (email sending, plugins) that would be needed to make this app 'production ready' or better, something that can be shared with others. Household invites are currently automatically accepted and image compression is done client side.
-Luckily SurrealDB v.3 is around the corner and these shortcommings are addressed in it.
+## Is it production-ready?
+Kind of. With the release of Surrealdb 3.0 many of the previous problems got fixed, but still there are some caveats to look out for:
+- Household invites are currently automatically accepted
+- If you are using the AI features, then the AI API token is visible to all users
+- There is no way to close signup on the instance
 
 ## Start/Deploy
 The project uses Nuxt.js and SurrealDB. It needs a DB instance running with the structure defined in `db.surql`.
@@ -41,7 +43,7 @@ The project uses two currently experimental features:
   - files: for this to work the `SURREAL_BUCKET_FOLDER_ALLOWLIST` env var has to be set
   - surrealism: the `recet.surli` plugin in the `surreal-plugin` directory has to be copied into the `plugins` bucket's directory
 
-These experimental features are available in the latest v3 alpha versions of SurrealDB.
+These experimental features are available in the v3 versions of SurrealDB.
 
 #### Steps:
 - clone the repo
@@ -49,4 +51,4 @@ These experimental features are available in the latest v3 alpha versions of Sur
 - pnpm run dev
 - it should be running on port 3000
 
-It looks for the database at 'ws://localhost:8000' by default, but this can be changed with the `NUXT_PUBLIC_SURREAL_DB_URL` enviroment variable.
+It looks for the database at 'http://localhost:8000' by default, but this can be changed with the `NUXT_PUBLIC_SURREAL_DB_URL` enviroment variable.

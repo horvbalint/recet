@@ -11,7 +11,7 @@ async function createAndNavigate() {
 
     useNebToast({ type: 'success', title: 'Household created', description: `Welcome to ${household.name}!` })
 
-    navigateTo('/')
+    await navigateTo('/')
   }
   catch (err) {
     console.error('Error creating household:', err)

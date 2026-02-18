@@ -3,7 +3,7 @@ import type { OutHousehold } from '~/db'
 export default defineNuxtRouteMiddleware(async () => {
   householdQuery.value = householdQuery.value || await useAsyncData(async () => {
     const [households] = await db
-      .query(surql`$auth.id -> member.out.{ id, name, language };`)
+      .query(surql`SELECT VALUE out.{ id, name, language } FROM member WHERE in = $auth`)
       .collect<[OutHousehold[]]>()
     return households
   })

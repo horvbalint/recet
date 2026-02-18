@@ -56,13 +56,22 @@ DEFINE FUNCTION OVERWRITE fn::users_role_in_household($household: record<househo
 	RETURN SELECT VALUE role FROM ONLY member WHERE in = $auth && out = $household;
 };
 
-DEFINE FUNCTION OVERWRITE fn::has_guest_access($id: record, $parent_id: option<record>) {
-	RETURN $access = 'recipe_guest' && $id = $auth || $parent_id = $auth
+DEFINE FUNCTION OVERWRITE fn::has_guest_access($id: record) {
+	RETURN $access = 'recipe_guest'&& (
+		$auth == $id ||
+		$auth.author = $id ||
+		$auth.tags.includes($id) ||
+		$auth.cuisine = $id ||
+		$auth.meal.includes($id) ||
+		$auth.ingredients.any(|$i| {
+			RETURN $i.ingredient = $id || $i.unit = $id;
+		})
+	)	
 };
 
 DEFINE FUNCTION OVERWRITE fn::define_household_table($name: string) {
 	DEFINE TABLE OVERWRITE $name SCHEMAFULL PERMISSIONS
-		for select WHERE fn::can_read_household(household) || fn::has_guest_access(id, $parent.id)
+		for select WHERE fn::can_read_household(household) || fn::has_guest_access(id)
 		for create, delete, update WHERE fn::can_write_household(household);
 
 	DEFINE FIELD OVERWRITE household ON $name TYPE record<household>;
@@ -76,7 +85,7 @@ DEFINE FUNCTION OVERWRITE fn::define_meta_fields($table: string) {
 
 // TABLE: user
 DEFINE TABLE OVERWRITE user SCHEMAFULL PERMISSIONS
-	FOR select WHERE $access = 'user' || fn::has_guest_access(id, $parent.id)
+	FOR select WHERE $access = 'user' || fn::has_guest_access(id)
 	FOR update WHERE id = $auth
 	FOR create, delete NONE;
 

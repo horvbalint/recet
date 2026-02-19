@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
-import type { RecordId } from 'surrealdb'
+import type { RecordId, Uuid } from 'surrealdb'
 import type { OutMember } from '~/db'
 
 export interface Member {
@@ -11,22 +11,25 @@ export interface Member {
   role: OutMember['role']
 }
 
-// Modal states
-const showAddModal = ref(false)
+interface Invitation {
+  id: RecordId<'invitation'>
+  token: Uuid
+  role: OutMember['role']
+  created_at: string
+}
+
+const showInviteModal = ref(false)
 const showEditModal = ref(false)
 const memberToEdit = ref<Member | null>(null)
 
-// Form data
-const addForm = ref({
-  username: '',
-  role: 'guest' as OutMember['role'],
-})
+const inviteRole = ref<OutMember['role']>('guest')
+const createdToken = ref<string | null>(null)
+const isCreatingInvitation = ref(false)
 
 const editForm = ref({
   role: 'guest' as OutMember['role'],
 })
 
-const isFormValid = ref(false)
 const isLoading = ref(false)
 
 const getQuery = computed(() => surql`
@@ -48,18 +51,73 @@ const { data: members, status, refresh } = useAsyncData(async () => {
   return result || []
 }, { watch: [currentHousehold] })
 
+const invitationsQuery = computed(() => surql`
+  SELECT * FROM invitation WHERE household = ${currentHousehold.value!.id} ORDER created_at DESC
+`)
+
+const { data: invitations, refresh: refreshInvitations } = useAsyncData('invitations', async () => {
+  const [result] = await db
+    .query(invitationsQuery.value)
+    .collect<[Invitation[]]>()
+  return result || []
+}, { watch: [currentHousehold] })
+
 const columns = {
   username: { text: 'Username' },
   email: { text: 'Email' },
   role: { text: 'Role' },
 } satisfies Columns<Member>
 
-// Role options
 const roleOptions = ['guest', 'writer', 'owner']
 
-function handleAddMember() {
-  addForm.value = { username: '', role: 'guest' }
-  showAddModal.value = true
+function openInvitationModal() {
+  inviteRole.value = 'guest'
+  createdToken.value = null
+  showInviteModal.value = true
+}
+
+async function createInvitation() {
+  isCreatingInvitation.value = true
+  try {
+    const [invitation] = await db
+      .query(surql`CREATE ONLY invitation SET household = ${currentHousehold.value!.id}, role = ${inviteRole.value}`)
+      .collect<[Invitation]>()
+
+    createdToken.value = invitation.token.toString()
+    await refreshInvitations()
+  }
+  catch (error) {
+    console.error(error)
+    useNebToast({ type: 'error', title: 'Failed to create invitation', description: 'Could not create the invitation. Please try again.' })
+  }
+  finally {
+    isCreatingInvitation.value = false
+  }
+}
+
+function copyToken(token: string) {
+  navigator.clipboard.writeText(token)
+  useNebToast({ type: 'success', title: 'Token copied!', description: 'Share it with the person you want to invite.' })
+}
+
+async function handleRevokeInvitation(invitation: Invitation) {
+  const confirmed = await useNebConfirm({
+    title: 'Revoke invitation?',
+    description: 'This invitation token will no longer work.',
+  })
+
+  if (!confirmed)
+    return
+
+  try {
+    await db.query(surql`DELETE ${invitation.id}`).collect()
+    await refreshInvitations()
+    useNebToast({ type: 'success', title: 'Invitation revoked!' })
+  }
+  catch (error) {
+    console.error(error)
+    useNebToast({ type: 'error', title: 'Failed to revoke invitation', description: 'Please try again.' })
+  }
 }
 
 function handleEditMember(member: Member) {
@@ -91,31 +149,6 @@ async function handleDeleteMember(member: Member) {
   }
 }
 
-// Add member function
-async function handleAddSubmit() {
-  if (!addForm.value.username)
-    return
-
-  isLoading.value = true
-  try {
-    await db
-      .query(surql`fn::add_member_to_household(${currentHousehold.value!.id}, ${addForm.value.username}, ${addForm.value.role})`)
-      .collect()
-
-    useNebToast({ type: 'success', title: 'Member added!', description: 'The user has been successfully added to the household.' })
-    showAddModal.value = false
-    await refresh()
-  }
-  catch (error: any) {
-    console.error(error)
-    useNebToast({ type: 'error', title: 'Failed to add member!', description: error.message || 'Could not add the member. Please try again.' })
-  }
-  finally {
-    isLoading.value = false
-  }
-}
-
-// Edit member role function
 async function handleEditSubmit() {
   if (!memberToEdit.value)
     return
@@ -140,7 +173,6 @@ async function handleEditSubmit() {
 }
 
 function closeModal() {
-  showAddModal.value = false
   showEditModal.value = false
   memberToEdit.value = null
 }
@@ -167,9 +199,9 @@ function mapRoleToColor(role: OutMember['role']) {
         has-separator
       >
         <template v-if="isCurrHouseholdOwner" #actions>
-          <neb-button small @click="handleAddMember()">
+          <neb-button small @click="openInvitationModal()">
             <icon name="material-symbols:person-add-outline-rounded" />
-            Add Member
+            Invite Member
           </neb-button>
         </template>
       </neb-content-header>
@@ -193,57 +225,74 @@ function mapRoleToColor(role: OutMember['role']) {
           <icon v-if="isCurrHouseholdOwner" class="row-action delete-action" name="material-symbols:delete-outline-rounded" @click="handleDeleteMember(original)" />
         </template>
       </neb-table>
+
+      <div v-if="isCurrHouseholdOwner && invitations?.length" class="invitations-section">
+        <neb-content-header title="Pending Invitations" type="section" has-separator />
+
+        <div class="invitation-list">
+          <div v-for="invitation in invitations" :key="invitation.id.toString()" class="invitation-item">
+            <div class="invitation-info">
+              <neb-badge :color="mapRoleToColor(invitation.role)">
+                {{ invitation.role }}
+              </neb-badge>
+
+              <code class="invitation-token">{{ invitation.token }}</code>
+              <neb-button type="link-neutral" small @click="copyToken(invitation.token)">
+                <icon name="material-symbols:content-copy-outline-rounded" />
+              </neb-button>
+            </div>
+
+            <icon class="row-action delete-action" name="material-symbols:delete-outline-rounded" @click="handleRevokeInvitation(invitation)" />
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Add Member Modal -->
-    <neb-modal
-      v-model="showAddModal"
-      title="Add Member to Household"
-      header-icon="material-symbols:person-add-outline-rounded"
-      max-width="500px"
-      :close-on-background-click="false"
-    >
+    <neb-modal v-model="showInviteModal" title="Invite Member" header-icon="material-symbols:person-add-outline-rounded" max-width="500px">
       <template #content>
-        <neb-validator v-model="isFormValid">
-          <div class="modal-form-content">
-            <neb-input
-              v-model="addForm.username"
-              label="Username"
-              placeholder="Enter the user's username"
-              required
-              :disabled="isLoading"
-            />
+        <div v-if="!createdToken" class="invite-form">
+          <neb-select
+            v-model="inviteRole"
+            label="Role"
+            placeholder="Select a role"
+            :options="roleOptions"
+            no-search
+          />
+        </div>
 
-            <neb-select
-              v-model="addForm.role"
-              label="Role"
-              placeholder="Select a role"
-              required
-              :disabled="isLoading"
-              :options="roleOptions"
-              no-search
-            />
+        <div v-else class="token-display">
+          <p class="token-instructions">
+            Share this token with the person you want to invite. It can only be used once.
+          </p>
+
+          <div class="token-field">
+            <code class="token-value">{{ createdToken }}</code>
+
+            <neb-button small type="secondary" @click="copyToken(createdToken)">
+              <icon name="material-symbols:content-copy-outline-rounded" />
+              Copy
+            </neb-button>
           </div>
-        </neb-validator>
+        </div>
       </template>
 
       <template #actions>
-        <neb-button type="secondary" @click="closeModal()">
-          Cancel
-        </neb-button>
+        <template v-if="!createdToken">
+          <neb-button type="secondary" @click="showInviteModal = false">
+            Cancel
+          </neb-button>
 
-        <neb-button
-          type="primary"
-          :disabled="!addForm.username || isLoading"
-          :loading="isLoading"
-          @click="handleAddSubmit()"
-        >
-          Add Member
+          <neb-button type="primary" :loading="isCreatingInvitation" @click="createInvitation()">
+            Create Invitation
+          </neb-button>
+        </template>
+
+        <neb-button v-else type="primary" @click="showInviteModal = false">
+          Done
         </neb-button>
       </template>
     </neb-modal>
 
-    <!-- Edit Member Role Modal -->
     <neb-modal
       v-model="showEditModal"
       title="Edit Member Role"
@@ -252,21 +301,16 @@ function mapRoleToColor(role: OutMember['role']) {
       :close-on-background-click="false"
     >
       <template #content>
-        <neb-validator v-model="isFormValid">
-          <div class="modal-form-content">
-            <neb-avatar-card :title="memberToEdit?.username" :text="memberToEdit?.email" />
+        <neb-avatar-card :title="memberToEdit?.username" :text="memberToEdit?.email" />
 
-            <neb-select
-              v-model="editForm.role"
-              label="Role"
-              placeholder="Select a role"
-              required
-              no-search
-              :disabled="isLoading"
-              :options="roleOptions"
-            />
-          </div>
-        </neb-validator>
+        <neb-select
+          v-model="editForm.role"
+          label="Role"
+          placeholder="Select a role"
+          no-search
+          :disabled="isLoading"
+          :options="roleOptions"
+        />
       </template>
 
       <template #actions>
@@ -274,12 +318,7 @@ function mapRoleToColor(role: OutMember['role']) {
           Cancel
         </neb-button>
 
-        <neb-button
-          type="primary"
-          :disabled="isLoading"
-          :loading="isLoading"
-          @click="handleEditSubmit()"
-        >
+        <neb-button type="primary" :disabled="isLoading" :loading="isLoading" @click="handleEditSubmit()">
           Update Role
         </neb-button>
       </template>
@@ -294,9 +333,87 @@ function mapRoleToColor(role: OutMember['role']) {
   gap: var(--space-6);
 }
 
-.modal-form-content {
+.invitations-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
+}
+
+.invitation-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.invitation-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--neutral-color-100);
+  border-radius: var(--radius-default);
+  background: var(--neutral-color-25);
+}
+
+.invitation-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.invitation-token {
+  font-size: var(--text-sm);
+  color: var(--neutral-color-600);
+}
+
+.invite-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.token-display {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.token-instructions {
+  font-size: var(--text-sm);
+  color: var(--neutral-color-600);
+}
+
+.token-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--neutral-color-100);
+  border-radius: var(--radius-default);
+  background: var(--neutral-color-25);
+}
+
+.token-value {
+  flex: 1;
+  font-size: var(--text-sm);
+  word-break: break-all;
+  color: var(--neutral-color-700);
+}
+
+.dark-mode {
+  .invitation-item,
+  .token-field {
+    background: var(--neutral-color-900);
+    border-color: var(--neutral-color-800);
+  }
+
+  .invitation-token,
+  .token-instructions {
+    color: var(--neutral-color-400);
+  }
+
+  .token-value {
+    color: var(--neutral-color-300);
+  }
 }
 </style>

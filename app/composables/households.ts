@@ -8,7 +8,6 @@ export const householdQuery = ref<Awaited<AsyncData<OutHousehold[], any>> | null
 
 export const currentHousehold = ref<OutHousehold | null>(null)
 
-// Create a new household
 export async function createHousehold(name: string) {
   try {
     const [result] = await db
@@ -25,7 +24,20 @@ export async function createHousehold(name: string) {
   }
 }
 
-// Switch current household
+export async function joinHousehold(token: string) {
+  const [result] = await db
+    .query(surql`api::invoke("/invitation/accept", { method: 'post', body: { token: ${token} } })`)
+    .collect<[{ status: number, body: any }]>()
+
+  if (result.status !== 200)
+    throw new Error(result.body.error || 'Failed to join household')
+
+  const household = result.body as OutHousehold
+  authMemberships.value?.set(household.id.toString(), 'guest')
+
+  return household
+}
+
 export function switchHousehold(household: OutHousehold) {
   currentHousehold.value = household
   localStorage.setItem('currentHousehold', household.id.toString())

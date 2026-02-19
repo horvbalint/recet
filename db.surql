@@ -220,11 +220,22 @@ DEFINE EVENT OVERWRITE relate_owner ON household WHEN $event = "CREATE" THEN (
 
 // TABLE: member
 DEFINE TABLE OVERWRITE member SCHEMAFULL TYPE RELATION FROM user TO household PERMISSIONS
-	FOR select WHERE in = $auth
+	FOR select WHERE in = $auth || (!$parent && fn::is_household_owner(out))
 	FOR create, update, delete WHERE fn::is_household_owner(out);
 DEFINE FIELD OVERWRITE role ON member TYPE "owner" | "writer" | "guest";
 
 DEFINE INDEX OVERWRITE member_unique ON member FIELDS in, out UNIQUE;
+
+// TABLE: invitation
+DEFINE TABLE OVERWRITE invitation SCHEMAFULL PERMISSIONS
+	FOR select, create, delete WHERE fn::is_household_owner(household)
+	FOR update NONE;
+DEFINE FIELD OVERWRITE token ON invitation TYPE uuid DEFAULT rand::uuid();
+DEFINE FIELD OVERWRITE household ON invitation TYPE record<household>;
+DEFINE FIELD OVERWRITE role ON invitation TYPE "owner" | "writer" | "guest";
+fn::define_meta_fields("invitation");
+
+DEFINE INDEX OVERWRITE token_unique ON invitation FIELDS token UNIQUE;
 
 // TABLE: shopping_list
 fn::define_household_table("shopping_list");
@@ -298,20 +309,6 @@ DEFINE FUNCTION OVERWRITE fn::add_image_to_recipe($recipe_id: record<recipe>, $i
 	};
 };
 
-DEFINE FUNCTION OVERWRITE fn::add_member_to_household($household: record<household>, $username: string, $role: "owner" | "writer" | "guest") {
-	LET $user = (SELECT id FROM ONLY user WHERE username = $username);
-	IF ($user == NONE) {
-		THROW "User with the provided username does not exist.";
-	};
-
-	IF ((SELECT id FROM ONLY member WHERE in = $user.id && out = $household) != NONE) {
-		THROW "User is already a member of the household.";
-	};
-
-	LET $temp = $user.id;
-	RELATE ONLY $temp -> member -> $household SET role = $role;
-};
-
 DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id: record<recipe>, $ingredient_indexes: array<number>, $shopping_list_id: record<shopping_list>, $portionRatio: number) {
 	LET $recipe = SELECT id, ingredients FROM ONLY $recipe_id FETCH ingredients.ingredient;
 	LET $shopping_list = SELECT items FROM ONLY $shopping_list_id;
@@ -351,5 +348,30 @@ DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id
 	
 	UPDATE ONLY $shopping_list_id SET items = $items;
 };
+
+
+DEFINE API OVERWRITE "/invitation/accept" FOR post
+	MIDDLEWARE
+		api::timeout(1s)
+	THEN {
+		LET $body_token = <uuid> $request.body.token;
+		LET $invitation = SELECT * FROM ONLY invitation WHERE token = $body_token LIMIT 1;
+
+		IF $invitation == NONE {
+			RETURN { status: 400, body: { error: "Invalid or expired invitation token." } };
+		};
+
+		LET $existing = SELECT id FROM ONLY member WHERE in = $auth.id AND out = $invitation.household;
+		IF $existing != NONE {
+			DELETE $invitation.id;
+			RETURN { status: 400, body: { error: "You are already a member of this household." } };
+		};
+
+		RELATE ONLY ($auth.id) -> member -> ($invitation.household) SET role = $invitation.role;
+		DELETE $invitation.id;
+
+		LET $household = SELECT id, name, language FROM ONLY $invitation.household;
+		RETURN { status: 200, body: $household };
+	};
 
 COMMIT;

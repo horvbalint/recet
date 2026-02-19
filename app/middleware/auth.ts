@@ -11,7 +11,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     authUser.value = await db.auth<OutUser>() || null
     const [memberships] = await db
-      .query(surql`SELECT out, role FROM member WHERE in = $auth.id`)
+      .query(surql`SELECT out, role FROM member WHERE in = $auth`)
       .collect<[{ out: RecordId<'household'>, role: OutMember['role'] }[]]>()
 
     authMemberships.value = new Map(memberships.map(m => [m.out.toString(), m.role]))

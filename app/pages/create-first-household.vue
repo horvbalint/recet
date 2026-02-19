@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const householdName = ref('')
 const isCreating = ref(false)
+const joinToken = ref('')
+const isJoining = ref(false)
 
 async function createAndNavigate() {
   try {
@@ -21,6 +23,34 @@ async function createAndNavigate() {
     isCreating.value = false
   }
 }
+
+async function joinAndNavigate() {
+  if (!joinToken.value.trim())
+    return
+
+  isJoining.value = true
+  try {
+    const household = await joinHousehold(joinToken.value.trim())
+    switchHousehold(household)
+
+    useNebToast({ type: 'success', title: 'Household joined!', description: `Welcome to ${household.name}!` })
+
+    await navigateTo('/')
+  }
+  catch (error: any) {
+    console.error('Error joining household:', error)
+    useNebToast({ type: 'error', title: 'Failed to join', description: error.message || 'Invalid invitation token.' })
+  }
+  finally {
+    isJoining.value = false
+  }
+}
+
+const tabs = {
+  create: 'Create a household',
+  join: 'Join a household',
+} as const
+const selectedTab = ref<keyof typeof tabs>('create')
 </script>
 
 <template>
@@ -33,13 +63,15 @@ async function createAndNavigate() {
           </div>
 
           <neb-content-header
-            title="Create Your First Household"
+            title="First you need a household"
             description="Welcome! Let's set up your household to start managing recipes and shopping lists together."
             type="section"
           />
         </div>
 
-        <div class="onboarding-form">
+        <neb-tabs v-model="selectedTab" full-width hierarchy="tertiary" :tabs />
+
+        <div v-if="selectedTab === 'create'" class="onboarding-form">
           <div class="form-fields">
             <neb-input
               v-model="householdName"
@@ -62,9 +94,38 @@ async function createAndNavigate() {
               Create Household
             </neb-button>
 
-            <div class="onboarding-note">
-              You can invite family members later
-            </div>
+            <neb-button type="link" @click="selectedTab = 'join'">
+              or join a household
+            </neb-button>
+          </div>
+        </div>
+
+        <div v-else class="onboarding-form">
+          <div class="form-fields">
+            <neb-input
+              v-model="joinToken"
+              label="Invitation Token"
+              placeholder="Paste the invitation token you received"
+              :required="true"
+              @keyup.enter="joinAndNavigate()"
+            />
+          </div>
+
+          <div class="form-actions">
+            <neb-button
+              type="primary"
+              class="submit-button"
+              :loading="isJoining"
+              :disabled="!joinToken.trim() || isJoining"
+              @click="joinAndNavigate()"
+            >
+              <icon name="material-symbols:group-add-outline-rounded" />
+              Join Household
+            </neb-button>
+
+            <neb-button type="link" @click="selectedTab = 'create'">
+              or create a new household
+            </neb-button>
           </div>
         </div>
       </div>
@@ -88,6 +149,9 @@ async function createAndNavigate() {
 }
 
 .onboarding-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
   background: #fff;
   border-radius: var(--radius-large);
   border: 1px solid var(--neutral-color-100);
@@ -97,7 +161,6 @@ async function createAndNavigate() {
 
 .onboarding-header {
   text-align: center;
-  margin-bottom: var(--space-8);
 }
 
 .header-icon {
@@ -149,12 +212,6 @@ async function createAndNavigate() {
   gap: var(--space-2);
 }
 
-.onboarding-note {
-  text-align: center;
-  font-size: var(--text-sm);
-  color: var(--neutral-color-500);
-}
-
 @media (--mobile-lg-viewport) {
   .onboarding-page {
     padding: var(--space-4);
@@ -169,10 +226,6 @@ async function createAndNavigate() {
   .onboarding-card {
     background: var(--neutral-color-900);
     border-color: var(--neutral-color-800);
-  }
-
-  .onboarding-note {
-    color: var(--neutral-color-400);
   }
 }
 </style>

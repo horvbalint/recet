@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { SurrealError } from 'surrealdb'
+
 const formData = ref({
   username: '',
   email: '',
@@ -24,7 +26,10 @@ async function handleSubmit() {
   catch (error) {
     console.error('Signup error:', error)
 
-    useNebToast({ type: 'error', title: 'Signup failed', description: 'Could not create account. Email or username may already be in use.' })
+    if (error instanceof SurrealError)
+      useNebToast({ type: 'error', title: 'Signup failed', description: error.message })
+    else
+      useNebToast({ type: 'error', title: 'Signup failed', description: 'An unexpected error occurred. Please try again.' })
   }
 }
 
@@ -83,7 +88,7 @@ function goToLogin() {
         <div class="form-actions">
           <neb-button
             type="primary"
-            :disabled="!isFormValid"
+            :disabled="!isFormValid || formData.password !== formData.confirmPassword"
             class="submit-button"
             @click="handleSubmit()"
           >

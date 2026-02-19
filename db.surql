@@ -1,5 +1,10 @@
 BEGIN TRANSACTION;
 
+-- To restrict signup to specific email addresses, set the following parameter:
+-- DEFINE PARAM OVERWRITE $allowedSignupEmails VALUE NONE PERMISSIONS NONE; // to allow all email addresses
+-- DEFINE PARAM OVERWRITE $allowedSignupEmails VALUE ['foo.bar.com'] PERMISSIONS NONE; // to allow specific email addresses
+DEFINE PARAM OVERWRITE $allowedSignupEmails VALUE [] PERMISSIONS NONE; // to disallow all signups - default value
+
 -- For AI integration set the following parameters:
 -- DEFINE PARAM OVERWRITE $openAiBaseUrl VALUE 'open-ai-compatible-api-url';
 -- DEFINE PARAM OVERWRITE $openAiModel VALUE 'name-of-the-model';
@@ -30,7 +35,14 @@ DEFINE BUCKET OVERWRITE plugins BACKEND $pluginsBucketPath PERMISSIONS NONE;
 DEFINE MODULE OVERWRITE mod::recet AS f"plugins:/recet.surli";
 
 DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
-	SIGNUP ( CREATE user SET email = $email, username = $username, password = crypto::argon2::generate($password) )
+	SIGNUP (
+		IF $allowedSignupEmails != NONE && !$allowedSignupEmails.includes($email) {
+			THROW "The admin did not allow this email address for signup."
+		}
+		ELSE {
+			CREATE user SET email = $email, username = $username, password = crypto::argon2::generate($password)
+		}
+	 )
 	SIGNIN ( SELECT * FROM ONLY user WHERE email = $email && crypto::argon2::compare(password, $password))
 	DURATION FOR TOKEN 8h, FOR SESSION 12h
 ;

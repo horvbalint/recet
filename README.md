@@ -31,12 +31,6 @@ I plan to create the following modules:
  |---------|---------|
  | ![A screenshot showing the recipes page](/public/screenshots/recipes-mobile.png?raw=true "The reipces page") | ![A screenshot showing the recipes page](/public/screenshots/recipe-mobile.png?raw=true "The reipces page") |
 
-## Is it production-ready?
-Kind of. With the release of Surrealdb 3.0 many of the previous problems got fixed, but still there are some caveats to look out for:
-- Household invites are currently automatically accepted
-- If you are using the AI features, then the AI API token is visible to all users
-- There is no way to close signup on the instance
-
 ## Start/Deploy
 The project uses Nuxt.js and SurrealDB. It needs a DB instance running with the structure defined in `db.surql`.
 The project uses two currently experimental features:

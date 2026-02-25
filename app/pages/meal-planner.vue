@@ -138,7 +138,7 @@ async function applyRule() {
 
   const selectedDays = Array.from({ length: dayCount }).map((_, i) => startDay.add(i, 'day'))
 
-  const whereConditions = constructWhereConditions(selectedRule.value!)
+  const whereConditions = constructWhereConditions(selectedRule.value!, undefined)
   const query = surql`SELECT id FROM recipe WHERE ${whereConditions} ORDER BY rand() LIMIT ${dayCount}`
 
   const [recipes] = await db.query(query).collect<[Pick<OutRecipe, 'id'>[]]>()

@@ -1,12 +1,20 @@
-import type { AsyncData } from '#app'
 import type { OutHousehold } from '~/db'
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import 'dayjs/locale/hu'
 
-export const householdQuery = ref<Awaited<AsyncData<OutHousehold[], any>> | null>(null)
-
 export const currentHousehold = ref<OutHousehold | null>(null)
+
+const houseHoldQueryKey = 'member-households'
+export const householdQuery = useAsyncData(houseHoldQueryKey, async () => {
+  const [households] = await db
+    .query(surql`SELECT VALUE out.{ id, name, language } FROM member WHERE in = $auth`)
+    .collect<[OutHousehold[]]>()
+  return households
+}, {
+  immediate: false,
+  getCachedData: (key, nuxt) => nuxt.payload.data[key],
+})
 
 export async function createHousehold(name: string) {
   try {
@@ -15,6 +23,8 @@ export async function createHousehold(name: string) {
       .collect<[OutHousehold]>()
     if (!currentHousehold.value)
       currentHousehold.value = result
+
+    householdQuery.clear()
 
     return result
   }
@@ -34,6 +44,8 @@ export async function joinHousehold(token: string) {
 
   const household = result.body as OutHousehold
   authMemberships.value?.set(household.id.toString(), 'guest')
+
+  householdQuery.clear()
 
   return household
 }

@@ -72,14 +72,14 @@ const recipeCount = ref<number | null>(null)
 const searchTerm = ref('')
 const filterConditions = ref<InMealRuleConditions>(createEmptyMealRuleConditions())
 
-export function constructWhereConditions(conditions: InMealRuleConditions): ExprLike {
+export function constructWhereConditions(conditions: InMealRuleConditions, searchTerm: string | undefined): ExprLike {
   const query_conditions = [
     eq('household', currentHousehold.value!.id),
     lte('created_at', firstPageQueriedAt),
   ]
 
-  if (searchTerm.value)
-    query_conditions.push(matches('name', searchTerm.value))
+  if (searchTerm)
+    query_conditions.push(matches('name', searchTerm))
 
   const inc = conditions.include
   const exc = conditions.exclude
@@ -136,7 +136,7 @@ export function constructWhereConditions(conditions: InMealRuleConditions): Expr
 }
 
 function constructCountQuery() {
-  const whereConditions = constructWhereConditions(filterConditions.value)
+  const whereConditions = constructWhereConditions(filterConditions.value, searchTerm.value)
   return surql`SELECT VALUE count() FROM ONLY recipe WHERE ${whereConditions} GROUP ALL`
 }
 
@@ -170,7 +170,7 @@ function constructRecipeQuery() {
       query.append(surql` WITH INDEX english_search_name`)
   }
 
-  const whereConditions = constructWhereConditions(filterConditions.value)
+  const whereConditions = constructWhereConditions(filterConditions.value, searchTerm.value)
   query.append(surql` WHERE ${whereConditions}`)
 
   if (searchTerm.value)
@@ -179,6 +179,8 @@ function constructRecipeQuery() {
     query.append(surql` ORDER BY created_at DESC`)
 
   query.append(surql` LIMIT ${recipesPerPage} START ${pageIndex.value * recipesPerPage}`)
+
+  // console.log(query.query, query.bindings)
 
   return query
 }

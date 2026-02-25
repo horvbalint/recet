@@ -274,11 +274,15 @@ async function importRecipe() {
   try {
     importing.value = true
 
-    const [recipe] = await db
-      .query(surql`mod::recet::scrape_for_recipe(${importSourceType.value}, ${importSource.value})`)
-      .collect<[ImportedRecipe | null]>()
+    const [{ status, body: recipe }] = await db
+      .query(surql`api::invoke('/recipe/scrape/' + ${importSourceType.value}, {
+        query: {
+          source: ${importSource.value},
+        }
+      })`)
+      .collect<[{ body: ImportedRecipe, status: number }]>()
 
-    if (!recipe)
+    if (status !== 200 || !recipe)
       throw new Error('No recipe found at the provided URL.')
 
     formData.value.name = recipe.name

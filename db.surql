@@ -6,13 +6,13 @@ BEGIN TRANSACTION;
 DEFINE PARAM OVERWRITE $allowedSignupEmails VALUE [] PERMISSIONS NONE; // to disallow all signups - default value
 
 -- For AI integration set the following parameters:
--- DEFINE PARAM OVERWRITE $openAiBaseUrl VALUE 'open-ai-compatible-api-url';
--- DEFINE PARAM OVERWRITE $openAiModel VALUE 'name-of-the-model';
--- DEFINE PARAM OVERWRITE $openAiToken VALUE 'your-token';
+-- DEFINE PARAM OVERWRITE $openAiBaseUrl VALUE 'open-ai-compatible-api-url' PERMISSIONS NONE;
+-- DEFINE PARAM OVERWRITE $openAiModel VALUE 'name-of-the-model' PERMISSIONS NONE;
+-- DEFINE PARAM OVERWRITE $openAiToken VALUE 'your-token' PERMISSIONS NONE;
 
 -- The following parameters are required:
--- DEFINE PARAM OVERWRITE $pluginsBucketPath VALUE 'file:/path/to/the/directory';
--- DEFINE PARAM OVERWRITE $recipeImagesBucketPath VALUE 'file:/path/to/the/directory';
+-- DEFINE PARAM OVERWRITE $pluginsBucketPath VALUE 'file:/path/to/the/directory' PERMISSIONS NONE;
+-- DEFINE PARAM OVERWRITE $recipeImagesBucketPath VALUE 'file:/path/to/the/directory' PERMISSIONS NONE;
 
 IF $pluginsBucketPath == NONE {
 	throw "Please run `DEFINE PARAM OVERWRITE $pluginsBucketPath VALUE 'file:/path/to/the/directory' PERMISSIONS NONE;` with the path to the directory where plugins will be stored.";
@@ -354,6 +354,10 @@ DEFINE API OVERWRITE "/invitation/accept" FOR post
 	MIDDLEWARE
 		api::timeout(1s)
 	THEN {
+		IF $access != 'user' {
+			RETURN { status: 403, body: { error: "Forbidden" } };
+		};
+
 		LET $body_token = <uuid> $request.body.token;
 		LET $invitation = SELECT * FROM ONLY invitation WHERE token = $body_token LIMIT 1;
 
@@ -373,5 +377,19 @@ DEFINE API OVERWRITE "/invitation/accept" FOR post
 		LET $household = SELECT id, name, language FROM ONLY $invitation.household;
 		RETURN { status: 200, body: $household };
 	};
+
+DEFINE API OVERWRITE "/recipe/scrape/:type" FOR get
+	THEN {
+		IF $access != 'user' {
+			RETURN { status: 403, body: { error: "Forbidden" } };
+		};
+
+		LET $type = $request.params.type;
+		LET $source = $request.query.source;
+
+		LET $result = mod::recet::scrape_for_recipe($type, $source);
+		RETURN { status: 200, body: $result };
+	};
+
 
 COMMIT;

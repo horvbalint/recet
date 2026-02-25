@@ -18,8 +18,6 @@ async function createAndNavigate() {
   catch (err) {
     console.error('Error creating household:', err)
     useNebToast({ type: 'error', title: 'Creation failed', description: 'Could not create household.' })
-  }
-  finally {
     isCreating.value = false
   }
 }
@@ -40,8 +38,6 @@ async function joinAndNavigate() {
   catch (error: any) {
     console.error('Error joining household:', error)
     useNebToast({ type: 'error', title: 'Failed to join', description: error.message || 'Invalid invitation token.' })
-  }
-  finally {
     isJoining.value = false
   }
 }

@@ -7,7 +7,7 @@ const showJoinModal = ref(false)
 const joinToken = ref('')
 const isJoining = ref(false)
 
-const { data, refresh } = householdQuery.value!
+const { data, refresh } = householdQuery
 
 async function handleHouseholdCreated(household: OutHousehold) {
   await refresh()
@@ -43,7 +43,7 @@ watch(showJoinModal, (visible) => {
 })
 
 const menus = computed(() => {
-  const menus: Menu[] = data.map(household => ({
+  const menus: Menu[] = data.value!.map(household => ({
     text: household.name,
     icon: 'material-symbols:home-outline-rounded',
     callback: () => switchHousehold(household),

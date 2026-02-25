@@ -159,7 +159,7 @@ function constructRecipeQuery() {
   const query = surql`SELECT ${raw(fieldsNeededForRecipeCard)} `
 
   if (searchTerm.value)
-    query.append(surql`,search::score(0) as score`)
+    query.append(surql`,search::score(0) as score `)
 
   query.append(surql`FROM recipe`)
 

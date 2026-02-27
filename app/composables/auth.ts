@@ -15,8 +15,15 @@ export const isCurrHouseholdOwner = computed(() => currHouseholdRole.value === '
 export const isCurrHouseholdEditor = computed(() => ['owner', 'writer'].includes(currHouseholdRole.value || ''))
 export const isCurrHouseholdViewer = computed(() => ['owner', 'writer', 'guest'].includes(currHouseholdRole.value || ''))
 
+const tokenKey = 'recet_tokens'
+
+db.subscribe('auth', (tokens) => {
+  if (tokens)
+    localStorage.setItem(tokenKey, JSON.stringify(tokens))
+})
+
 export async function signUp(email: string, username: string, password: string) {
-  const { access } = await db.signup({
+  await db.signup({
     access: 'user',
     variables: {
       email,
@@ -24,12 +31,10 @@ export async function signUp(email: string, username: string, password: string) 
       password,
     },
   })
-
-  localStorage.setItem('recet_token', access)
 }
 
 export async function signIn(email: string, password: string) {
-  const { access } = await db.signin({
+  await db.signin({
     access: 'user',
     variables: {
       email,
@@ -37,7 +42,15 @@ export async function signIn(email: string, password: string) {
     },
   })
 
-  localStorage.setItem('recet_token', access)
+  authUser.value = await db.auth<OutUser>() || null
+}
+
+export async function authenticateWithToken() {
+  const tokens = localStorage.getItem(tokenKey)
+  if (!tokens)
+    return
+
+  await db.authenticate(JSON.parse(tokens))
 }
 
 export function logout() {

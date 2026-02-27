@@ -44,12 +44,17 @@ DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
 		}
 	 )
 	SIGNIN ( SELECT * FROM ONLY user WHERE email = $email && crypto::argon2::compare(password, $password))
-	DURATION FOR TOKEN 8h, FOR SESSION 12h
+	WITH REFRESH
+	DURATION
+		FOR TOKEN 15m,
+		FOR SESSION 12h
 ;
 
 DEFINE ACCESS OVERWRITE recipe_guest ON DATABASE TYPE RECORD
 	SIGNIN (SELECT * FROM ONLY recipe WHERE id = type::record('recipe', $recipe_id) && public = true)
-	DURATION FOR TOKEN 5m, FOR SESSION 5m
+	DURATION
+		FOR TOKEN 5m,
+		FOR SESSION 5m
 ;
 
 DEFINE FUNCTION OVERWRITE fn::can_read_household($household: record<household>) {

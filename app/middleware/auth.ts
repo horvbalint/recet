@@ -6,8 +6,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (authUser.value)
       return
 
-    if (localStorage.recet_token)
-      await db.authenticate(localStorage.recet_token)
+    await authenticateWithToken()
 
     authUser.value = await db.auth<OutUser>() || null
     const [memberships] = await db

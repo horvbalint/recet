@@ -7,7 +7,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      surrealDbUrl: 'http://localhost:8000',
+      surrealDbUrl: 'ws://localhost:8000',
     },
   },
 

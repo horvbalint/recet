@@ -277,14 +277,6 @@ export interface OutShop {
 export interface InShoppingList {
   id?: RecordId<'shopping_list'>
   household: Required<InHousehold>['id']
-  items?: Array<{
-    amount?: number | undefined
-    category?: Required<InIngredientCategory>['id'] | undefined
-    ingredient?: Required<InIngredient>['id'] | undefined
-    item: string | Required<InIngredient>['id']
-    recipe?: Required<InRecipe>['id'] | undefined
-    unit?: Required<InUnit>['id'] | undefined
-  }>
   name: string
   shop?: Required<InShop>['id'] | undefined
   updated_at: Date | string
@@ -293,14 +285,6 @@ export interface InShoppingList {
 export interface OutShoppingList {
   id: RecordId<'shopping_list'>
   household: OutHousehold
-  items: Array<{
-    amount?: number | undefined
-    category?: OutIngredientCategory | undefined
-    ingredient?: OutIngredient | undefined
-    item: string | OutIngredient
-    recipe?: OutRecipe | undefined
-    unit?: OutUnit | undefined
-  }>
   name: string
   shop?: OutShop | undefined
   updated_at: string

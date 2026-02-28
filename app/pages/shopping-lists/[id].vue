@@ -1,86 +1,101 @@
 <script setup lang="ts">
-import type { RecordId } from 'surrealdb'
+import type { LiveSubscription, RecordId, Uuid } from 'surrealdb'
 import type { OutIngredient, OutIngredientCategory, OutRecipe, OutShop, OutShoppingList, OutUnit } from '~/db'
+import { Table } from 'surrealdb'
 
 const route = useRoute()
 const listId = route.params.id as string
 
-interface ShoppingList extends Omit<OutShoppingList, 'items'> {
-  items: {
-    item: string | {
-      id: RecordId<'ingredient'>
-      name: string
-      category?: Pick<OutIngredientCategory, 'id' | 'name'>
-    }
-    amount?: number
-    unit?: Pick<OutUnit, 'id' | 'name'>
-    recipe?: OutRecipe
+interface ShoppingListItem {
+  id: RecordId<'shopping_list_item'>
+  item: string | {
+    id: RecordId<'ingredient'>
+    name: string
     category?: Pick<OutIngredientCategory, 'id' | 'name'>
-    marked?: boolean
-  }[]
+  }
+  amount?: number
+  unit?: Pick<OutUnit, 'id' | 'name'>
+  recipe?: OutRecipe
+  category?: Pick<OutIngredientCategory, 'id' | 'name'>
+  marked?: boolean
 }
 
 const { status, data, refresh, error } = useAsyncData('shopping-list', async () => {
-  const [shoppingList, ingredients, units, categories, shops] = await db
+  const [shoppingList, items, ingredients, units, categories, shops] = await db
     .query(surql`
       SELECT
         *,
-        items.{
-          item: item.{
-            id,
-            name,
-            category.{id, name}
-          } || item,
-          amount,
-          unit.{id, name},
-          recipe.{id, name},
-          category.{id, name},
-          marked
-        },
         shop.{
           id,
           name,
           categories.{id, name}
         }
       FROM ONLY type::record(shopping_list, ${listId});
+      SELECT 
+        id,
+        item.{
+          id,
+          name,
+          category.{id, name}
+        } || item as item,
+        amount,
+        unit.{id, name},
+        recipe.{id, name},
+        category.{id, name},
+        marked
+      FROM shopping_list_item WHERE shopping_list = type::record('shopping_list', ${listId});
       SELECT * FROM ingredient FETCH category;
       SELECT * FROM unit WITH NOINDEX ORDER BY name ASC;
       SELECT * FROM ingredient_category ORDER BY name ASC;
       SELECT * FROM shop ORDER BY name ASC FETCH categories;
     `)
-    .collect<[ShoppingList, OutIngredient[], OutUnit[], OutIngredientCategory[], OutShop[]]>()
-  return { shoppingList, ingredients, units, categories, shops }
+    .collect<[OutShoppingList, ShoppingListItem[], OutIngredient[], OutUnit[], OutIngredientCategory[], OutShop[]]>()
+  return { shoppingList, items, ingredients, units, categories, shops }
 })
+
+async function setUpLiveQuery() {
+  let liveQuery: LiveSubscription | null = null
+
+  onBeforeUnmount(() => {
+    if (liveQuery)
+      liveQuery.kill()
+  })
+
+  try {
+    const [liveSelectToken] = await db.query<[Uuid]>(surql`LIVE SELECT VALUE id FROM shopping_list WHERE id = type::record('shopping_list', ${listId})`)
+    liveQuery = await db.liveOf(liveSelectToken)
+    liveQuery.subscribe(() => refresh())
+  }
+  catch (err) {
+    console.error(err)
+    useNebToast({ type: 'warning', title: 'Live update not available!', description: 'Could not set up live updates for this shopping list.' })
+  }
+}
+setUpLiveQuery()
 
 const isLoading = ref(false)
-const showFormModal = ref<'add' | { type: 'edit', categoryName: string, index: number } | null>(null)
-const newItem = ref<{
-  item?: ShoppingList['items'][number]['item']
-  amount?: number
-  unit?: ShoppingList['items'][number]['unit']
-  category?: ShoppingList['items'][number]['category']
-}>({})
+const itemModal = ref<Optional<ShoppingListItem, 'id'> | null>(null)
 
-watch(() => newItem.value.item, () => {
-  if (typeof newItem.value.item === 'object')
-    newItem.value.category = newItem.value.item.category
+watch(() => itemModal.value?.item, () => {
+  if (typeof itemModal.value?.item === 'object')
+    itemModal.value.category = itemModal.value.item.category
 })
 
-type Table = 'ingredient' | 'unit'
-const dynamicCreateTable = ref<Table | null>(null)
+type DynamicCreateTable = 'ingredient' | 'unit'
+const dynamicCreateTable = ref<DynamicCreateTable | null>(null)
 const dynamicCreateSearchTerm = ref<string>('')
 
 const shop = ref(data.value?.shoppingList.shop)
 watchOnce(data, () => shop.value = data.value?.shoppingList.shop)
 
 const groupedItems = computed(() => {
-  if (!data.value?.shoppingList.items)
+  if (!data.value?.items)
     return {}
 
   const categoryList = shop.value?.categories || data.value.categories
-  const groups: Record<string, ShoppingList['items'][number][]> = Object.fromEntries(categoryList.map(c => [c.name, []]))
+  const groups: Record<string, ShoppingListItem[]> = Object.fromEntries(categoryList.map(c => [c.name, []]))
 
-  for (const item of data.value.shoppingList.items) {
+  for (const item of data.value.items) {
     const categoryName = item.category?.name || (typeof item.item === 'object' && item.item?.category?.name) || 'Other'
 
     if (!groups[categoryName])
@@ -97,26 +112,11 @@ const groupedItems = computed(() => {
   return groups
 })
 
-async function updateListItems(onSuccess?: () => void) {
+async function wrapUpdate(logicFun: () => Promise<unknown>) {
   isLoading.value = true
 
   try {
-    const items = data.value!.shoppingList.items.map(item => ({
-      item: typeof item.item === 'object' ? item.item.id : item.item,
-      amount: item.amount,
-      unit: item.unit?.id,
-      recipe: item.recipe?.id,
-      category: item.category?.id,
-      marked: item.marked,
-    }))
-
-    await db
-      .query(surql`UPDATE ${data.value!.shoppingList.id} SET items = ${items} RETURN NONE`)
-      .collect()
-
-    if (onSuccess)
-      onSuccess()
-
+    await logicFun()
     await refresh()
   }
   catch (error) {
@@ -128,26 +128,42 @@ async function updateListItems(onSuccess?: () => void) {
   }
 }
 
-function handleSubmit() {
-  if (typeof showFormModal.value === 'object') {
-    Object.assign(groupedItems.value[showFormModal.value!.categoryName]![showFormModal.value!.index]!, newItem.value)
+function itemToDbItem(item: Optional<ShoppingListItem, 'id'>) {
+  return {
+    item: typeof item.item === 'object' ? item.item.id : item.item,
+    amount: item.amount,
+    unit: item.unit?.id,
+    category: item.category?.id,
+    recipe: item.recipe?.id,
+    marked: item.marked,
+    shopping_list: data.value!.shoppingList.id,
+    household: currentHousehold.value!.id,
   }
-  else {
-    data.value!.shoppingList.items.push({
-      item: newItem.value.item!,
-      amount: newItem.value.amount ? Number(newItem.value.amount) : undefined,
-      unit: newItem.value.unit || undefined,
-      category: newItem.value.category,
-    })
-  }
+}
 
-  updateListItems(closeModal)
+function startAddItem() {
+  itemModal.value = {
+    item: '',
+    amount: undefined,
+    unit: undefined,
+    category: undefined,
+  }
+}
+
+function handleSubmit() {
+  wrapUpdate(async () => {
+    if (itemModal.value?.id)
+      await db.update(itemModal.value.id).merge(itemToDbItem(itemModal.value))
+    else
+      await db.create(new Table('shopping_list_item')).content(itemToDbItem(itemModal.value!))
+
+    closeModal()
+  })
 }
 
 let undoToast: NebToast | null = null
-async function removeItem(item: ShoppingList['items'][number]) {
-  data.value!.shoppingList.items = data.value!.shoppingList.items.filter(i => i !== item)
-  await updateListItems()
+async function removeItem(item: ShoppingListItem) {
+  await wrapUpdate(() => db.delete(item.id))
 
   if (undoToast)
     undoToast.destroy()
@@ -160,19 +176,21 @@ async function removeItem(item: ShoppingList['items'][number]) {
       text: 'Undo',
       callback() {
         undoToast?.destroy()
-        data.value!.shoppingList.items.push(item)
-        updateListItems()
+        wrapUpdate(() => db.create(item.id).content(itemToDbItem(item)))
       },
     }],
   })
 }
 
-function closeModal() {
-  showFormModal.value = null
-  newItem.value = {}
+async function toggleMarkedItem(item: ShoppingListItem) {
+  await wrapUpdate(() => db.update(item.id).merge({ marked: !item.marked }))
 }
 
-function getItemAmount(item: ShoppingList['items'][number]) {
+function closeModal() {
+  itemModal.value = null
+}
+
+function getItemAmount(item: ShoppingListItem) {
   const parts = [item.amount!.toString()]
 
   if (item.unit)
@@ -181,13 +199,12 @@ function getItemAmount(item: ShoppingList['items'][number]) {
   return parts.join(' ')
 }
 
-function startEditItem(categoryName: string, index: number) {
-  newItem.value = { ...groupedItems.value[categoryName]![index] as Required<ShoppingList['items'][number]> }
-  showFormModal.value = { type: 'edit', categoryName, index }
+function startEditItem(item: Optional<ShoppingListItem, 'id'>) {
+  itemModal.value = item
 }
 
-const modalTitle = computed(() => showFormModal.value === 'add' ? 'Add Item' : 'Edit Item')
-const modalSubmitText = computed(() => typeof showFormModal.value === 'object' ? 'Save Changes' : 'Add Item')
+const modalTitle = computed(() => itemModal.value?.id ? 'Edit Item' : 'Add Item')
+const modalSubmitText = computed(() => itemModal.value?.id ? 'Save Changes' : 'Add Item')
 
 watch(currentHousehold, () => goToShoppingLists())
 
@@ -206,18 +223,13 @@ function handleCreateUnit(searchTerm: string) {
 }
 
 function onIngredientCreated(ingredient: OutIngredient) {
-  newItem.value.item = ingredient
+  itemModal.value!.item = ingredient
   refresh()
 }
 
 function onUnitCreated(unit: OutUnit) {
-  newItem.value.unit = unit
+  itemModal.value!.unit = unit
   refresh()
-}
-
-function toggleMarkedItem(item: ShoppingList['items'][number]) {
-  item.marked = !item.marked
-  updateListItems()
 }
 </script>
 
@@ -227,7 +239,7 @@ function toggleMarkedItem(item: ShoppingList['items'][number]) {
       <neb-content-header
         has-separator
         :title="data?.shoppingList.name || 'Shopping List'"
-        :description="`${data?.shoppingList.items.length || 0} items`"
+        :description="`${data?.items.length || 0} items`"
         icon="material-symbols:shopping-cart-outline-rounded"
         :type="pageHeaderType"
       >
@@ -246,7 +258,7 @@ function toggleMarkedItem(item: ShoppingList['items'][number]) {
             />
           </div>
 
-          <neb-button type="primary" small @click="showFormModal = 'add'">
+          <neb-button type="primary" small @click="startAddItem()">
             <icon name="material-symbols:add-rounded" />
             Add Item
           </neb-button>
@@ -273,10 +285,10 @@ function toggleMarkedItem(item: ShoppingList['items'][number]) {
 
             <div class="items-list">
               <div
-                v-for="(item, index) in items"
+                v-for="item in items"
                 :key="`${categoryName}-${typeof item.item === 'object' ? item.item.id : item.item}`"
                 class="item-card"
-                @click="startEditItem(categoryName, index)"
+                @click="startEditItem(item)"
               >
                 <neb-checkbox class="item-checkbox" @click.stop @update:model-value="removeItem(item)" />
 
@@ -310,7 +322,7 @@ function toggleMarkedItem(item: ShoppingList['items'][number]) {
           title="No items yet"
           description="Add your first item to start shopping."
         >
-          <neb-button type="primary" @click="showFormModal = 'add'">
+          <neb-button type="primary" @click="startAddItem()">
             Add First Item
           </neb-button>
         </neb-empty-state>
@@ -318,7 +330,7 @@ function toggleMarkedItem(item: ShoppingList['items'][number]) {
     </div>
 
     <neb-modal
-      v-model="showFormModal"
+      v-model="itemModal"
       :closed-value="null"
       :title="modalTitle"
       header-icon="material-symbols:add-rounded"
@@ -328,7 +340,7 @@ function toggleMarkedItem(item: ShoppingList['items'][number]) {
       <template #content>
         <div class="modal-form-content">
           <suggestion-input
-            v-model="newItem.item"
+            v-model="itemModal!.item"
             label="Item"
             placeholder="Search an ingredient or add a custom item"
             :options="data!.ingredients"
@@ -340,7 +352,7 @@ function toggleMarkedItem(item: ShoppingList['items'][number]) {
 
           <div class="amount-row">
             <neb-input
-              v-model="newItem.amount"
+              v-model="itemModal!.amount"
               label="Quantity"
               type="number"
               placeholder="e.g., 2"
@@ -348,7 +360,7 @@ function toggleMarkedItem(item: ShoppingList['items'][number]) {
             />
 
             <neb-select
-              v-model="newItem.unit"
+              v-model="itemModal!.unit"
               :options="data!.units"
               label="Unit"
               placeholder="Select unit"
@@ -362,7 +374,7 @@ function toggleMarkedItem(item: ShoppingList['items'][number]) {
           </div>
 
           <neb-select
-            v-model="newItem.category"
+            v-model="itemModal!.category"
             :options="data!.categories"
             label="Category"
             placeholder="Select a category"
@@ -382,7 +394,7 @@ function toggleMarkedItem(item: ShoppingList['items'][number]) {
 
         <neb-button
           type="primary"
-          :disabled="!newItem.item || isLoading"
+          :disabled="!itemModal!.item || isLoading"
           :loading="isLoading"
           @click="handleSubmit()"
         >

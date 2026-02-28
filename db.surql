@@ -262,13 +262,17 @@ DEFINE INDEX OVERWRITE token_unique ON invitation FIELDS token UNIQUE;
 fn::define_household_table("shopping_list");
 DEFINE FIELD OVERWRITE shop ON shopping_list TYPE option<record<shop>>;
 DEFINE FIELD OVERWRITE name ON shopping_list TYPE string;
-DEFINE FIELD OVERWRITE items ON shopping_list TYPE array<object> DEFAULT [];
-DEFINE FIELD OVERWRITE items.*.item ON shopping_list TYPE string | record<ingredient> ASSERT !type::is_record($value) || household = $value.household;
-DEFINE FIELD OVERWRITE items.*.category ON shopping_list TYPE option<record<ingredient_category>> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE items.*.amount ON shopping_list TYPE option<number>;
-DEFINE FIELD OVERWRITE items.*.unit ON shopping_list TYPE option<record<unit>> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE items.*.recipe ON shopping_list TYPE option<record<recipe>> ASSERT household = $value.household;
-DEFINE FIELD OVERWRITE items.*.marked ON shopping_list TYPE option<bool>;
+fn::define_meta_fields("shopping_list");
+
+fn::define_household_table("shopping_list_item");
+DEFINE FIELD OVERWRITE shopping_list ON shopping_list_item TYPE record<shopping_list> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE item ON shopping_list_item TYPE string | record<ingredient> ASSERT !type::is_record($value) || household = $value.household;
+DEFINE FIELD OVERWRITE category ON shopping_list_item TYPE option<record<ingredient_category>> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE amount ON shopping_list_item TYPE option<number>;
+DEFINE FIELD OVERWRITE unit ON shopping_list_item TYPE option<record<unit>> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE recipe ON shopping_list_item TYPE option<record<recipe>> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE marked ON shopping_list_item TYPE option<bool>;
+fn::define_meta_fields("shopping_list_item");
 
 // TABLE: meal_plan
 fn::define_household_table("meal_plan");

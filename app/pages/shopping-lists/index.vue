@@ -2,23 +2,31 @@
 import type { RecordId } from 'surrealdb'
 import type { OutShoppingList } from '~/db'
 
+export interface ShoppingList extends Omit<OutShoppingList, 'shop'> {
+  item_count: number
+  shop: {
+    id: RecordId<'shop'>
+    name: string
+  }
+}
+
 const router = useRouter()
 
 const { data: shoppingLists, status, refresh, error } = useAsyncData('shopping-lists', async () => {
   const [shoppingLists] = await db
     .query(surql`
       SELECT
-        *
+        *,
+        shop.{id, name},
+        SELECT VALUE count() FROM ONLY shopping_list_item WHERE shopping_list = $parent.id GROUP ALL as item_count
       FROM
         shopping_list
       WHERE
         household = ${currentHousehold.value!.id}
       ORDER BY
         updated_at DESC
-      FETCH
-        shop
     `)
-    .collect<[OutShoppingList[]]>()
+    .collect<[ShoppingList[]]>()
 
   return shoppingLists
 }, { watch: [currentHousehold] })

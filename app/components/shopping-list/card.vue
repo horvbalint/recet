@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { OutShoppingList } from '~/db'
+import type { ShoppingList } from '~/pages/shopping-lists/index.vue'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
 const props = defineProps<{
-  list: OutShoppingList
+  list: ShoppingList
 }>()
 
 const emit = defineEmits<{
@@ -63,7 +63,7 @@ async function deleteList() {
 
         <div class="list-stats">
           <neb-badge small>
-            {{ props.list.items.length }} items
+            {{ props.list.item_count }} items
           </neb-badge>
 
           <span class="updated-time">{{ dayjs(props.list.updated_at).fromNow() }}</span>

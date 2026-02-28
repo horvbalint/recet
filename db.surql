@@ -336,42 +336,26 @@ DEFINE FUNCTION OVERWRITE fn::add_image_to_recipe($recipe_id: record<recipe>, $i
 
 DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id: record<recipe>, $ingredient_indexes: array<number>, $shopping_list_id: record<shopping_list>, $portionRatio: number) {
 	LET $recipe = SELECT id, ingredients FROM ONLY $recipe_id FETCH ingredients.ingredient;
-	LET $shopping_list = SELECT items FROM ONLY $shopping_list_id;
-	
 	IF ($recipe == NONE) {
 		THROW "Recipe not found.";
 	};
 	
-	IF ($shopping_list == NONE) {
-		THROW "Shopping list not found.";
-	};
-	
-	LET $items = function($recipe, $ingredient_indexes, $shopping_list.items, $portionRatio) {
-    const [recipe, ingredientIndexes, listItems, portionRatio] = arguments;
+	FOR $ingredient_index IN $ingredient_indexes {
+		LET $ingredient = $recipe.ingredients[$ingredient_index];
+		IF ($ingredient.ingredient.skip_from_shopping_list) {
+			CONTINUE;
+		};
 
-		const ingredientsToAdd = ingredientIndexes.map(index => recipe.ingredients[index]).filter(ing => !ing.ingredient.skip_from_shopping_list);
-
-    for(const ingredient of ingredientsToAdd) {
-			const existing_item = listItems.find(item => typeof item.item === 'object' && item.item.id === ingredient.ingredient.id.id);
-
-			if(existing_item && existing_item.unit?.id === ingredient.unit?.id) {
-				existing_item.amount = (existing_item.amount || 0) + (ingredient.amount || 0) * portionRatio;
-			}
-			else {
-				listItems.push({
-					item: ingredient.ingredient.id,
-					amount: ingredient.amount && ingredient.amount * portionRatio,
-					unit: ingredient.unit,
-					category: ingredient.ingredient.category,
-					recipe: recipe.id
-				});
-			}
-		}
-
-    return listItems
-	};
-	
-	UPDATE ONLY $shopping_list_id SET items = $items;
+		UPSERT shopping_list_item SET
+			shopping_list = $shopping_list_id,
+			household = $shopping_list_id.household,
+			item = $ingredient.ingredient.id,
+			amount += ($ingredient.amount && $ingredient.amount * $portionRatio) || 0,
+			unit = $ingredient.unit,
+			category = $ingredient.ingredient.category,
+			recipe = $recipe.id
+		WHERE shopping_list = $shopping_list_id && item = $ingredient.ingredient.id && unit = $ingredient.unit;
+	}
 };
 
 

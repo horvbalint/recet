@@ -62,7 +62,7 @@ async function setUpLiveQuery() {
   })
 
   try {
-    const [liveSelectToken] = await db.query<[Uuid]>(surql`LIVE SELECT VALUE id FROM shopping_list WHERE id = type::record('shopping_list', ${listId})`)
+    const [liveSelectToken] = await db.query<[Uuid]>(surql`LIVE SELECT VALUE id FROM shopping_list_item WHERE shopping_list = type::record('shopping_list', ${listId})`)
     liveQuery = await db.liveOf(liveSelectToken)
     liveQuery.subscribe(() => refresh())
   }

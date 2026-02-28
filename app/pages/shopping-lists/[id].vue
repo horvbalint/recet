@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LiveSubscription, RecordId, Uuid } from 'surrealdb'
 import type { OutIngredient, OutIngredientCategory, OutRecipe, OutShop, OutShoppingList, OutUnit } from '~/db'
-import { Table } from 'surrealdb'
+import { raw, Table } from 'surrealdb'
 
 const route = useRoute()
 const listId = route.params.id as string
@@ -20,8 +20,8 @@ interface ShoppingListItem {
   marked?: boolean
 }
 
-const { status, data, refresh, error } = useAsyncData('shopping-list', async () => {
-  const [shoppingList, items, ingredients, units, categories, shops] = await db
+const { data, status: dataStatus, error: dataError } = useAsyncData('shopping-list', async () => {
+  const [shoppingList, ingredients, units, categories, shops] = await db
     .query(surql`
       SELECT
         *,
@@ -31,29 +31,43 @@ const { status, data, refresh, error } = useAsyncData('shopping-list', async () 
           categories.{id, name}
         }
       FROM ONLY type::record(shopping_list, ${listId});
-
-      SELECT 
-        id,
-        item.{
-          id,
-          name,
-          category.{id, name}
-        } || item as item,
-        amount,
-        unit.{id, name},
-        recipe.{id, name},
-        category.{id, name},
-        marked
-      FROM shopping_list_item WHERE shopping_list = type::record('shopping_list', ${listId});
-      
       SELECT * FROM ingredient FETCH category;
       SELECT * FROM unit WITH NOINDEX ORDER BY name ASC;
       SELECT * FROM ingredient_category ORDER BY name ASC;
       SELECT * FROM shop ORDER BY name ASC FETCH categories;
     `)
-    .collect<[OutShoppingList, ShoppingListItem[], OutIngredient[], OutUnit[], OutIngredientCategory[], OutShop[]]>()
-  return { shoppingList, items, ingredients, units, categories, shops }
+    .collect<[OutShoppingList, OutIngredient[], OutUnit[], OutIngredientCategory[], OutShop[]]>()
+  return { shoppingList, ingredients, units, categories, shops }
 })
+
+const fieldsToSelectFromItem = `
+  id,
+  item.{
+    id,
+    name,
+    category.{id, name}
+  } || item as item,
+  amount,
+  unit.{id, name},
+  recipe.{id, name},
+  category.{id, name},
+  marked
+`
+const { data: items, status: itemsStatus, error: itemsError, refresh: refreshItems } = useAsyncData('shopping-list-items', async () => {
+  const [items] = await db.query<[ShoppingListItem[]]>(surql`
+    SELECT
+      ${raw(fieldsToSelectFromItem)}
+    FROM
+      shopping_list_item
+    WHERE
+      shopping_list = type::record('shopping_list', ${listId});`,
+  )
+
+  return items
+})
+
+const status = nebCombineStatuses(dataStatus, itemsStatus)
+const error = computed(() => dataError.value || itemsError.value)
 
 async function setUpLiveQuery() {
   let liveQuery: LiveSubscription | null = null
@@ -64,9 +78,25 @@ async function setUpLiveQuery() {
   })
 
   try {
-    const [liveSelectToken] = await db.query<[Uuid]>(surql`LIVE SELECT VALUE id FROM shopping_list_item WHERE shopping_list = type::record('shopping_list', ${listId})`)
+    const [liveSelectToken] = await db.query<[Uuid]>(surql`
+      LIVE SELECT
+        ${raw(fieldsToSelectFromItem)}
+      FROM
+        shopping_list_item
+      WHERE
+        shopping_list = type::record('shopping_list', ${listId})
+    `)
     liveQuery = await db.liveOf(liveSelectToken)
-    liveQuery.subscribe(() => refresh())
+    liveQuery.subscribe((event) => {
+      refreshItems()
+      const localItem = items.value?.find(i => i.id.id === event.recordId.id)
+
+      if (event.action === 'DELETE' && !localItem)
+        return
+
+      if (!localItem || JSON.stringify(localItem) !== JSON.stringify(event.value))
+        refreshItems()
+    })
   }
   catch (err) {
     console.error(err)
@@ -91,13 +121,13 @@ const shop = ref(data.value?.shoppingList.shop)
 watchOnce(data, () => shop.value = data.value?.shoppingList.shop)
 
 const groupedItems = computed(() => {
-  if (!data.value?.items)
+  if (!items.value || !data.value)
     return {}
 
   const categoryList = shop.value?.categories || data.value.categories
   const groups: Record<string, ShoppingListItem[]> = Object.fromEntries(categoryList.map(c => [c.name, []]))
 
-  for (const item of data.value.items) {
+  for (const item of items.value) {
     const categoryName = item.category?.name || (typeof item.item === 'object' && item.item?.category?.name) || 'Other'
 
     if (!groups[categoryName])
@@ -119,7 +149,7 @@ async function wrapUpdate(logicFun: () => Promise<unknown>) {
 
   try {
     await logicFun()
-    await refresh()
+    await refreshItems()
   }
   catch (error) {
     console.error(error)
@@ -185,7 +215,10 @@ async function removeItem(item: ShoppingListItem) {
 }
 
 async function toggleMarkedItem(item: ShoppingListItem) {
-  await wrapUpdate(() => db.update(item.id).merge({ marked: !item.marked }))
+  await wrapUpdate(async () => {
+    await db.update(item.id).merge({ marked: !item.marked })
+    item.marked = !item.marked
+  })
 }
 
 function closeModal() {
@@ -226,12 +259,12 @@ function handleCreateUnit(searchTerm: string) {
 
 function onIngredientCreated(ingredient: OutIngredient) {
   itemModal.value!.item = ingredient
-  refresh()
+  refreshItems()
 }
 
 function onUnitCreated(unit: OutUnit) {
   itemModal.value!.unit = unit
-  refresh()
+  refreshItems()
 }
 </script>
 
@@ -241,7 +274,7 @@ function onUnitCreated(unit: OutUnit) {
       <neb-content-header
         has-separator
         :title="data?.shoppingList.name || 'Shopping List'"
-        :description="`${data?.items.length || 0} items`"
+        :description="`${items?.length || 0} items`"
         icon="material-symbols:shopping-cart-outline-rounded"
         :type="pageHeaderType"
       >

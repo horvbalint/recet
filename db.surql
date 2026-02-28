@@ -34,20 +34,36 @@ DEFINE ANALYZER OVERWRITE english_analyzer
 DEFINE BUCKET OVERWRITE plugins BACKEND $pluginsBucketPath PERMISSIONS NONE;
 DEFINE MODULE OVERWRITE mod::recet AS f"plugins:/recet.surli";
 
-DEFINE ACCESS OVERWRITE user ON DATABASE TYPE RECORD
-	SIGNUP (
+DEFINE ACCESS OVERWRITE desktop_user ON DATABASE TYPE RECORD
+	SIGNUP
 		IF $allowedSignupEmails != NONE && !$allowedSignupEmails.includes($email) {
 			THROW "The admin did not allow this email address for signup."
 		}
 		ELSE {
 			CREATE user SET email = $email, username = $username, password = crypto::argon2::generate($password)
 		}
-	 )
-	SIGNIN ( SELECT * FROM ONLY user WHERE email = $email && crypto::argon2::compare(password, $password))
+	SIGNIN
+		SELECT id FROM ONLY user WHERE email = $email && crypto::argon2::compare(password, $password)
 	WITH REFRESH
 	DURATION
 		FOR TOKEN 15m,
-		FOR SESSION 12h
+		FOR SESSION 1h
+;
+
+DEFINE ACCESS OVERWRITE mobile_user ON DATABASE TYPE RECORD
+	SIGNUP
+		IF $allowedSignupEmails != NONE && !$allowedSignupEmails.includes($email) {
+			THROW "The admin did not allow this email address for signup."
+		}
+		ELSE {
+			CREATE user SET email = $email, username = $username, password = crypto::argon2::generate($password)
+		}
+	SIGNIN
+		SELECT id FROM ONLY user WHERE email = $email && crypto::argon2::compare(password, $password)
+	WITH REFRESH
+	DURATION
+		FOR TOKEN 15m,
+		FOR SESSION 1h
 ;
 
 DEFINE ACCESS OVERWRITE recipe_guest ON DATABASE TYPE RECORD
@@ -58,15 +74,15 @@ DEFINE ACCESS OVERWRITE recipe_guest ON DATABASE TYPE RECORD
 ;
 
 DEFINE FUNCTION OVERWRITE fn::can_read_household($household: record<household>) {
-	RETURN $access = 'user' && fn::users_role_in_household($household) != NONE;
+	RETURN fn::users_role_in_household($household) != NONE;
 };
 
 DEFINE FUNCTION OVERWRITE fn::can_write_household($household: record<household>) {
-	RETURN $access = 'user' && fn::users_role_in_household($household) IN ["owner", "writer"];
+	RETURN fn::users_role_in_household($household) IN ["owner", "writer"];
 };
 
 DEFINE FUNCTION OVERWRITE fn::is_household_owner($household: record<household>) {
-	RETURN $access = 'user' && fn::users_role_in_household($household) == "owner";
+	RETURN fn::users_role_in_household($household) == "owner";
 };
 
 DEFINE FUNCTION OVERWRITE fn::users_role_in_household($household: record<household>) {
@@ -102,7 +118,7 @@ DEFINE FUNCTION OVERWRITE fn::define_meta_fields($table: string) {
 
 // TABLE: user
 DEFINE TABLE OVERWRITE user SCHEMAFULL PERMISSIONS
-	FOR select WHERE $access = 'user' || fn::has_guest_access(id)
+	FOR select WHERE id = $auth || id IN ($auth -> member -> household <- member <- user) || fn::has_guest_access(id)
 	FOR update WHERE id = $auth
 	FOR create, delete NONE;
 
@@ -207,7 +223,7 @@ DEFINE FIELD OVERWRITE categories ON shop TYPE array<record<ingredient_category>
 
 // TABLE: household
 DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
-	for create WHERE $access = 'user'
+	for create WHERE $access = 'mobile_user' || $access = 'desktop_user'
 	for select WHERE fn::can_read_household(id)
 	for delete, update WHERE fn::is_household_owner(id);
 DEFINE FIELD OVERWRITE name ON household TYPE string;
@@ -359,7 +375,7 @@ DEFINE API OVERWRITE "/invitation/accept" FOR post
 	MIDDLEWARE
 		api::timeout(1s)
 	THEN {
-		IF $access != 'user' {
+		IF $access != 'mobile_user' && $access != 'desktop_user' {
 			RETURN { status: 403, body: { error: "Forbidden" } };
 		};
 
@@ -385,7 +401,7 @@ DEFINE API OVERWRITE "/invitation/accept" FOR post
 
 DEFINE API OVERWRITE "/recipe/scrape/:type" FOR get
 	THEN {
-		IF $access != 'user' {
+		IF $access != 'mobile_user' && $access != 'desktop_user' {
 			RETURN { status: 403, body: { error: "Forbidden" } };
 		};
 

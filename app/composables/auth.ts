@@ -22,9 +22,10 @@ db.subscribe('auth', (tokens) => {
     localStorage.setItem(tokenKey, JSON.stringify(tokens))
 })
 
+const userAccess = useAppBreakpoints().isMobile.value ? 'mobile_user' : 'desktop_user'
 export async function signUp(email: string, username: string, password: string) {
   await db.signup({
-    access: 'user',
+    access: userAccess,
     variables: {
       email,
       username,
@@ -35,7 +36,7 @@ export async function signUp(email: string, username: string, password: string) 
 
 export async function signIn(email: string, password: string) {
   await db.signin({
-    access: 'user',
+    access: userAccess,
     variables: {
       email,
       password,

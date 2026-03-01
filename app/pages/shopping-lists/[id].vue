@@ -88,7 +88,6 @@ async function setUpLiveQuery() {
     `)
     liveQuery = await db.liveOf(liveSelectToken)
     liveQuery.subscribe((event) => {
-      refreshItems()
       const localItem = items.value?.find(i => i.id.id === event.recordId.id)
 
       if (event.action === 'DELETE' && !localItem)

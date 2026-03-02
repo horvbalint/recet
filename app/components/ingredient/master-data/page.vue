@@ -6,7 +6,7 @@ interface OutIngredientWithCategory extends OutIngredient {
   category?: OutIngredientCategory
 }
 
-const getQuery = computed(() => surql`SELECT * FROM ingredient WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH category`)
+const getQuery = computed(() => surql`SELECT * FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH category`)
 
 const columns = {
   name: {

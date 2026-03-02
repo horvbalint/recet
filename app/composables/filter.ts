@@ -4,10 +4,10 @@ export function useFilterData() {
   return useAsyncData('recipe-filter-data', async () => {
     const [meals, tags, cuisines, ingredients] = await db
       .query(surql`
-      SELECT id, name, color FROM meal WITH NOINDEX ORDER BY name ASC;
-      SELECT id, name, color, icon FROM recipe_tag WITH NOINDEX ORDER BY name ASC;
-      SELECT id, name, color, flag FROM cuisine WITH NOINDEX ORDER BY name ASC;
-      SELECT id, name FROM ingredient WITH NOINDEX ORDER BY name ASC;
+      SELECT id, name, color FROM meal ORDER BY name ASC;
+      SELECT id, name, color, icon FROM recipe_tag ORDER BY name ASC;
+      SELECT id, name, color, flag FROM cuisine ORDER BY name ASC;
+      SELECT id, name FROM ingredient ORDER BY name ASC;
     `)
       .collect<[OutMeal[], OutRecipeTag[], OutCuisine[], OutIngredient[]]>()
 

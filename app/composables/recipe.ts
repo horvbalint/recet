@@ -148,6 +148,7 @@ export const fieldsNeededForRecipeCard = `
   cooking_time_minutes,
   author.{username},
   ingredients.len(),
+  recipes.len(),
   steps.len(),
   cuisine.{name, color, flag},
   tags.{name, color, icon},

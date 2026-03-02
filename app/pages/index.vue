@@ -5,6 +5,7 @@ export interface Recipe {
   id: RecordId<'recipe'>
   name: string
   ingredients: number
+  recipes: number
   steps: number
   image_blur_hash?: string
   cooking_time_minutes?: number

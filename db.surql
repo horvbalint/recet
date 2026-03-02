@@ -140,6 +140,9 @@ DEFINE FIELD OVERWRITE ingredients.*.ingredient ON recipe TYPE record<ingredient
 DEFINE FIELD OVERWRITE ingredients.*.amount ON recipe TYPE option<number>;
 DEFINE FIELD OVERWRITE ingredients.*.unit ON recipe TYPE option<record<unit>> ASSERT household = $value.household;
 DEFINE FIELD OVERWRITE ingredients.*.description ON recipe TYPE option<string>;
+DEFINE FIELD OVERWRITE recipes ON recipe TYPE array<object> DEFAULT [];
+DEFINE FIELD OVERWRITE recipes.*.recipe ON recipe TYPE record<recipe> ASSERT household = $value.household;
+DEFINE FIELD OVERWRITE recipes.*.description ON recipe TYPE option<string>;
 DEFINE FIELD OVERWRITE portions ON recipe TYPE option<number> ASSERT $value > 0; 
 DEFINE FIELD OVERWRITE steps ON recipe TYPE array<string> DEFAULT [];
 DEFINE FIELD OVERWRITE cooking_time_minutes ON recipe TYPE option<number> ASSERT $value >= 0;
@@ -334,14 +337,26 @@ DEFINE FUNCTION OVERWRITE fn::add_image_to_recipe($recipe_id: record<recipe>, $i
 	};
 };
 
-DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id: record<recipe>, $ingredient_indexes: array<number>, $shopping_list_id: record<shopping_list>, $portionRatio: number) {
-	LET $recipe = SELECT id, ingredients FROM ONLY $recipe_id FETCH ingredients.ingredient;
+DEFINE FUNCTION OVERWRITE fn::add_recipe_to_shopping_list(
+	$recipe_id: record<recipe>,
+	$shopping_list_id: record<shopping_list>,
+	$ingredient_indexes: option<array<number>>,
+	$recipe_indexes: option<array<number>>,
+	$portionRatio: number,
+	$visited_recipes: array<record<recipe>>
+) {
+	LET $recipe = SELECT id, ingredients, recipes FROM ONLY $recipe_id FETCH ingredients.ingredient;
 	IF ($recipe == NONE) {
 		THROW "Recipe not found.";
 	};
+
+	LET $selected_ingredients = IF $ingredient_indexes != NONE {
+		$ingredient_indexes.map(|$index| $recipe.ingredients[$index])
+	} ELSE {
+		$recipe.ingredients;
+	};
 	
-	FOR $ingredient_index IN $ingredient_indexes {
-		LET $ingredient = $recipe.ingredients[$ingredient_index];
+	FOR $ingredient IN $selected_ingredients {
 		IF ($ingredient.ingredient.skip_from_shopping_list) {
 			CONTINUE;
 		};
@@ -355,9 +370,24 @@ DEFINE FUNCTION OVERWRITE fn::add_recipe_ingredients_to_shopping_list($recipe_id
 			category = $ingredient.ingredient.category,
 			recipe = $recipe.id
 		WHERE shopping_list = $shopping_list_id && item = $ingredient.ingredient.id && unit = $ingredient.unit;
-	}
-};
+	};
 
+	LET $selected_recipes = IF $recipe_indexes != NONE {
+		$recipe_indexes.map(|$index| $recipe.recipes[$index])
+	} ELSE {
+		$recipe.recipes;
+	};
+
+	FOR $sub_recipe IN $selected_recipes {
+		IF ($visited_recipes.includes($sub_recipe.recipe)) {
+			CONTINUE;
+		};
+
+		fn::add_recipe_to_shopping_list($sub_recipe.recipe, $shopping_list_id, NONE, NONE, $portionRatio, $visited_recipes.push($sub_recipe.recipe));
+	};
+
+	$recipe
+};
 
 DEFINE API OVERWRITE "/invitation/accept" FOR post
 	MIDDLEWARE

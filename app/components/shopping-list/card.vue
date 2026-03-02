@@ -63,7 +63,7 @@ async function deleteList() {
 
         <div class="list-stats">
           <neb-badge small>
-            {{ props.list.item_count }} items
+            {{ props.list.item_count || 0 }} items
           </neb-badge>
 
           <span class="updated-time">{{ dayjs(props.list.updated_at).fromNow() }}</span>

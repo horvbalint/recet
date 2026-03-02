@@ -1,0 +1,1 @@
+UPDATE recipe SET recipes = [] WHERE recipes = NONE;

@@ -211,6 +211,10 @@ export interface InRecipe {
     ingredient: Required<InIngredient>['id']
     unit?: Required<InUnit>['id'] | undefined
   }>
+  recipes: {
+    recipe: Required<InRecipe>['id']
+    description?: string | undefined
+  }[]
   meal?: Array<Required<InMeal>['id']>
   name: string
   portions?: number | undefined

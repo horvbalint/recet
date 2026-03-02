@@ -4,6 +4,7 @@ import type { InRecipe, OutCuisine, OutIngredient, OutMeal, OutRecipe, OutRecipe
 
 const formData = ref<Partial<InRecipe>>({
   name: '',
+  recipes: [],
   ingredients: [],
   steps: [],
   tags: [],
@@ -64,15 +65,17 @@ watchOnce(recipeToEdit, async () => {
 })
 
 const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, error: masterDataError } = useAsyncData(async () => {
-  const [ingredients, units, cuisines, meals, recipeTags] = await db
+  const [recipes, ingredients, units, cuisines, meals, recipeTags] = await db
     .query(surql`
-      SELECT id, name FROM ingredient WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-      SELECT id, name FROM unit WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-      SELECT id, name, color, flag FROM cuisine WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-      SELECT id, name, color FROM meal WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
-      SELECT id, name, color, icon FROM recipe_tag WITH NOINDEX WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name FROM recipe WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name FROM unit WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color, flag FROM cuisine WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color FROM meal WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
+      SELECT id, name, color, icon FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
     `)
     .collect<[
+    Pick<OutRecipe, 'id' | 'name'>[],
     OutIngredient[],
     OutUnit[],
     OutCuisine[],
@@ -81,6 +84,7 @@ const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, 
   ]>()
 
   return {
+    recipes,
     ingredients,
     units,
     cuisines,
@@ -465,6 +469,34 @@ function createImportHint(value: string | number | undefined) {
           </div>
 
           <neb-form-list
+            v-model="formData.recipes"
+            label="Recipes"
+            class="form-section"
+          >
+            <template #default="{ index }">
+              <div class="recipe-fields">
+                <neb-select
+                  v-model="formData.recipes![index]!.recipe"
+                  label="Recipe"
+                  :options="masterData!.recipes!"
+                  label-key="name"
+                  track-by-key="id"
+                  placeholder="Select recipe"
+                  :transform-fun="transformId"
+                  use-only-tracked-key
+                  required
+                />
+
+                <neb-input
+                  v-model="formData.recipes![index]!.description"
+                  label="Description"
+                  placeholder="e.g., for the sauce, for serving"
+                />
+              </div>
+            </template>
+          </neb-form-list>
+
+          <neb-form-list
             v-model="formData.ingredients"
             label="Ingredients"
             class="form-section"
@@ -482,6 +514,7 @@ function createImportHint(value: string | number | undefined) {
                   :transform-fun="transformId"
                   use-only-tracked-key
                   :hint="createImportHint(importedRecipe?.ingredients[index]?.name)"
+                  required
                   @new="handleCreateIngredient($event, index)"
                 />
 
@@ -644,6 +677,11 @@ function createImportHint(value: string | number | undefined) {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: var(--space-4);
+}
+
+.recipe-fields {
+  display: flex;
+  gap: var(--space-3);
 }
 
 .ingredient-fields {

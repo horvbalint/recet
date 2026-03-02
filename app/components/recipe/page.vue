@@ -20,6 +20,13 @@ interface Recipe {
     description?: string
     skip_from_shopping_list: boolean
   }>
+  recipes: Array<{
+    recipe: {
+      id: RecordId<'recipe'>
+      name: string
+    }
+    description?: string
+  }>
   steps: string[]
   author: {
     username: string
@@ -59,11 +66,15 @@ const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncDat
         tags.{name, color, icon},
         meal.{name, color},
         ingredients.map(|$i| {
-            amount: $i.amount,
-            ingredient: $i.ingredient.name,
-            unit: $i.unit.name,
-            description: $i.description,
-            skip_from_shopping_list: $i.ingredient.skip_from_shopping_list
+          amount: $i.amount,
+          ingredient: $i.ingredient.name,
+          unit: $i.unit.name,
+          description: $i.description,
+          skip_from_shopping_list: $i.ingredient.skip_from_shopping_list
+        }),
+        recipes.map(|$r| {
+          recipe: $r.recipe.{id, name},
+          description: $r.description
         })
       FROM ONLY
         type::record('recipe', ${props.recipeId})
@@ -83,6 +94,7 @@ const recipe = computed<Recipe | null | undefined>(() => {
   return {
     ...cachedRecipe,
     ingredients: [],
+    recipes: [],
     steps: [],
     portions: 1,
     public: false,
@@ -116,6 +128,7 @@ logOnError(shoppingListError)
 const isAddingToList = ref(false)
 
 const checkedIngredients = ref<number[]>([])
+const checkedRecipes = ref<number[]>([])
 const portions = ref(recipe.value?.portions)
 const portionRatio = computed(() => {
   if (!portions.value || !recipe.value?.portions)
@@ -138,26 +151,25 @@ async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
   try {
     isAddingToList.value = true
 
-    const checkedIngredientIndexes = checkedIngredients.value.length
-      ? checkedIngredients.value
-      : recipe.value!.ingredients!.map((_, index) => index)
+    const checkedIngredientIndexes = checkedIngredients.value.length ? checkedIngredients.value : undefined
+    const ingredientIndexesToAdd = checkedIngredientIndexes?.filter(index => !recipe.value!.ingredients[index]!.skip_from_shopping_list)
+    const checkedRecipeIndexes = checkedRecipes.value.length ? checkedRecipes.value : undefined
 
-    const ingredientIndexesToAdd = checkedIngredientIndexes.filter(index => !recipe.value!.ingredients[index]!.skip_from_shopping_list)
-
-    await db
-      .query(surql`
-        fn::add_recipe_ingredients_to_shopping_list(
-          ${recipe.value!.id},
-          ${ingredientIndexesToAdd},
-          ${shoppingListId},
-          ${portionRatio.value}
-        )
-      `)
-      .collect()
+    await db.query(surql`
+      fn::add_recipe_to_shopping_list(
+        ${recipe.value!.id},
+        ${shoppingListId},
+        ${ingredientIndexesToAdd},
+        ${checkedRecipeIndexes},
+        ${portionRatio.value},
+        []
+      )
+    `)
 
     checkedIngredients.value = []
+    checkedRecipes.value = []
 
-    useNebToast({ type: 'success', title: 'Ingredients added', description: `Added ${ingredientIndexesToAdd.length} ingredients to the shopping list.` })
+    useNebToast({ type: 'success', title: 'Ingredients added', description: `Added ingredients to the shopping list.` })
   }
   catch (err) {
     console.error('Error adding ingredients to shopping list:', err)
@@ -297,6 +309,11 @@ watch(currentHousehold, async () => await navigateTo('/'))
                   <span>{{ recipe.ingredients?.length || 0 }} ingredients</span>
                 </div>
 
+                <div v-if="recipe.recipes?.length" class="meta-item">
+                  <icon name="material-symbols:menu-book-outline-rounded" />
+                  <span>{{ recipe.recipes.length }} recipes</span>
+                </div>
+
                 <div class="meta-item">
                   <icon name="material-symbols:format-list-numbered-rounded" />
                   <span>{{ recipe.steps?.length || 0 }} steps</span>
@@ -363,7 +380,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
                         <div class="add-to-list-wrapper">
                           <neb-content-header
-                            :title="checkedIngredients.length ? `Add to shopping list (${checkedIngredients.length}):` : 'Add to shopping list:'"
+                            :title="checkedIngredients.length ? `Add to shopping list (${checkedIngredients.length + checkedRecipes.length}):` : 'Add to shopping list:'"
                             type="paragraph"
                           />
 
@@ -387,7 +404,33 @@ watch(currentHousehold, async () => await navigateTo('/'))
                 </template>
               </neb-content-header>
 
-              <div v-if="recipe.ingredients?.length" class="ingredients-list">
+              <div v-if="recipe.recipes?.length || recipe.ingredients?.length" class="ingredients-list">
+                <neb-checkbox
+                  v-for="(subRecipe, index) in recipe.recipes"
+                  :key="subRecipe.recipe.id.id.toString()"
+                  v-model="checkedRecipes"
+                  :value="index"
+                  class="ingredient-item sub-recipe-item"
+                >
+                  <div class="ingredient-inner">
+                    <neb-dropdown>
+                      <template #trigger="{ toggle }">
+                        <neb-badge
+                          @click.stop.prevent="toggle()"
+                        >
+                          {{ subRecipe.recipe.name }}
+                        </neb-badge>
+                      </template>
+
+                      <template #content="{ isOpen }">
+                        <recipe-card v-if="isOpen" :recipe-id="subRecipe.recipe.id" class="sub-recipe-card" />
+                      </template>
+                    </neb-dropdown>
+
+                    <span v-if="subRecipe.description" class="sub-recipe-description">{{ subRecipe.description }}</span>
+                  </div>
+                </neb-checkbox>
+
                 <neb-checkbox
                   v-for="(ingredient, index) in recipe.ingredients"
                   :key="index"
@@ -477,7 +520,8 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
 .recipe-image {
   :deep(img),
-  :deep(canvas) {
+  :deep(canvas),
+  :deep(.image-placeholder) {
     border-radius: var(--radius-large);
     border: 1px solid var(--neutral-color-200);
   }
@@ -711,6 +755,45 @@ watch(currentHousehold, async () => await navigateTo('/'))
   padding: var(--space-8);
 }
 
+.sub-recipe-item .ingredient-inner {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.sub-recipe-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.sub-recipe-name {
+  font-size: var(--text-md);
+  font-weight: 500;
+  color: var(--neutral-color-700);
+}
+
+.sub-recipe-expand-icon {
+  font-size: 16px !important;
+  color: var(--neutral-color-400);
+  transition: color var(--duration-default);
+
+  .sub-recipe-trigger:hover & {
+    color: var(--neutral-color-600);
+  }
+}
+
+.sub-recipe-description {
+  color: var(--neutral-color-500);
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+
+.sub-recipe-card {
+  width: 300px;
+}
+
 /* Responsive Design */
 @media (--tablet-viewport) {
   .recipe-content {
@@ -803,6 +886,19 @@ watch(currentHousehold, async () => await navigateTo('/'))
     border-color: var(--neutral-color-700);
   }
 
+  .sub-recipe-item {
+    border-color: var(--neutral-color-800);
+  }
+
+  .sub-recipe-item:hover {
+    background: var(--neutral-color-800);
+    border-color: var(--neutral-color-700);
+  }
+
+  .sub-recipe-name {
+    color: var(--neutral-color-300);
+  }
+
   .ingredient-amount {
     color: var(--neutral-color-200);
   }
@@ -825,7 +921,8 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
   .recipe-image {
     :deep(img),
-    :deep(canvas) {
+    :deep(canvas),
+    :deep(.image-placeholder) {
       border: 1px solid var(--neutral-color-700);
     }
   }

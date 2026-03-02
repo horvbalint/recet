@@ -61,6 +61,11 @@ function handleMiddleClick() {
               <span>{{ recipe!.ingredients }} ingredients</span>
             </div>
 
+            <div v-if="recipe!.recipes" class="meta-item">
+              <icon name="material-symbols:menu-book-outline-rounded" />
+              <span>{{ recipe!.recipes }} recipes</span>
+            </div>
+
             <div class="meta-item">
               <icon name="material-symbols:format-list-numbered-rounded" />
               <span>{{ recipe!.steps }} steps</span>

@@ -410,24 +410,31 @@ watch(currentHousehold, async () => await navigateTo('/'))
                   :key="subRecipe.recipe.id.id.toString()"
                   v-model="checkedRecipes"
                   :value="index"
-                  class="ingredient-item sub-recipe-item"
+                  class="ingredient-item"
                 >
                   <div class="ingredient-inner">
-                    <neb-dropdown>
-                      <template #trigger="{ toggle }">
-                        <neb-badge
-                          @click.stop.prevent="toggle()"
-                        >
-                          {{ subRecipe.recipe.name }}
-                        </neb-badge>
-                      </template>
+                    <div class="ingredient-content">
+                      <neb-dropdown>
+                        <template #trigger="{ toggle }">
+                          <neb-badge
+                            class="sub-recipe-badge"
+                            @click.stop.prevent="toggle()"
+                          >
+                            {{ subRecipe.recipe.name }}
+                          </neb-badge>
+                        </template>
 
-                      <template #content="{ isOpen }">
-                        <recipe-card v-if="isOpen" :recipe-id="subRecipe.recipe.id" class="sub-recipe-card" />
-                      </template>
-                    </neb-dropdown>
+                        <template #content="{ isOpen }">
+                          <recipe-card v-if="isOpen" :recipe-id="subRecipe.recipe.id" class="sub-recipe-card" />
+                        </template>
+                      </neb-dropdown>
 
-                    <span v-if="subRecipe.description" class="sub-recipe-description">{{ subRecipe.description }}</span>
+                      <span v-if="subRecipe.description" class="sub-recipe-description">{{ subRecipe.description }}</span>
+                    </div>
+
+                    <neb-tooltip title="This ingredient is a recipe">
+                      <icon name="material-symbols:menu-book-outline-rounded" />
+                    </neb-tooltip>
                   </div>
                 </neb-checkbox>
 
@@ -755,12 +762,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   padding: var(--space-8);
 }
 
-.sub-recipe-item .ingredient-inner {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-1);
-}
-
 .sub-recipe-trigger {
   display: flex;
   align-items: center;
@@ -782,6 +783,10 @@ watch(currentHousehold, async () => await navigateTo('/'))
   .sub-recipe-trigger:hover & {
     color: var(--neutral-color-600);
   }
+}
+
+.sub-recipe-badge {
+  cursor: pointer;
 }
 
 .sub-recipe-description {
@@ -882,15 +887,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   }
 
   .ingredient-item:hover {
-    background: var(--neutral-color-800);
-    border-color: var(--neutral-color-700);
-  }
-
-  .sub-recipe-item {
-    border-color: var(--neutral-color-800);
-  }
-
-  .sub-recipe-item:hover {
     background: var(--neutral-color-800);
     border-color: var(--neutral-color-700);
   }

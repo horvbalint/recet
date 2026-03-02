@@ -682,6 +682,7 @@ function createImportHint(value: string | number | undefined) {
 .recipe-fields {
   display: flex;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .ingredient-fields {

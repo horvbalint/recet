@@ -94,7 +94,7 @@ async function setUpLiveQuery() {
       if (event.action === 'DELETE' && !localItem)
         return
 
-      if (!localItem || JSON.stringify(localItem) !== JSON.stringify(event.value))
+      if (!localItem || JSON.stringify(localItem) !== JSON.stringify(event.value) || event.action === 'DELETE')
         refreshItems()
     })
   }
@@ -195,7 +195,10 @@ function handleSubmit() {
 
 let undoToast: NebToast | null = null
 async function removeItem(item: ShoppingListItem) {
-  await wrapUpdate(() => db.delete(item.id))
+  await wrapUpdate(async () => {
+    await db.delete(item.id)
+    items.value = items.value!.filter(i => i.id.id !== item.id.id)
+  })
 
   if (undoToast)
     undoToast.destroy()
@@ -208,7 +211,10 @@ async function removeItem(item: ShoppingListItem) {
       text: t('common.undo'),
       callback() {
         undoToast?.destroy()
-        wrapUpdate(() => db.create(item.id).content(itemToDbItem(item)))
+        wrapUpdate(async () => {
+          const res = await db.create(item.id).content(itemToDbItem(item)) as ShoppingListItem
+          items.value!.push(res)
+        })
       },
     }],
   })

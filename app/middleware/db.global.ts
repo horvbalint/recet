@@ -6,7 +6,7 @@ export default defineNuxtRouteMiddleware(async () => {
     await db.connect(useRuntimeConfig().public.surrealDbUrl, {
       reconnect: {
         enabled: true,
-        attempts: 10,
+        attempts: 20,
         retryDelay: 100,
         retryDelayMax: 2000,
         retryDelayMultiplier: 2,

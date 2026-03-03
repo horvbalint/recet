@@ -1,10 +1,8 @@
-import type { DateTime, FileRef, RecordId } from 'surrealdb'
+import type { Value } from 'surrealdb'
 
 declare module '@vue/reactivity' {
   export interface RefUnwrapBailTypes {
-    RecordId: RecordId
-    DateTime: DateTime
-    FileRef: FileRef
+    Value: Value
   }
 }
 

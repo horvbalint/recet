@@ -1,13 +1,11 @@
-import { applyDiagnostics, createRemoteEngines, DateTime, FileRef, RecordId, Surreal } from 'surrealdb'
+import { applyDiagnostics, createRemoteEngines, Surreal, Value } from 'surrealdb'
 
 export { surql } from 'surrealdb'
 
 export const db = new Surreal({
   codecOptions: {
     valueDecodeVisitor(value) {
-      const isBuiltInType = value instanceof RecordId || value instanceof DateTime || value instanceof FileRef
-
-      if (isBuiltInType)
+      if (value instanceof Value)
         return markRaw(value)
       else
         return value

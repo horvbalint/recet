@@ -16,16 +16,17 @@
   },
   "dependencies": {
     "@formkit/drag-and-drop": "0.5.3",
+    "@nuxtjs/i18n": "^10.2.3",
     "@vite-pwa/assets-generator": "1.0.2",
-    "@vue/reactivity": "3.5.25",
+    "@vue/reactivity": "3.5.29",
     "blurhash": "2.0.5",
     "dayjs": "1.11.19",
     "nebula": "github:horvbalint/nebula",
-    "nuxt": "4.3.0",
+    "nuxt": "4.3.1",
     "sortablejs": "^1.15.6",
     "surreal-ts": "3.0.0",
     "surrealdb": "2.0.0",
-    "vue": "3.5.25",
+    "vue": "3.5.29",
     "vue-tsc": "^3.1.5"
   },
   "devDependencies": {

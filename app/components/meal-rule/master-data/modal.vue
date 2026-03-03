@@ -55,13 +55,13 @@ watch(modelValue, () => {
     <template #form="{ data }">
       <neb-input
         v-model="data.name"
-        label="Rule Name"
-        placeholder="e.g., No Meat Mondays"
+        :label="$t('common.name.label')"
+        :placeholder="$t('masterData.mealRule.name_placeholder')"
         required
       />
 
       <div class="filter-wrapper">
-        <neb-content-header type="paragraph" title="Conditions" />
+        <neb-content-header type="paragraph" :title="$t('masterData.mealRule.conditions')" />
 
         <neb-state-content :status="filterStatus" :refresh="queryFilterData">
           <recipe-filter v-if="filterData" v-model="data.conditions" :filter-data="filterData" />

@@ -6,24 +6,25 @@ interface OutIngredientWithCategory extends OutIngredient {
   category?: OutIngredientCategory
 }
 
+const { t } = useI18n()
 const getQuery = computed(() => surql`SELECT * FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH category`)
 
-const columns = {
+const columns = computed(() => ({
   name: {
-    text: 'Name',
+    text: t('masterData.ingredient.columns.name'),
   },
   category: {
-    text: 'Category',
+    text: t('masterData.ingredient.columns.category'),
     formatFunction: category => category?.name || '-',
     sortFunction: (a, b) => a.formatted.category.localeCompare(b.formatted.category),
   },
-} satisfies Columns<OutIngredientWithCategory>
+}) satisfies Columns<OutIngredientWithCategory>)
 </script>
 
 <template>
   <master-data-layout
     table="ingredient"
-    name="ingredient"
+    :name="$t('masterData.ingredient.name')"
     icon="material-symbols:grocery"
     :get-query
     :columns

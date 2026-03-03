@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { InShoppingList, OutShop, OutShoppingList } from '~/db'
 
+const { t } = useI18n()
 const props = defineProps<{
   initialData?: Pick<InShoppingList, 'name' | 'shop'> | null
 }>()
@@ -25,8 +26,8 @@ const formData = ref<Partial<InShoppingList>>(props.initialData || {
 const isLoading = ref(false)
 const isValid = ref(false)
 
-const title = computed(() => formData.value.id ? 'Edit Shopping List' : 'Create Shopping List')
-const actionLabel = computed(() => formData.value.id ? 'Save Changes' : 'Create List')
+const title = computed(() => formData.value.id ? t('shoppingLists.modal.title.edit') : t('shoppingLists.modal.title.create'))
+const actionLabel = computed(() => formData.value.id ? t('common.save') : t('shoppingLists.modal.createButton'))
 
 async function handleSubmit() {
   isLoading.value = true
@@ -40,7 +41,7 @@ async function handleSubmit() {
         }}`)
         .collect<[OutShoppingList]>()
 
-      useNebToast({ type: 'success', title: 'List updated', description: `"${formData.value.name}" has been updated.` })
+      useNebToast({ type: 'success', title: t('shoppingLists.modal.updateSuccess.title'), description: t('shoppingLists.modal.updateSuccess.description', { name: formData.value.name }) })
     }
     else {
       await db
@@ -51,14 +52,14 @@ async function handleSubmit() {
         }}`)
         .collect<[OutShoppingList]>()
 
-      useNebToast({ type: 'success', title: 'List created', description: `"${formData.value.name}" has been created.` })
+      useNebToast({ type: 'success', title: t('shoppingLists.modal.createSuccess.title'), description: t('shoppingLists.modal.createSuccess.description', { name: formData.value.name }) })
     }
 
     emit('change')
   }
   catch (error) {
     console.error('Error saving list:', error)
-    useNebToast({ type: 'error', title: formData.value.id ? 'Update failed' : 'Creation failed', description: `Could not ${formData.value.id ? 'update' : 'create'} the shopping list.` })
+    useNebToast({ type: 'error', title: t('shoppingLists.modal.error.title'), description: t('shoppingLists.modal.error.description') })
   }
   finally {
     isLoading.value = false
@@ -78,21 +79,21 @@ async function handleSubmit() {
       <neb-validator v-model="isValid">
         <neb-input
           v-model="formData.name"
-          label="List Name"
-          placeholder="e.g., Weekly Groceries, Party Shopping"
+          :label="$t('shoppingLists.modal.name.label')"
+          :placeholder="$t('shoppingLists.modal.name.placeholder')"
           required
           @keydown.enter="handleSubmit()"
         />
 
         <neb-select
           v-model="formData.shop"
-          label="Shop"
+          :label="$t('shoppingLists.modal.shop.label')"
           :options="shops!"
           label-key="name"
           track-by-key="id"
           :transform-fun="transformId"
           use-only-tracked-key
-          placeholder="Select a shop"
+          :placeholder="$t('shoppingLists.modal.shop.placeholder')"
           allow-empty
           no-search
           @keydown.enter="handleSubmit()"
@@ -102,7 +103,7 @@ async function handleSubmit() {
 
     <template #actions>
       <neb-button type="secondary" @click="modelValue = false">
-        Cancel
+        {{ $t('common.cancel') }}
       </neb-button>
 
       <neb-button

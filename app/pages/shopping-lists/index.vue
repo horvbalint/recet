@@ -47,15 +47,15 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
   <page-layout>
     <template #content-header>
       <neb-content-header
-        title="Shopping Lists"
-        description="Manage your household shopping lists"
+        :title="$t('shoppingLists.list.title')"
+        :description="$t('shoppingLists.list.description')"
         has-separator
         :type="pageHeaderType"
       >
         <template v-if="shoppingLists?.length" #actions>
           <neb-button small type="primary" @click="showCreateModal = true">
             <icon name="material-symbols:add-rounded" />
-            New List
+            {{ $t('shoppingLists.list.newButton') }}
           </neb-button>
         </template>
       </neb-content-header>
@@ -76,11 +76,11 @@ function handleViewList(listId: RecordId<'shopping_list'>) {
         <neb-empty-state
           v-else
           icon="material-symbols:shopping-cart-outline-rounded"
-          title="No shopping lists yet"
-          description="Create your first shopping list to get started."
+          :title="$t('shoppingLists.list.empty.title')"
+          :description="$t('shoppingLists.list.empty.description')"
         >
           <neb-button type="primary" @click="showCreateModal = true">
-            Create First List
+            {{ $t('shoppingLists.list.createFirstButton') }}
           </neb-button>
         </neb-empty-state>
       </div>

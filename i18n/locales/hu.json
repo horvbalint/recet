@@ -1,0 +1,744 @@
+{
+  "common": {
+    "cancel": "Mégsem",
+    "save": "Mentés",
+    "saveChanges": "Módosítások mentése",
+    "create": "Létrehozás",
+    "delete": "Törlés",
+    "edit": "Szerkesztés",
+    "retry": "Újrapróbálás",
+    "done": "Kész",
+    "copy": "Másolás",
+    "add": "Hozzáadás",
+    "import": "Importálás",
+    "undo": "Visszavonás",
+    "name": {
+      "label": "Név"
+    },
+    "color": {
+      "label": "Szín"
+    },
+    "category": {
+      "label": "Kategória"
+    },
+    "preview": "Előnézet",
+    "minutes": "perc",
+    "confirm": {},
+    "email": {},
+    "password": {},
+    "description": {},
+    "role": {}
+  },
+  "nav": {
+    "groups": {
+      "planning": "Tervezés",
+      "household": "Háztartás",
+      "data": "Adatok"
+    },
+    "recipes": "Receptek",
+    "mealPlanner": "Étkezéstervező",
+    "shoppingLists": "Bevásárlólisták",
+    "members": "Tagok",
+    "settings": "Beállítások",
+    "masterData": "Törzsadatok",
+    "pwa": {
+      "newVersion": {
+        "button": "✨ Új verzió elérhető ✨",
+        "tooltip": {
+          "title": "Új verzió érhető el.",
+          "text": "A frissítéshez kattints erre a gombra és várd meg, amíg az oldal újratöltődik."
+        }
+      },
+      "install": {
+        "button": "✨ Telepítés egy kattintással ✨",
+        "tooltip": {
+          "title": "Telepítsd a Recet-et alkalmazásként!",
+          "text": "Kattints erre a gombra, hogy azonnal telepítsd a Recet-et az eszközödre."
+        }
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Üdv újra!",
+      "description": "Jelentkezz be a fiókodba a folytatáshoz",
+      "email": {
+        "label": "Email",
+        "placeholder": "Add meg az email címed"
+      },
+      "password": {
+        "label": "Jelszó",
+        "placeholder": "Add meg a jelszavad"
+      },
+      "submit": "Bejelentkezés",
+      "noAccount": "Nincs még fiókod?",
+      "signUpLink": "Regisztrálj itt",
+      "error": {
+        "title": "Sikertelen bejelentkezés",
+        "description": "Hibás email vagy jelszó."
+      }
+    },
+    "signup": {
+      "title": "Fiók létrehozása",
+      "description": "Regisztrálj, hogy elkezdhess recepteket kezelni",
+      "username": {
+        "label": "Felhasználónév",
+        "placeholder": "Add meg a felhasználóneved"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "Add meg az email címed"
+      },
+      "password": {
+        "label": "Jelszó",
+        "placeholder": "Add meg a jelszavad"
+      },
+      "confirmPassword": {
+        "label": "Jelszó megerősítése",
+        "placeholder": "Erősítsd meg a jelszavad"
+      },
+      "submit": "Fiók létrehozása",
+      "hasAccount": "Már van fiókod?",
+      "signInLink": "Jelentkezz be itt",
+      "success": {
+        "title": "Fiók létrehozva!",
+        "description": "A fiókod sikeresen létrejött. Kérlek, jelentkezz be."
+      },
+      "error": {
+        "title": "Sikertelen regisztráció",
+        "description": "Váratlan hiba történt. Kérlek, próbáld újra."
+      },
+      "passwordMismatch": {
+        "title": "A jelszavak nem egyeznek",
+        "description": "A jelszavak nem egyeznek. Kérlek, próbáld újra."
+      }
+    }
+  },
+  "household": {
+    "selector": {
+      "select": "Háztartás kiválasztása",
+      "create": "Háztartás létrehozása",
+      "join": "Csatlakozás háztartáshoz"
+    },
+    "create": {
+      "title": "Háztartás létrehozása",
+      "name": {
+        "label": "Háztartás neve",
+        "placeholder": "Add meg a háztartás nevét"
+      },
+      "submit": "Háztartás létrehozása",
+      "success": {
+        "title": "Háztartás létrehozva!",
+        "description": "{name} sikeresen létrejött."
+      },
+      "error": {
+        "title": "Sikertelen létrehozás",
+        "description": "Nem sikerült létrehozni a háztartást. Kérlek, próbáld újra."
+      }
+    },
+    "join": {
+      "title": "Csatlakozás háztartáshoz",
+      "token": {
+        "label": "Meghívó token",
+        "placeholder": "Illeszd be a meghívó tokent"
+      },
+      "submit": "Csatlakozás",
+      "success": {
+        "title": "Csatlakoztál a háztartáshoz!",
+        "description": "Mostantól tagja vagy a(z) {name} háztartásnak."
+      },
+      "error": {
+        "title": "Sikertelen csatlakozás",
+        "description": "Érvénytelen meghívó token."
+      }
+    },
+    "onboarding": {
+      "title": "Először szükséged van egy háztartásra",
+      "description": "Üdvözlünk! Hozzuk létre a háztartásodat, hogy elkezdhess recepteket és bevásárlólistákat kezelni.",
+      "tabs": {
+        "create": "Háztartás létrehozása",
+        "join": "Csatlakozás háztartáshoz"
+      },
+      "name": {
+        "placeholder": "pl. Kovács család, Otthonunk"
+      },
+      "createButton": "Háztartás létrehozása",
+      "joinButton": "Csatlakozás",
+      "orJoin": "vagy csatlakozz egy háztartáshoz",
+      "orCreate": "vagy hozz létre egy új háztartást",
+      "welcome": "Üdvözlünk a(z) {name} háztartásban!"
+    }
+  },
+  "recipes": {
+    "list": {
+      "title": "Receptek",
+      "description": "Fedezd fel és böngészd a gyűjteményünk finom receptjeit",
+      "addButton": "Recept hozzáadása",
+      "addFirstButton": "Add hozzá az első recepted",
+      "filters": "Szűrők",
+      "empty": {
+        "noResults": {
+          "title": "Nem találtunk recepteket",
+          "description": "Próbáld módosítani a keresési feltételeket"
+        },
+        "noData": {
+          "title": "Még nincsenek receptek",
+          "description": "Kezdd el építeni a receptgyűjteményed az első recept hozzáadásával"
+        }
+      },
+      "error": {
+        "title": "Nem sikerült betölteni a recepteket"
+      }
+    },
+    "card": {
+      "ingredients": "{count} hozzávaló",
+      "recipes": "{count} recept",
+      "steps": "{count} lépés"
+    },
+    "detail": {
+      "ingredients": "{count} hozzávaló",
+      "recipes": "{count} recept",
+      "steps": "{count} lépés",
+      "ingredientsSection": "Hozzávalók",
+      "instructionsSection": "Elkészítés",
+      "portions": "Adagok:",
+      "addToList": "Hozzáadás bevásárlólistához:",
+      "addToListSelected": "Hozzáadás bevásárlólistához ({count}):",
+      "byAuthor": "Szerző: {author}",
+      "createdOn": "Létrehozva: {date}",
+      "backToRecipes": "Vissza a receptekhez",
+      "copyLink": "Link másolása",
+      "copyPublicLink": "Publikus link másolása",
+      "makePrivate": "Privát",
+      "makePublic": "Publikus",
+      "copyRecipe": "Recept másolása",
+      "deleteRecipe": "Recept törlése",
+      "empty": {
+        "notFound": {
+          "title": "Recept nem található",
+          "description": "A keresett recept nem létezik vagy eltávolításra került"
+        },
+        "noIngredients": "Ehhez a recepthez nincsenek hozzávalók megadva.",
+        "noInstructions": "Ehhez a recepthez nincs elkészítési útmutató megadva."
+      },
+      "tooltip": {
+        "isRecipe": "Ez a hozzávaló egy recept",
+        "skipFromList": "Ez a hozzávaló nem kerül a bevásárlólistára",
+        "publicRecipe": {
+          "title": "Publikus recept",
+          "text": "Ez a recept publikus, bárki megtekintheti a publikus linkkel."
+        }
+      },
+      "ingredientsAdded": {
+        "title": "Hozzávalók hozzáadva",
+        "description": "A hozzávalók felkerültek a bevásárlólistára."
+      },
+      "ingredientsAddError": {
+        "title": "Nem sikerült hozzáadni a hozzávalókat",
+        "description": "Nem sikerült a hozzávalókat a bevásárlólistához adni."
+      },
+      "linkCopied": {
+        "title": "Publikus link másolva!",
+        "description": "A publikus link a vágólapra került."
+      },
+      "nowPublic": {
+        "title": "A recept most publikus",
+        "description": "Bárki megtekintheti ezt a receptet a linkkel."
+      },
+      "nowPrivate": {
+        "title": "A recept most privát",
+        "description": "Csak a háztartás tagjai tekinthetik meg ezt a receptet."
+      },
+      "visibilityError": {
+        "title": "Nem sikerült módosítani a láthatóságot",
+        "description": "Nem sikerült megváltoztatni a recept láthatóságát. Kérlek, próbáld újra."
+      },
+      "deleteConfirm": {
+        "title": "Megerősítés szükséges!",
+        "description": "Biztosan törölni szeretnéd ezt a receptet? Ez a művelet nem vonható vissza."
+      },
+      "deleteSuccess": {
+        "title": "Recept törölve!",
+        "description": "A recept sikeresen törlésre került."
+      },
+      "deleteError": {
+        "title": "Nem sikerült törölni a receptet!",
+        "description": "Nem sikerült törölni a receptet. Kérlek, próbáld újra."
+      },
+      "loadError": {
+        "title": "Nem sikerült betölteni a receptet"
+      }
+    },
+    "create": {
+      "title": {
+        "create": "Recept létrehozása",
+        "edit": "Recept szerkesztése",
+        "copy": "Recept másolása"
+      },
+      "description": {
+        "create": "Új recept hozzáadása a gyűjteményedhez",
+        "edit": "A recept részleteinek szerkesztése",
+        "copy": "Szerkeszd a részleteket a másolt recept mentése előtt"
+      },
+      "importButton": "Recept importálása",
+      "saveButton": "Recept mentése",
+      "basicInfo": "Alapadatok",
+      "name": {
+        "label": "Recept neve",
+        "placeholder": "Add meg a recept nevét"
+      },
+      "portionCount": {
+        "label": "Adagok száma",
+        "placeholder": "pl. 4"
+      },
+      "cookingTime": {
+        "label": "Elkészítési idő (perc)",
+        "placeholder": "pl. 30"
+      },
+      "image": {
+        "label": "Recept képe",
+        "placeholder": "Tölts fel egy képet a recepthez"
+      },
+      "cuisine": {
+        "label": "Konyha",
+        "placeholder": "Válassz konyhát"
+      },
+      "meals": {
+        "label": "Étkezések",
+        "placeholder": "Válassz étkezéseket"
+      },
+      "tags": {
+        "label": "Címkék",
+        "placeholder": "Válassz címkéket"
+      },
+      "recipesSection": "Receptek",
+      "recipe": {
+        "label": "Recept",
+        "placeholder": "Válassz receptet"
+      },
+      "ingredientsSection": "Hozzávalók",
+      "ingredient": {
+        "label": "Hozzávaló",
+        "placeholder": "Válassz hozzávalót"
+      },
+      "amount": "Mennyiség",
+      "unit": {
+        "label": "Egység",
+        "placeholder": "Válassz egységet"
+      },
+      "ingredientDescription": {
+        "label": "Leírás",
+        "placeholder": "pl. a szószhoz, tálaláshoz"
+      },
+      "instructionsSection": "Elkészítés",
+      "step": {
+        "label": "{number}. lépés",
+        "placeholder": "Írd le ezt a lépést..."
+      },
+      "import": {
+        "title": "Recept importálása",
+        "tabs": {
+          "url": "URL-ből",
+          "text": "Szövegből"
+        },
+        "url": {
+          "label": "Weboldal URL"
+        },
+        "text": {
+          "label": "Recept szövege",
+          "placeholder": "Illeszd be a recept szövegét ide."
+        },
+        "hint": "Importálva: {value}"
+      },
+      "createSuccess": {
+        "title": "Recept létrehozva!",
+        "description": "A recepted sikeresen mentésre került."
+      },
+      "updateSuccess": {
+        "title": "Recept frissítve!",
+        "description": "A recepted sikeresen mentésre került."
+      },
+      "error": {
+        "title": "Sikertelen mentés!",
+        "description": "Nem sikerült menteni a receptet. Kérlek, próbáld újra."
+      },
+      "importError": {
+        "title": "Sikertelen importálás!",
+        "description": "Nem sikerült importálni a receptet. Kérlek, próbáld újra."
+      }
+    }
+  },
+  "shoppingLists": {
+    "list": {
+      "title": "Bevásárlólisták",
+      "description": "A háztartásod bevásárlólistáinak kezelése",
+      "newButton": "Új lista",
+      "createFirstButton": "Első lista létrehozása",
+      "empty": {
+        "title": "Még nincsenek bevásárlólisták",
+        "description": "Hozd létre az első bevásárlólistádat a kezdéshez."
+      }
+    },
+    "card": {
+      "itemsCount": "{count} tétel",
+      "viewButton": "Lista megtekintése",
+      "deleteConfirm": {
+        "title": "Törlés megerősítése!",
+        "description": "Biztosan törölni szeretnéd ezt a bevásárlólistát? Ez a művelet nem vonható vissza."
+      },
+      "deleteSuccess": {
+        "title": "Lista törölve",
+        "description": "A bevásárlólista törlésre került."
+      },
+      "deleteError": {
+        "title": "Sikertelen törlés",
+        "description": "Nem sikerült törölni a bevásárlólistát."
+      }
+    },
+    "modal": {
+      "title": {
+        "create": "Bevásárlólista létrehozása",
+        "edit": "Bevásárlólista szerkesztése"
+      },
+      "name": {
+        "label": "Lista neve",
+        "placeholder": "pl. Heti bevásárlás, Partit bevásárlás"
+      },
+      "shop": {
+        "label": "Bolt",
+        "placeholder": "Válassz boltot"
+      },
+      "createButton": "Lista létrehozása",
+      "updateSuccess": {
+        "title": "Lista frissítve",
+        "description": "\"{name}\" frissítésre került."
+      },
+      "createSuccess": {
+        "title": "Lista létrehozva",
+        "description": "\"{name}\" létrehozásra került."
+      },
+      "error": {
+        "title": "Sikertelen mentés",
+        "description": "Nem sikerült menteni a bevásárlólistát."
+      }
+    },
+    "detail": {
+      "itemsCount": "{count} tétel",
+      "addItemButton": "Tétel hozzáadása",
+      "addFirstButton": "Első tétel hozzáadása",
+      "shop": {
+        "placeholder": "Bolt"
+      },
+      "itemModal": {
+        "addTitle": "Tétel hozzáadása",
+        "editTitle": "Tétel szerkesztése"
+      },
+      "item": {
+        "label": "Tétel",
+        "placeholder": "Keress hozzávalót vagy adj hozzá egyedi tételt"
+      },
+      "quantity": {
+        "label": "Mennyiség",
+        "placeholder": "pl. 2"
+      },
+      "unit": {
+        "label": "Egység",
+        "placeholder": "Válassz egységet"
+      },
+      "category": {
+        "label": "Kategória",
+        "placeholder": "Válassz kategóriát"
+      },
+      "saveChanges": "Módosítások mentése",
+      "itemRemoved": "Tétel eltávolítva",
+      "fromRecipe": "Innen: {name}",
+      "empty": {
+        "title": "Még nincsenek tételek",
+        "description": "Add hozzá az első tételt a bevásárlás megkezdéséhez."
+      },
+      "error": {
+        "title": "Sikertelen frissítés",
+        "description": "Nem sikerült menteni a változtatásokat az adatbázisba"
+      },
+      "liveUpdateWarning": {
+        "title": "Élő frissítés nem elérhető!",
+        "description": "Nem sikerült beállítani az élő frissítéseket ehhez a bevásárlólistához."
+      }
+    }
+  },
+  "mealPlanner": {
+    "title": "Étkezéstervező",
+    "description": "Tervezd meg az étkezéseid a következő napokra",
+    "meals": {
+      "breakfast": "Reggeli",
+      "lunch": "Ebéd",
+      "dinner": "Vacsora",
+      "snack": "Snack"
+    },
+    "noRecipes": "Nincs recept",
+    "selectRule": {
+      "title": "Válassz szabályt",
+      "subtitle": "Válassz egy étkezéstervezési szabályt a kiválasztott napokra",
+      "label": "Válassz szabályt a(z) {meal} étkezéshez"
+    },
+    "overwriteExisting": "Meglévő étkezések felülírása",
+    "applyRule": "Szabály alkalmazása",
+    "addByRule": "Hozzáadás szabály alapján",
+    "editMeal": {
+      "title": "{meal} szerkesztése - {date}",
+      "subtitle": "Receptek hozzáadása, szerkesztése vagy eltávolítása ehhez az étkezéshez"
+    },
+    "servings": "Adagok",
+    "recipeState": {
+      "todo": "Teendő",
+      "prepared": "Előkészítve",
+      "done": "Elkészült",
+      "served": "Tálalva"
+    },
+    "ruleApplied": {
+      "title": "Étkezésterv frissítve",
+      "description": "A kiválasztott étkezéstervezési szabály sikeresen alkalmazásra került."
+    },
+    "mealsSaved": {
+      "title": "Étkezések mentve",
+      "description": "Az étkezésterved frissítésre került."
+    },
+    "updateError": {
+      "title": "Sikertelen frissítés",
+      "description": "Nem sikerült frissíteni a recept állapotát."
+    },
+    "moveError": {
+      "title": "Sikertelen áthelyezés",
+      "description": "Nem sikerült áthelyezni a receptet. Kérlek, próbáld újra."
+    },
+    "saveError": {
+      "title": "Sikertelen mentés",
+      "description": "Nem sikerült menteni az étkezéseket. Kérlek, próbáld újra."
+    }
+  },
+  "members": {
+    "title": "Háztartás tagjai",
+    "description": "Kezeld, hogy ki férhet hozzá ehhez a háztartáshoz és milyen jogosultságokkal",
+    "inviteButton": "Tag meghívása",
+    "columns": {
+      "username": "Felhasználónév",
+      "email": "Email",
+      "role": "Szerepkör"
+    },
+    "pendingInvitations": "Függő meghívók",
+    "invite": {
+      "title": "Tag meghívása",
+      "role": {
+        "label": "Szerepkör",
+        "placeholder": "Válassz szerepkört"
+      },
+      "createButton": "Meghívó létrehozása",
+      "tokenInstructions": "Oszd meg ezt a tokent azzal, akit meg szeretnél hívni. Csak egyszer használható.",
+      "tokenCopied": {
+        "title": "Token másolva!",
+        "description": "Oszd meg azzal, akit meg szeretnél hívni."
+      },
+      "error": {
+        "title": "Nem sikerült létrehozni a meghívót",
+        "description": "Nem sikerült létrehozni a meghívót. Kérlek, próbáld újra."
+      }
+    },
+    "revokeConfirm": {
+      "title": "Meghívó visszavonása?",
+      "description": "Ez a meghívó token többé nem lesz érvényes."
+    },
+    "revokeSuccess": "Meghívó visszavonva!",
+    "revokeError": {
+      "title": "Nem sikerült visszavonni a meghívót",
+      "description": "Kérlek, próbáld újra."
+    },
+    "editRole": {
+      "title": "Tag szerepkörének szerkesztése",
+      "updateButton": "Szerepkör frissítése",
+      "success": {
+        "title": "Szerepkör frissítve!",
+        "description": "A tag szerepköre sikeresen frissítésre került."
+      },
+      "error": {
+        "title": "Nem sikerült frissíteni a szerepkört!",
+        "description": "Nem sikerült frissíteni a tag szerepkörét. Kérlek, próbáld újra."
+      }
+    },
+    "remove": {
+      "confirm": {
+        "title": "Tag eltávolítása a háztartásból?",
+        "description": "Biztosan el szeretnéd távolítani {username} felhasználót ebből a háztartásból? Ez a művelet nem vonható vissza."
+      },
+      "success": {
+        "title": "Tag eltávolítva!",
+        "description": "A tag sikeresen eltávolításra került a háztartásból."
+      },
+      "error": {
+        "title": "Sikertelen eltávolítás!",
+        "description": "Nem sikerült eltávolítani a tagot a háztartásból. Kérlek, próbáld újra."
+      }
+    },
+    "roles": {
+      "owner": "tulajdonos",
+      "writer": "szerkesztő",
+      "guest": "vendég"
+    }
+  },
+  "settings": {
+    "title": "Háztartás beállításai",
+    "description": "A háztartásod konfigurációjának és beállításainak kezelése",
+    "general": "Általános beállítások",
+    "name": {
+      "label": "Háztartás neve",
+      "placeholder": "Add meg a háztartás nevét"
+    },
+    "language": "Nyelv",
+    "success": {
+      "title": "Háztartás frissítve!",
+      "description": "A háztartás sikeresen frissítésre került."
+    },
+    "error": {
+      "title": "Sikertelen frissítés!",
+      "description": "Nem sikerült frissíteni a háztartást. Kérlek, próbáld újra."
+    }
+  },
+  "masterData": {
+    "title": "Törzsadatok kezelése",
+    "description": "Egységek, étkezéstípusok, konyhák, címkék, hozzávalók, kategóriák és boltok kezelése",
+    "tabs": {
+      "units": "Egységek",
+      "mealTypes": "Étkezéstípusok",
+      "cuisines": "Konyhák",
+      "tags": "Címkék",
+      "categories": "Kategóriák",
+      "shops": "Boltok",
+      "ingredients": "Hozzávalók",
+      "mealRules": "Étkezési szabályok"
+    },
+    "addButton": "{name} hozzáadása",
+    "modal": {
+      "createTitle": "Új {name} létrehozása",
+      "editTitle": "{name} szerkesztése"
+    },
+    "deleteConfirm": {
+      "title": "Biztosan törölni szeretnéd ezt az elemet?",
+      "description": "Ez a művelet nem vonható vissza."
+    },
+    "deleteSuccess": {
+      "title": "Sikeresen törölve!",
+      "description": "Az elem eltávolításra került az adatbázisból."
+    },
+    "deleteError": {
+      "title": "Sikertelen törlés!",
+      "description": "Nem sikerült eltávolítani az elemet az adatbázisból."
+    },
+    "createSuccess": {
+      "title": "{name} létrehozva!",
+      "description": "A(z) {name} sikeresen mentésre került."
+    },
+    "updateSuccess": {
+      "title": "{name} frissítve!",
+      "description": "A(z) {name} sikeresen frissítésre került."
+    },
+    "saveError": {
+      "title": "Sikertelen mentés!",
+      "description": "Nem sikerült {action} a(z) {name} elemet. Kérlek, próbáld újra."
+    },
+    "unit": {
+      "name": "egység",
+      "columns": {
+        "name": "Név"
+      }
+    },
+    "meal": {
+      "name": "étkezéstípus",
+      "columns": {
+        "name": "Név",
+        "color": "Szín"
+      }
+    },
+    "cuisine": {
+      "name": "konyha",
+      "columns": {
+        "name": "Név",
+        "flag": "Zászló",
+        "color": "Szín"
+      },
+      "flag": {
+        "label": "Zászló",
+        "placeholder": "Válassz zászlót"
+      }
+    },
+    "recipeTag": {
+      "name": "címke",
+      "columns": {
+        "name": "Név",
+        "icon": "Ikon",
+        "color": "Szín"
+      },
+      "icon": {
+        "label": "Ikon",
+        "placeholder": "Válassz ikont"
+      }
+    },
+    "ingredientCategory": {
+      "name": "kategória",
+      "columns": {
+        "name": "Név"
+      }
+    },
+    "ingredient": {
+      "name": "hozzávaló",
+      "columns": {
+        "name": "Név",
+        "category": "Kategória"
+      },
+      "category": {
+        "placeholder": "Válassz kategóriát"
+      },
+      "skipFromList": "Kihagyás a bevásárlólistából"
+    },
+    "shop": {
+      "name": "bolt",
+      "columns": {
+        "name": "Név"
+      },
+      "categories": {
+        "title": "Kategóriák és sorrend",
+        "description": "Állítsd be a kategóriák sorrendjét, hogy ebben a sorrendben jelenjenek meg a bevásárlólistán."
+      }
+    },
+    "mealRule": {
+      "name": "étkezési szabály",
+      "name_placeholder": "pl. Húsmentes hétfők",
+      "columns": {
+        "name": "Név",
+        "conditionCount": "Feltételek száma"
+      },
+      "conditions": "Feltételek"
+    }
+  },
+  "filter": {
+    "include": "Tartalmazza",
+    "exclude": "Kizárja",
+    "noneExcluded": "Nincs kizárva",
+    "showAdvanced": "Haladó beállítások megjelenítése",
+    "hideAdvanced": "Haladó beállítások elrejtése",
+    "meals": {
+      "label": "Étkezések",
+      "placeholder": "Szűrés étkezéstípus szerint"
+    },
+    "tags": {
+      "label": "Címkék",
+      "placeholder": "Szűrés címke szerint"
+    },
+    "cuisines": {
+      "label": "Konyhák",
+      "placeholder": "Szűrés konyha szerint"
+    },
+    "ingredients": {
+      "label": "Hozzávalók",
+      "placeholder": "Szűrés hozzávaló szerint"
+    }
+  }
+}

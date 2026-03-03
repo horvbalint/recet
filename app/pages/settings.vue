@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { InHousehold, OutHousehold } from '~/db'
 
+const { t } = useI18n()
+
 watch(isCurrHouseholdOwner, () => {
   if (!isCurrHouseholdOwner.value)
     navigateTo('/')
@@ -20,11 +22,13 @@ async function handleSaveHousehold() {
       .collect<[OutHousehold]>()
     currentHousehold.value = result
 
-    useNebToast({ type: 'success', title: 'Household updated!', description: 'The household has been successfully updated.' })
+    useNuxtApp().$i18n.setLocale(result.language)
+
+    useNebToast({ type: 'success', title: t('settings.success.title'), description: t('settings.success.description') })
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Update failed!', description: 'Could not update the household. Please try again.' })
+    useNebToast({ type: 'error', title: t('settings.error.title'), description: t('settings.error.description') })
   }
   finally {
     isLoading.value = false
@@ -41,23 +45,23 @@ const availableLanguages = [
   <page-layout>
     <template #content-header>
       <neb-content-header
-        title="Household Settings"
-        description="Manage your household configuration and preferences"
+        :title="$t('settings.title')"
+        :description="$t('settings.description')"
         :type="pageHeaderType"
         has-separator
       />
     </template>
 
     <div class="settings-page">
-      <neb-content-header title="General settings" type="section" />
+      <neb-content-header :title="$t('settings.general')" type="section" />
 
       <neb-validator v-model="isFormValid">
         <div class="form-content">
           <div class="flex-wrapper">
             <neb-input
               v-model="householdForm.name"
-              label="Household Name"
-              placeholder="Enter household name"
+              :label="$t('settings.name.label')"
+              :placeholder="$t('settings.name.placeholder')"
               required
             />
 
@@ -67,7 +71,7 @@ const availableLanguages = [
               label-key="name"
               track-by-key="code"
               use-only-tracked-key
-              label="Language"
+              :label="$t('settings.language')"
               required
               no-search
               :allow-empty="false"
@@ -83,7 +87,7 @@ const availableLanguages = [
           :loading="isLoading"
           @click="handleSaveHousehold()"
         >
-          Save Changes
+          {{ $t('common.saveChanges') }}
         </neb-button>
       </div>
     </div>

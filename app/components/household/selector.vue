@@ -2,6 +2,7 @@
 import type { Menu } from '@nebula/components/overlays/neb-menu.vue'
 import type { OutHousehold } from '~/db'
 
+const { t } = useI18n()
 const showCreateModal = ref(false)
 const showJoinModal = ref(false)
 const joinToken = ref('')
@@ -25,12 +26,12 @@ async function handleJoinHousehold() {
     await refresh()
     switchHousehold(household)
 
-    useNebToast({ type: 'success', title: 'Household joined!', description: `You are now a member of ${household.name}.` })
+    useNebToast({ type: 'success', title: t('household.join.success.title'), description: t('household.join.success.description', { name: household.name }) })
     showJoinModal.value = false
   }
   catch (error: any) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Failed to join', description: error.message || 'Invalid invitation token.' })
+    useNebToast({ type: 'error', title: t('household.join.error.title'), description: error.message || t('household.join.error.description') })
   }
   finally {
     isJoining.value = false
@@ -51,13 +52,13 @@ const menus = computed(() => {
 
   menus.push({
     segment: true,
-    text: 'Join Household',
+    text: t('household.selector.join'),
     icon: 'material-symbols:group-add-outline-rounded',
     callback: () => showJoinModal.value = true,
   })
 
   menus.push({
-    text: 'Create Household',
+    text: t('household.selector.create'),
     icon: 'material-symbols:add-rounded',
     callback: () => showCreateModal.value = true,
   })
@@ -77,7 +78,7 @@ const menus = computed(() => {
       >
         <div class="label">
           <icon name="material-symbols:home-outline-rounded" />
-          {{ currentHousehold?.name || 'Select Household' }}
+          {{ currentHousehold?.name || $t('household.selector.select') }}
         </div>
         <icon name="material-symbols:keyboard-arrow-down-rounded" />
       </neb-button>
@@ -89,12 +90,12 @@ const menus = computed(() => {
     @created="handleHouseholdCreated($event)"
   />
 
-  <neb-modal v-model="showJoinModal" title="Join Household" header-icon="material-symbols:group-add-outline-rounded" max-width="450px">
+  <neb-modal v-model="showJoinModal" :title="$t('household.join.title')" header-icon="material-symbols:group-add-outline-rounded" max-width="450px">
     <template #content>
       <neb-input
         v-model="joinToken"
-        label="Invitation Token"
-        placeholder="Paste the invitation token"
+        :label="$t('household.join.token.label')"
+        :placeholder="$t('household.join.token.placeholder')"
         :disabled="isJoining"
         @keyup.enter="handleJoinHousehold()"
       />
@@ -102,11 +103,11 @@ const menus = computed(() => {
 
     <template #actions>
       <neb-button type="secondary" @click="showJoinModal = false">
-        Cancel
+        {{ $t('common.cancel') }}
       </neb-button>
 
       <neb-button type="primary" :disabled="!joinToken.trim() || isJoining" :loading="isJoining" @click="handleJoinHousehold()">
-        Join
+        {{ $t('household.join.submit') }}
       </neb-button>
     </template>
   </neb-modal>

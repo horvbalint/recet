@@ -45,23 +45,23 @@ function onCategoryCreated() {
     @saved="handleSave"
   >
     <template #form="{ data }">
-      <neb-input v-model="data.name" label="Name" required />
+      <neb-input v-model="data.name" :label="$t('common.name.label')" required />
 
       <neb-select
         v-model="data.category"
-        label="Category"
+        :label="$t('common.category.label')"
         :options="categories || []"
         label-key="name"
         track-by-key="id"
         :transform-fun="transformId"
         use-only-tracked-key
-        placeholder="Select a category"
+        :placeholder="$t('masterData.ingredient.category.placeholder')"
         allow-empty
         no-search
         @new="handleCreateCategory($event)"
       />
 
-      <neb-checkbox v-model="data.skip_from_shopping_list" label="Skip from shopping list" />
+      <neb-checkbox v-model="data.skip_from_shopping_list" :label="$t('masterData.ingredient.skipFromList')" />
     </template>
   </master-data-modal>
 

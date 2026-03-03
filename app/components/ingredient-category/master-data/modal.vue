@@ -26,7 +26,7 @@ function handleSave(item: OutIngredientCategory) {
     @saved="handleSave"
   >
     <template #form="{ data }">
-      <neb-input v-model="data.name" label="Name" required />
+      <neb-input v-model="data.name" :label="$t('common.name.label')" required />
     </template>
   </master-data-modal>
 </template>

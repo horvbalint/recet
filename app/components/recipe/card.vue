@@ -58,22 +58,22 @@ function handleMiddleClick() {
           <div class="recipe-meta">
             <div class="meta-item">
               <icon name="material-symbols:grocery" />
-              <span>{{ recipe!.ingredients }} ingredients</span>
+              <span>{{ $t('recipes.card.ingredients', { count: recipe!.ingredients }) }}</span>
             </div>
 
             <div v-if="recipe!.recipes" class="meta-item">
               <icon name="material-symbols:menu-book-outline-rounded" />
-              <span>{{ recipe!.recipes }} recipes</span>
+              <span>{{ $t('recipes.card.recipes', { count: recipe!.recipes }) }}</span>
             </div>
 
             <div class="meta-item">
               <icon name="material-symbols:format-list-numbered-rounded" />
-              <span>{{ recipe!.steps }} steps</span>
+              <span>{{ $t('recipes.card.steps', { count: recipe!.steps }) }}</span>
             </div>
 
             <div v-if="recipe!.cooking_time_minutes" class="meta-item">
               <icon name="material-symbols:schedule-outline-rounded" />
-              <span>{{ recipe!.cooking_time_minutes }} min</span>
+              <span>{{ recipe!.cooking_time_minutes }} {{ $t('common.minutes') }}</span>
             </div>
           </div>
         </div>

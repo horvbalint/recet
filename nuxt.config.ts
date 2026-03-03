@@ -66,8 +66,21 @@ export default defineNuxtConfig({
   },
 
   i18n: {
+    locales: [
+      {
+        code: 'en',
+        file: 'en.json',
+      },
+      {
+        code: 'hu',
+        file: 'hu.json',
+      },
+    ],
     defaultLocale: 'en',
-    detectBrowserLanguage: false,
+    detectBrowserLanguage: {
+      fallbackLocale: 'en',
+    },
+    strategy: 'no_prefix',
   },
 
   pwa: {

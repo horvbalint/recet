@@ -2,6 +2,7 @@
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
 import type { BoundQuery } from 'surrealdb'
 
+const { t } = useI18n()
 const props = defineProps<{
   table: string
   columns: Columns<T>
@@ -31,7 +32,7 @@ function handleEditClick(item: T) {
 
 async function handleDeleteClick(item: T) {
   try {
-    if (!await useNebConfirm({ title: 'Are you sure you want to delete this item?', description: 'This action cannot be undone.' }))
+    if (!await useNebConfirm({ title: t('masterData.deleteConfirm.title'), description: t('masterData.deleteConfirm.description') }))
       return
 
     await db
@@ -39,11 +40,11 @@ async function handleDeleteClick(item: T) {
       .collect()
     await refresh()
 
-    useNebToast({ type: 'success', title: 'Succesfully deleted!', description: 'The item got removed from the database.' })
+    useNebToast({ type: 'success', title: t('masterData.deleteSuccess.title'), description: t('masterData.deleteSuccess.description') })
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Deletion failed!', description: 'We could not remove the item from the database.' })
+    useNebToast({ type: 'error', title: t('masterData.deleteError.title'), description: t('masterData.deleteError.description') })
   }
 }
 
@@ -64,7 +65,7 @@ function closeModal() {
       <template #actions>
         <neb-button small @click="handleCreateClick()">
           <Icon name="material-symbols:add-rounded" />
-          Add {{ props.name }}
+          {{ $t('masterData.addButton', { name: props.name }) }}
         </neb-button>
       </template>
 

@@ -3,6 +3,7 @@ import type { ShoppingList } from '~/pages/shopping-lists/index.vue'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
+const { t } = useI18n()
 const props = defineProps<{
   list: ShoppingList
 }>()
@@ -16,19 +17,19 @@ dayjs.extend(relativeTime)
 
 const showEditModal = ref(false)
 
-const menuItems = [
+const menuItems = computed(() => [
   {
-    text: 'Edit',
+    text: t('common.edit'),
     icon: 'material-symbols:edit-outline-rounded',
     callback: () => showEditModal.value = true,
   },
   {
-    text: 'Delete',
+    text: t('common.delete'),
     icon: 'material-symbols:delete-outline-rounded',
     desctructive: true,
     callback: () => deleteList(),
   },
-]
+])
 
 async function handleListChange() {
   showEditModal.value = false
@@ -37,18 +38,18 @@ async function handleListChange() {
 
 async function deleteList() {
   try {
-    if (!await useNebConfirm({ title: 'Confirm deletion!', description: 'Are you sure you want to delete this shopping list? This action cannot be undone.' }))
+    if (!await useNebConfirm({ title: t('shoppingLists.card.deleteConfirm.title'), description: t('shoppingLists.card.deleteConfirm.description') }))
       return
 
     await db
       .query(surql`DELETE ${props.list.id}`)
       .collect()
-    useNebToast({ type: 'success', title: 'List deleted', description: 'Shopping list has been deleted.' })
+    useNebToast({ type: 'success', title: t('shoppingLists.card.deleteSuccess.title'), description: t('shoppingLists.card.deleteSuccess.description') })
     emit('changed')
   }
   catch (error) {
     console.error('Error deleting list:', error)
-    useNebToast({ type: 'error', title: 'Delete failed', description: 'Could not delete the shopping list.' })
+    useNebToast({ type: 'error', title: t('shoppingLists.card.deleteError.title'), description: t('shoppingLists.card.deleteError.description') })
   }
 }
 </script>
@@ -63,7 +64,7 @@ async function deleteList() {
 
         <div class="list-stats">
           <neb-badge small>
-            {{ props.list.item_count || 0 }} items
+            {{ $t('shoppingLists.card.itemsCount', { count: props.list.item_count || 0 }) }}
           </neb-badge>
 
           <span class="updated-time">{{ dayjs(props.list.updated_at).fromNow() }}</span>
@@ -85,7 +86,7 @@ async function deleteList() {
 
     <div class="list-actions">
       <neb-button type="secondary" small>
-        View List
+        {{ $t('shoppingLists.card.viewButton') }}
       </neb-button>
     </div>
   </div>

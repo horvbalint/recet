@@ -51,6 +51,8 @@ const { data: members, status, refresh } = useAsyncData(async () => {
   return result || []
 }, { watch: [currentHousehold] })
 
+const { t } = useI18n()
+
 const invitationsQuery = computed(() => surql`
   SELECT * FROM invitation WHERE household = ${currentHousehold.value!.id} ORDER created_at DESC
 `)
@@ -63,12 +65,12 @@ const { data: invitations, refresh: refreshInvitations } = useAsyncData('invitat
 }, { watch: [currentHousehold] })
 
 const columns = {
-  username: { text: 'Username' },
-  email: { text: 'Email' },
-  role: { text: 'Role' },
+  username: { text: t('members.columns.username') },
+  email: { text: t('members.columns.email') },
+  role: { text: t('members.columns.role') },
 } satisfies Columns<Member>
 
-const roleOptions = ['guest', 'writer', 'owner']
+const roleOptions = ['guest', 'writer', 'owner'] as ['guest', 'writer', 'owner']
 
 function openInvitationModal() {
   inviteRole.value = 'guest'
@@ -88,7 +90,7 @@ async function createInvitation() {
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Failed to create invitation', description: 'Could not create the invitation. Please try again.' })
+    useNebToast({ type: 'error', title: t('members.invite.error.title'), description: t('members.invite.error.description') })
   }
   finally {
     isCreatingInvitation.value = false
@@ -97,13 +99,13 @@ async function createInvitation() {
 
 function copyToken(token: string) {
   navigator.clipboard.writeText(token)
-  useNebToast({ type: 'success', title: 'Token copied!', description: 'Share it with the person you want to invite.' })
+  useNebToast({ type: 'success', title: t('members.invite.tokenCopied.title'), description: t('members.invite.tokenCopied.description') })
 }
 
 async function handleRevokeInvitation(invitation: Invitation) {
   const confirmed = await useNebConfirm({
-    title: 'Revoke invitation?',
-    description: 'This invitation token will no longer work.',
+    title: t('members.revokeConfirm.title'),
+    description: t('members.revokeConfirm.description'),
   })
 
   if (!confirmed)
@@ -112,11 +114,11 @@ async function handleRevokeInvitation(invitation: Invitation) {
   try {
     await db.query(surql`DELETE ${invitation.id}`).collect()
     await refreshInvitations()
-    useNebToast({ type: 'success', title: 'Invitation revoked!' })
+    useNebToast({ type: 'success', title: t('members.revokeSuccess') })
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Failed to revoke invitation', description: 'Please try again.' })
+    useNebToast({ type: 'error', title: t('members.revokeError.title'), description: t('members.revokeError.description') })
   }
 }
 
@@ -129,8 +131,8 @@ function handleEditMember(member: Member) {
 async function handleDeleteMember(member: Member) {
   try {
     const confirmResult = await useNebConfirm({
-      title: 'Remove member from household?',
-      description: `Are you sure you want to remove ${member.username} from this household? This action cannot be undone.`,
+      title: t('members.remove.confirm.title'),
+      description: t('members.remove.confirm.description', { username: member.username }),
     })
 
     if (!confirmResult)
@@ -141,11 +143,11 @@ async function handleDeleteMember(member: Member) {
       .collect()
     await refresh()
 
-    useNebToast({ type: 'success', title: 'Member removed!', description: 'The member has been successfully removed from the household.' })
+    useNebToast({ type: 'success', title: t('members.remove.success.title'), description: t('members.remove.success.description') })
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Removal failed!', description: 'Could not remove the member from the household. Please try again.' })
+    useNebToast({ type: 'error', title: t('members.remove.error.title'), description: t('members.remove.error.description') })
   }
 }
 
@@ -158,14 +160,14 @@ async function handleEditSubmit() {
     await db
       .query(surql`UPDATE ${memberToEdit.value.member} SET role = ${editForm.value.role}`)
       .collect()
-    useNebToast({ type: 'success', title: 'Role updated!', description: 'The member role has been successfully updated.' })
+    useNebToast({ type: 'success', title: t('members.editRole.success.title'), description: t('members.editRole.success.description') })
 
     showEditModal.value = false
     await refresh()
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Failed to update role!', description: 'Could not update the member role. Please try again.' })
+    useNebToast({ type: 'error', title: t('members.editRole.error.title'), description: t('members.editRole.error.description') })
   }
   finally {
     isLoading.value = false
@@ -177,15 +179,16 @@ function closeModal() {
   memberToEdit.value = null
 }
 
-function mapRoleToColor(role: OutMember['role']) {
-  switch (role) {
-    case 'owner':
-      return 'primary'
-    case 'writer':
-      return 'info'
-    case 'guest':
-      return 'success'
-  }
+const roleColorMap = {
+  owner: 'primary',
+  writer: 'info',
+  guest: 'success',
+} as const
+
+const roleDictionary: Record<OutMember['role'], string> = {
+  owner: t('members.roles.owner'),
+  writer: t('members.roles.writer'),
+  guest: t('members.roles.guest'),
 }
 </script>
 
@@ -193,15 +196,15 @@ function mapRoleToColor(role: OutMember['role']) {
   <page-layout>
     <template #content-header>
       <neb-content-header
-        title="Household Members"
-        description="Manage who has access to this household and their permissions"
+        :title="$t('members.title')"
+        :description="$t('members.description')"
         :type="pageHeaderType"
         has-separator
       >
         <template v-if="isCurrHouseholdOwner" #actions>
           <neb-button small @click="openInvitationModal()">
             <icon name="material-symbols:person-add-outline-rounded" />
-            Invite Member
+            {{ $t('members.inviteButton') }}
           </neb-button>
         </template>
       </neb-content-header>
@@ -215,8 +218,8 @@ function mapRoleToColor(role: OutMember['role']) {
         :refresh="refresh"
       >
         <template #td-role="{ data: { original } }">
-          <neb-badge :color="mapRoleToColor(original.role)">
-            {{ original.role }}
+          <neb-badge :color="roleColorMap[original.role]">
+            {{ roleDictionary[original.role] }}
           </neb-badge>
         </template>
 
@@ -227,17 +230,17 @@ function mapRoleToColor(role: OutMember['role']) {
       </neb-table>
 
       <div v-if="isCurrHouseholdOwner && invitations?.length" class="invitations-section">
-        <neb-content-header title="Pending Invitations" type="section" has-separator />
+        <neb-content-header :title="$t('members.pendingInvitations')" type="section" has-separator />
 
         <div class="invitation-list">
           <div v-for="invitation in invitations" :key="invitation.id.toString()" class="invitation-item">
             <div class="invitation-info">
-              <neb-badge :color="mapRoleToColor(invitation.role)">
-                {{ invitation.role }}
+              <neb-badge :color="roleColorMap[invitation.role]">
+                {{ roleDictionary[invitation.role] }}
               </neb-badge>
 
               <code class="invitation-token">{{ invitation.token }}</code>
-              <neb-button type="link-neutral" small @click="copyToken(invitation.token)">
+              <neb-button type="link-neutral" small @click="copyToken(invitation.token.toString())">
                 <icon name="material-symbols:content-copy-outline-rounded" />
               </neb-button>
             </div>
@@ -248,21 +251,22 @@ function mapRoleToColor(role: OutMember['role']) {
       </div>
     </div>
 
-    <neb-modal v-model="showInviteModal" title="Invite Member" header-icon="material-symbols:person-add-outline-rounded" max-width="500px">
+    <neb-modal v-model="showInviteModal" :title="$t('members.invite.title')" header-icon="material-symbols:person-add-outline-rounded" max-width="500px">
       <template #content>
         <div v-if="!createdToken" class="invite-form">
           <neb-select
             v-model="inviteRole"
-            label="Role"
-            placeholder="Select a role"
+            :label="$t('members.invite.role.label')"
+            :placeholder="$t('members.invite.role.placeholder')"
             :options="roleOptions"
+            :custom-label="(role: OutMember['role']) => roleDictionary[role]"
             no-search
           />
         </div>
 
         <div v-else class="token-display">
           <p class="token-instructions">
-            Share this token with the person you want to invite. It can only be used once.
+            {{ $t('members.invite.tokenInstructions') }}
           </p>
 
           <div class="token-field">
@@ -270,7 +274,7 @@ function mapRoleToColor(role: OutMember['role']) {
 
             <neb-button small type="secondary" @click="copyToken(createdToken)">
               <icon name="material-symbols:content-copy-outline-rounded" />
-              Copy
+              {{ $t('common.copy') }}
             </neb-button>
           </div>
         </div>
@@ -279,23 +283,23 @@ function mapRoleToColor(role: OutMember['role']) {
       <template #actions>
         <template v-if="!createdToken">
           <neb-button type="secondary" @click="showInviteModal = false">
-            Cancel
+            {{ $t('common.cancel') }}
           </neb-button>
 
           <neb-button type="primary" :loading="isCreatingInvitation" @click="createInvitation()">
-            Create Invitation
+            {{ $t('members.invite.createButton') }}
           </neb-button>
         </template>
 
         <neb-button v-else type="primary" @click="showInviteModal = false">
-          Done
+          {{ $t('common.done') }}
         </neb-button>
       </template>
     </neb-modal>
 
     <neb-modal
       v-model="showEditModal"
-      title="Edit Member Role"
+      :title="$t('members.editRole.title')"
       header-icon="material-symbols:edit-outline-rounded"
       max-width="500px"
       :close-on-background-click="false"
@@ -305,21 +309,22 @@ function mapRoleToColor(role: OutMember['role']) {
 
         <neb-select
           v-model="editForm.role"
-          label="Role"
-          placeholder="Select a role"
+          :label="$t('members.invite.role.label')"
+          :placeholder="$t('members.invite.role.placeholder')"
           no-search
           :disabled="isLoading"
           :options="roleOptions"
+          :custom-label="(role: OutMember['role']) => roleDictionary[role]"
         />
       </template>
 
       <template #actions>
         <neb-button type="secondary" @click="closeModal()">
-          Cancel
+          {{ $t('common.cancel') }}
         </neb-button>
 
         <neb-button type="primary" :disabled="isLoading" :loading="isLoading" @click="handleEditSubmit()">
-          Update Role
+          {{ $t('members.editRole.updateButton') }}
         </neb-button>
       </template>
     </neb-modal>

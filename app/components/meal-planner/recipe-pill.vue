@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { OutMealPlan } from '~/db'
 
+const { t } = useI18n()
 type MealState = OutMealPlan['meals']['breakfast'][number]['state']
 
 const props = defineProps<{
@@ -13,12 +14,12 @@ const emit = defineEmits<{
 
 const stateOptions: MealState[] = ['todo', 'prepared', 'done', 'served']
 
-const stateLabels: Record<MealState, string> = {
-  todo: 'To do',
-  prepared: 'Prepared',
-  done: 'Done',
-  served: 'Served',
-}
+const stateLabels = computed<Record<MealState, string>>(() => ({
+  todo: t('mealPlanner.recipeState.todo'),
+  prepared: t('mealPlanner.recipeState.prepared'),
+  done: t('mealPlanner.recipeState.done'),
+  served: t('mealPlanner.recipeState.served'),
+}))
 
 const stateColors = {
   todo: 'info',

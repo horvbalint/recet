@@ -2,6 +2,7 @@
 import type { RecordId } from 'surrealdb'
 import type { InRecipe, OutCuisine, OutIngredient, OutMeal, OutRecipe, OutRecipeTag, OutUnit } from '~/db'
 
+const { t } = useI18n()
 const formData = ref<Partial<InRecipe>>({
   name: '',
   recipes: [],
@@ -25,20 +26,20 @@ const action = computed(() => {
 
 const headerTitle = computed(() => {
   if (action.value === 'edit')
-    return 'Edit Recipe'
+    return t('recipes.create.title.edit')
   if (action.value === 'copy')
-    return 'Copy Recipe'
+    return t('recipes.create.title.copy')
   else
-    return 'Create Recipe'
+    return t('recipes.create.title.create')
 })
 
 const headerDescription = computed(() => {
   if (action.value === 'edit')
-    return 'Edit the details of the recipe'
+    return t('recipes.create.description.edit')
   if (action.value === 'copy')
-    return 'Edit the details before saving the copied recipe'
+    return t('recipes.create.description.copy')
   else
-    return 'Add a new recipe to your collection'
+    return t('recipes.create.description.create')
 })
 
 const { data: recipeToEdit, status: recipeStatus, refresh: recipeRefresh, error: recipeError } = useAsyncData(async () => {
@@ -130,12 +131,12 @@ async function createRecipe() {
       await setImageOnRecipe(result!.id, selectedImage.value)
 
     clearRecipeCache()
-    useNebToast({ type: 'success', title: 'Recipe created!', description: 'Your recipe has been saved successfully.' })
+    useNebToast({ type: 'success', title: t('recipes.create.createSuccess.title'), description: t('recipes.create.createSuccess.description') })
     await navigateTo(`/recipe/${result!.id.id}`)
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Creation failed!', description: 'Could not save the recipe. Please try again.' })
+    useNebToast({ type: 'error', title: t('recipes.create.error.title'), description: t('recipes.create.error.description') })
   }
   finally {
     submitting.value = false
@@ -161,12 +162,12 @@ async function updateRecipe() {
     }
 
     clearRecipeCache()
-    useNebToast({ type: 'success', title: 'Recipe updated!', description: 'Your recipe has been saved successfully.' })
+    useNebToast({ type: 'success', title: t('recipes.create.updateSuccess.title'), description: t('recipes.create.updateSuccess.description') })
     await navigateTo(`/recipe/${recipeId}`)
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Update failed!', description: 'Could not save the recipe. Please try again.' })
+    useNebToast({ type: 'error', title: t('recipes.create.error.title'), description: t('recipes.create.error.description') })
   }
   finally {
     submitting.value = false
@@ -262,10 +263,10 @@ interface ImportedRecipe {
 
 const importModal = ref(false)
 const importSourceType = ref<'url' | 'text'>('url')
-const importOptions = [
-  { text: 'From URL', value: 'url' },
-  { text: 'From text', value: 'text' },
-]
+const importOptions = computed(() => [
+  { text: t('recipes.create.import.tabs.url'), value: 'url' },
+  { text: t('recipes.create.import.tabs.text'), value: 'text' },
+])
 const importedRecipe = ref<ImportedRecipe | null>(null)
 const importSource = ref('')
 const importing = ref(false)
@@ -311,7 +312,7 @@ async function importRecipe() {
   }
   catch (err) {
     console.error(err)
-    useNebToast({ type: 'error', title: 'Import failed!', description: 'Could not import the recipe. Please try again.' })
+    useNebToast({ type: 'error', title: t('recipes.create.importError.title'), description: t('recipes.create.importError.description') })
   }
   finally {
     importing.value = false
@@ -320,7 +321,7 @@ async function importRecipe() {
 
 function createImportHint(value: string | number | undefined) {
   if (value)
-    return `Imported: ${value}`
+    return t('recipes.create.import.hint', { value })
 }
 </script>
 
@@ -340,7 +341,7 @@ function createImportHint(value: string | number | undefined) {
             @click="importModal = true"
           >
             <icon name="material-symbols:wand-stars-outline-rounded" />
-            Import recipe
+            {{ $t('recipes.create.importButton') }}
           </neb-button>
 
           <neb-button
@@ -351,7 +352,7 @@ function createImportHint(value: string | number | undefined) {
             @click="handleSubmit()"
           >
             <icon name="material-symbols:save-outline-rounded" />
-            Save Recipe
+            {{ $t('recipes.create.saveButton') }}
           </neb-button>
         </template>
       </neb-content-header>
@@ -362,7 +363,7 @@ function createImportHint(value: string | number | undefined) {
         <div class="form-container">
           <div class="form-section">
             <neb-content-header
-              title="Basic Information"
+              :title="$t('recipes.create.basicInfo')"
               type="section"
             />
 
@@ -370,23 +371,23 @@ function createImportHint(value: string | number | undefined) {
               <div class="flex-row">
                 <neb-input
                   v-model="formData.name"
-                  label="Recipe Name"
-                  placeholder="Enter recipe name"
+                  :label="$t('recipes.create.name.label')"
+                  :placeholder="$t('recipes.create.name.placeholder')"
                   required
                 />
 
                 <div class="flex-row">
                   <neb-input
                     v-model="formData.portions"
-                    label="Portion count"
-                    placeholder="e.g., 4"
+                    :label="$t('recipes.create.portionCount.label')"
+                    :placeholder="$t('recipes.create.portionCount.placeholder')"
                     type="number"
                   />
 
                   <neb-input
                     v-model="formData.cooking_time_minutes"
-                    label="Cooking time (minutes)"
-                    placeholder="e.g., 30"
+                    :label="$t('recipes.create.cookingTime.label')"
+                    :placeholder="$t('recipes.create.cookingTime.placeholder')"
                     type="number"
                   />
                 </div>
@@ -394,17 +395,17 @@ function createImportHint(value: string | number | undefined) {
 
               <neb-single-file-picker
                 v-model="selectedImage"
-                label="Recipe Image"
+                :label="$t('recipes.create.image.label')"
                 accept="image/*"
-                placeholder="Upload an image for the recipe"
+                :placeholder="$t('recipes.create.image.placeholder')"
               />
 
               <div class="selects-row">
                 <neb-select
                   v-model="formData.cuisine"
                   :options="masterData!.cuisines"
-                  label="Cuisine"
-                  placeholder="Select cuisine"
+                  :label="$t('recipes.create.cuisine.label')"
+                  :placeholder="$t('recipes.create.cuisine.placeholder')"
                   track-by-key="id"
                   label-key="name"
                   :transform-fun="transformId"
@@ -424,8 +425,8 @@ function createImportHint(value: string | number | undefined) {
                 <neb-select
                   v-model="formData.meal"
                   :options="masterData!.meals"
-                  label="Meals"
-                  placeholder="Select meals"
+                  :label="$t('recipes.create.meals.label')"
+                  :placeholder="$t('recipes.create.meals.placeholder')"
                   track-by-key="id"
                   label-key="name"
                   :transform-fun="transformId"
@@ -446,8 +447,8 @@ function createImportHint(value: string | number | undefined) {
                 <neb-select
                   v-model="formData.tags"
                   :options="masterData!.recipeTags"
-                  label="Tags"
-                  placeholder="Select tags"
+                  :label="$t('recipes.create.tags.label')"
+                  :placeholder="$t('recipes.create.tags.placeholder')"
                   track-by-key="id"
                   label-key="name"
                   :transform-fun="transformId"
@@ -470,18 +471,18 @@ function createImportHint(value: string | number | undefined) {
 
           <neb-form-list
             v-model="formData.recipes"
-            label="Recipes"
+            :label="$t('recipes.create.recipesSection')"
             class="form-section"
           >
             <template #default="{ index }">
               <div class="recipe-fields">
                 <neb-select
                   v-model="formData.recipes![index]!.recipe"
-                  label="Recipe"
+                  :label="$t('recipes.create.recipe.label')"
                   :options="masterData!.recipes!"
                   label-key="name"
                   track-by-key="id"
-                  placeholder="Select recipe"
+                  :placeholder="$t('recipes.create.recipe.placeholder')"
                   :transform-fun="transformId"
                   use-only-tracked-key
                   required
@@ -489,8 +490,8 @@ function createImportHint(value: string | number | undefined) {
 
                 <neb-input
                   v-model="formData.recipes![index]!.description"
-                  label="Description"
-                  placeholder="e.g., for the sauce, for serving"
+                  :label="$t('recipes.create.ingredientDescription.label')"
+                  :placeholder="$t('recipes.create.ingredientDescription.placeholder')"
                 />
               </div>
             </template>
@@ -498,7 +499,7 @@ function createImportHint(value: string | number | undefined) {
 
           <neb-form-list
             v-model="formData.ingredients"
-            label="Ingredients"
+            :label="$t('recipes.create.ingredientsSection')"
             class="form-section"
             :with-initial-item="!formData.id"
           >
@@ -506,11 +507,11 @@ function createImportHint(value: string | number | undefined) {
               <div class="ingredient-fields">
                 <neb-select
                   v-model="ingredient.ingredient"
-                  label="Ingredient"
+                  :label="$t('recipes.create.ingredient.label')"
                   :options="masterData!.ingredients!"
                   label-key="name"
                   track-by-key="id"
-                  placeholder="Select ingredient"
+                  :placeholder="$t('recipes.create.ingredient.placeholder')"
                   :transform-fun="transformId"
                   use-only-tracked-key
                   :hint="createImportHint(importedRecipe?.ingredients[index]?.name)"
@@ -520,18 +521,18 @@ function createImportHint(value: string | number | undefined) {
 
                 <neb-input
                   v-model="ingredient.amount"
-                  label="Amount"
+                  :label="$t('recipes.create.amount')"
                   type="number"
                   placeholder="0"
                 />
 
                 <neb-select
                   v-model="ingredient.unit"
-                  label="Unit"
+                  :label="$t('recipes.create.unit.label')"
                   :options="masterData!.units!"
                   label-key="name"
                   track-by-key="id"
-                  placeholder="Select unit"
+                  :placeholder="$t('recipes.create.unit.placeholder')"
                   :transform-fun="transformId"
                   use-only-tracked-key
                   allow-empty
@@ -541,8 +542,8 @@ function createImportHint(value: string | number | undefined) {
 
                 <neb-input
                   v-model="ingredient.description"
-                  label="Description"
-                  placeholder="e.g., diced, chopped"
+                  :label="$t('recipes.create.ingredientDescription.label')"
+                  :placeholder="$t('recipes.create.ingredientDescription.placeholder')"
                 />
               </div>
             </template>
@@ -550,7 +551,7 @@ function createImportHint(value: string | number | undefined) {
 
           <neb-form-list
             v-model="formData.steps"
-            label="Instructions"
+            :label="$t('recipes.create.instructionsSection')"
             class="form-section"
             :factory="() => ''"
             :with-initial-item="!formData.id"
@@ -559,8 +560,8 @@ function createImportHint(value: string | number | undefined) {
               <neb-textarea
                 v-model="formData.steps![index]"
                 :required="true"
-                :label="`Step ${index + 1}`"
-                placeholder="Describe this step..."
+                :label="$t('recipes.create.step.label', { number: index + 1 })"
+                :placeholder="$t('recipes.create.step.placeholder')"
               />
             </template>
           </neb-form-list>
@@ -611,29 +612,30 @@ function createImportHint(value: string | number | undefined) {
 
     <neb-modal
       v-model="importModal"
-      title="Import recipe"
+      :title="$t('recipes.create.import.title')"
       header-icon="material-symbols:wand-stars-outline-rounded"
       min-width="600px"
     >
       <template #content>
         <neb-radio-group v-model="importSourceType" small :options="importOptions" />
 
-        <neb-input v-if="importSourceType === 'url'" v-model="importSource" required label="Website URL" />
+        <neb-input v-if="importSourceType === 'url'" v-model="importSource" required :label="$t('recipes.create.import.url.label')" />
         <neb-textarea
           v-else
           v-model="importSource"
-          required label="Recipe Text"
-          placeholder="Paste the recipe text here."
+          required
+          :label="$t('recipes.create.import.text.label')"
+          :placeholder="$t('recipes.create.import.text.placeholder')"
         />
       </template>
 
       <template #actions>
         <neb-button type="secondary" @click="importModal = false">
-          Cancel
+          {{ $t('common.cancel') }}
         </neb-button>
 
         <neb-button :loading="importing" :disabled="!importSource || importing" type="primary" @click="importRecipe()">
-          Import
+          {{ $t('common.import') }}
         </neb-button>
       </template>
     </neb-modal>

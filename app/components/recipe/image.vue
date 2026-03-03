@@ -73,7 +73,7 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
     <div class="info-badges">
       <cuisine-badge v-if="recipe.cuisine" :cuisine="recipe.cuisine" />
 
-      <neb-tooltip v-if="recipe.public" title="Public recipe" text="This recipe is public and can be viewed by anyone with its public link.">
+      <neb-tooltip v-if="recipe.public" :title="$t('recipes.detail.tooltip.publicRecipe.title')" :text="$t('recipes.detail.tooltip.publicRecipe.text')">
         <neb-button type="secondary-neutral" small @click.stop="copyPublicUrl(recipe.id.id)">
           <icon name="material-symbols:public" />
         </neb-button>

@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
+const { t } = useI18n()
 const props = withDefaults(defineProps<{
   table: string
   name: string
@@ -26,11 +27,11 @@ const isFormValid = ref(false)
 const isEdit = computed(() => !!props.initialData?.id)
 
 const title = computed(() => {
-  return !isEdit.value ? `Create new ${props.name}` : `Edit ${props.name}`
+  return !isEdit.value ? t('masterData.modal.createTitle', { name: props.name }) : t('masterData.modal.editTitle', { name: props.name })
 })
 
 const actionLabel = computed(() => {
-  return !isEdit.value ? 'Create' : 'Save Changes'
+  return !isEdit.value ? t('common.create') : t('common.save')
 })
 
 watch(() => props.initialData, (newData) => {
@@ -55,7 +56,7 @@ async function handleSubmit() {
         }}`)
         .collect<[T]>()
 
-      useNebToast({ type: 'success', title: `${props.name} created!`, description: `The ${props.name} was saved successfully.` })
+      useNebToast({ type: 'success', title: t('masterData.createSuccess.title', { name: props.name }), description: t('masterData.createSuccess.description', { name: props.name }) })
 
       emit('saved', result)
     }
@@ -68,7 +69,7 @@ async function handleSubmit() {
         }} RETURN AFTER`)
         .collect<[T]>()
 
-      useNebToast({ type: 'success', title: `${props.name} updated!`, description: `The ${props.name} was updated successfully.` })
+      useNebToast({ type: 'success', title: t('masterData.updateSuccess.title', { name: props.name }), description: t('masterData.updateSuccess.description', { name: props.name }) })
 
       emit('saved', result)
     }
@@ -77,7 +78,7 @@ async function handleSubmit() {
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: `${!isEdit.value ? 'Creation' : 'Update'} failed!`, description: `Could not ${!isEdit.value ? 'create' : 'update'} the ${props.name}. Please try again.` })
+    useNebToast({ type: 'error', title: t('masterData.saveError.title'), description: t('masterData.saveError.description', { action: !isEdit.value ? 'create' : 'update', name: props.name }) })
   }
 }
 
@@ -104,7 +105,7 @@ function handleCancel() {
 
     <template #actions>
       <neb-button type="tertiary-neutral" @click="handleCancel()">
-        Cancel
+        {{ $t('common.cancel') }}
       </neb-button>
 
       <neb-button type="primary" :disabled="!isFormValid" @click="handleSubmit()">

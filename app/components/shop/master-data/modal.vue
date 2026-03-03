@@ -56,11 +56,11 @@ function handleSave(item: OutShop) {
     @saved="handleSave"
   >
     <template #form="{ data }">
-      <neb-input v-model="data.name" label="Name" required />
+      <neb-input v-model="data.name" :label="$t('common.name.label')" required />
 
       <neb-content-header
-        title="Categories & order"
-        description="Set the order of categories so that they appear in this order in the shopping list."
+        :title="$t('masterData.shop.categories.title')"
+        :description="$t('masterData.shop.categories.description')"
         type="paragraph"
       />
 

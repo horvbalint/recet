@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const householdName = ref('')
 const isCreating = ref(false)
 const joinToken = ref('')
@@ -11,13 +13,13 @@ async function createAndNavigate() {
     const household = await createHousehold(householdName.value.trim())
     switchHousehold(household)
 
-    useNebToast({ type: 'success', title: 'Household created', description: `Welcome to ${household.name}!` })
+    useNebToast({ type: 'success', title: t('household.create.success.title'), description: t('household.onboarding.welcome', { name: household.name }) })
 
     await navigateTo('/')
   }
   catch (err) {
     console.error('Error creating household:', err)
-    useNebToast({ type: 'error', title: 'Creation failed', description: 'Could not create household.' })
+    useNebToast({ type: 'error', title: t('household.create.error.title'), description: t('household.create.error.description') })
     isCreating.value = false
   }
 }
@@ -31,22 +33,22 @@ async function joinAndNavigate() {
     const household = await joinHousehold(joinToken.value.trim())
     switchHousehold(household)
 
-    useNebToast({ type: 'success', title: 'Household joined!', description: `Welcome to ${household.name}!` })
+    useNebToast({ type: 'success', title: t('household.join.success.title'), description: t('household.onboarding.welcome', { name: household.name }) })
 
     await navigateTo('/')
   }
   catch (error: any) {
     console.error('Error joining household:', error)
-    useNebToast({ type: 'error', title: 'Failed to join', description: error.message || 'Invalid invitation token.' })
+    useNebToast({ type: 'error', title: t('household.join.error.title'), description: error.message || t('household.join.error.description') })
     isJoining.value = false
   }
 }
 
-const tabs = {
-  create: 'Create a household',
-  join: 'Join a household',
-} as const
-const selectedTab = ref<keyof typeof tabs>('create')
+const tabs = computed(() => ({
+  create: t('household.onboarding.tabs.create'),
+  join: t('household.onboarding.tabs.join'),
+}))
+const selectedTab = ref<'create' | 'join'>('create')
 </script>
 
 <template>
@@ -59,8 +61,8 @@ const selectedTab = ref<keyof typeof tabs>('create')
           </div>
 
           <neb-content-header
-            title="First you need a household"
-            description="Welcome! Let's set up your household to start managing recipes and shopping lists together."
+            :title="$t('household.onboarding.title')"
+            :description="$t('household.onboarding.description')"
             type="section"
           />
         </div>
@@ -71,8 +73,8 @@ const selectedTab = ref<keyof typeof tabs>('create')
           <div class="form-fields">
             <neb-input
               v-model="householdName"
-              label="Household Name"
-              placeholder="e.g., The Smith Family, Our Home"
+              :label="$t('household.create.name.label')"
+              :placeholder="$t('household.onboarding.name.placeholder')"
               :required="true"
               @keyup.enter="createAndNavigate()"
             />
@@ -87,11 +89,11 @@ const selectedTab = ref<keyof typeof tabs>('create')
               @click="createAndNavigate()"
             >
               <icon name="material-symbols:add-home-outline-rounded" />
-              Create Household
+              {{ $t('household.onboarding.createButton') }}
             </neb-button>
 
             <neb-button type="link" @click="selectedTab = 'join'">
-              or join a household
+              {{ $t('household.onboarding.orJoin') }}
             </neb-button>
           </div>
         </div>
@@ -100,8 +102,8 @@ const selectedTab = ref<keyof typeof tabs>('create')
           <div class="form-fields">
             <neb-input
               v-model="joinToken"
-              label="Invitation Token"
-              placeholder="Paste the invitation token you received"
+              :label="$t('household.join.token.label')"
+              :placeholder="$t('household.join.token.placeholder')"
               :required="true"
               @keyup.enter="joinAndNavigate()"
             />
@@ -116,11 +118,11 @@ const selectedTab = ref<keyof typeof tabs>('create')
               @click="joinAndNavigate()"
             >
               <icon name="material-symbols:group-add-outline-rounded" />
-              Join Household
+              {{ $t('household.onboarding.joinButton') }}
             </neb-button>
 
             <neb-button type="link" @click="selectedTab = 'create'">
-              or create a new household
+              {{ $t('household.onboarding.orCreate') }}
             </neb-button>
           </div>
         </div>

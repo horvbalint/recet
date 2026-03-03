@@ -1,8 +1,10 @@
 <script setup lang="ts">
-const columns = {
-  name: { text: 'Name' },
-  conditionCount: { text: 'Condition Count' },
-}
+const { t } = useI18n()
+
+const columns = computed(() => ({
+  name: { text: t('masterData.mealRule.columns.name') },
+  conditionCount: { text: t('masterData.mealRule.columns.conditionCount') },
+}))
 
 const getQuery = surql`
   SELECT *, array::len(
@@ -31,7 +33,7 @@ const getQuery = surql`
     table="meal_rule"
     :columns="columns"
     :get-query="getQuery"
-    name="Meal Rule"
+    :name="$t('masterData.mealRule.name')"
     icon="material-symbols:rule-rounded"
   >
     <template #modal="{ afterSave, close, docToEdit }">

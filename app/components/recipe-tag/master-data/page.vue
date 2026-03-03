@@ -2,18 +2,19 @@
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
 import type { OutRecipeTag } from '~/db'
 
+const { t } = useI18n()
 const getQuery = computed(() => surql`SELECT * FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC`)
-const columns = {
-  name: { text: 'Name' },
-  icon: { text: 'Icon' },
-  color: { text: 'Color' },
-} satisfies Columns<OutRecipeTag>
+const columns = computed(() => ({
+  name: { text: t('masterData.recipeTag.columns.name') },
+  icon: { text: t('masterData.recipeTag.columns.icon') },
+  color: { text: t('masterData.recipeTag.columns.color') },
+}) satisfies Columns<OutRecipeTag>)
 </script>
 
 <template>
   <master-data-layout
     table="recipe_tag"
-    name="tag"
+    :name="$t('masterData.recipeTag.name')"
     icon="material-symbols:tag-rounded"
     :get-query
     :columns

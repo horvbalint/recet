@@ -13,6 +13,8 @@ dayjs.extend(isSameOrBefore)
 dayjs.extend(isSameOrAfter)
 dayjs.extend(isBetween)
 
+const { t } = useI18n()
+
 const meals = ['breakfast', 'lunch', 'dinner', 'snack'] as const
 type Meal = (typeof meals)[number]
 
@@ -171,7 +173,7 @@ async function applyRule() {
   selectedRule.value = null
   selection.value = null
 
-  useNebToast({ type: 'success', title: 'Meal plan updated', description: 'The selected meal planning rule has been applied successfully.' })
+  useNebToast({ type: 'success', title: t('mealPlanner.ruleApplied.title'), description: t('mealPlanner.ruleApplied.description') })
   refresh()
 }
 
@@ -247,7 +249,7 @@ async function updateRecipeState(day: dayjs.Dayjs, meal: Meal, recipeIndex: numb
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Update failed', description: 'Could not update the recipe state.' })
+    useNebToast({ type: 'error', title: t('mealPlanner.updateError.title'), description: t('mealPlanner.updateError.description') })
   }
 }
 
@@ -302,7 +304,7 @@ async function updatePlansOnDragEnd(
   }
 
   catch (err) {
-    useNebToast({ type: 'error', title: 'Move failed', description: 'Could not move the recipe. Please try again.' })
+    useNebToast({ type: 'error', title: t('mealPlanner.moveError.title'), description: t('mealPlanner.moveError.description') })
     console.error(err)
   }
   finally {
@@ -363,13 +365,13 @@ async function saveDayMeals() {
     await upsertMealPlan(editingDay.value!, editingMeal.value!, editingMeals.value)
     dayEditModal.value = false
 
-    useNebToast({ type: 'success', title: 'Meals saved', description: 'Your meal plan has been updated.' })
+    useNebToast({ type: 'success', title: t('mealPlanner.mealsSaved.title'), description: t('mealPlanner.mealsSaved.description') })
 
     refresh()
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Save failed', description: 'Could not save the meals. Please try again.' })
+    useNebToast({ type: 'error', title: t('mealPlanner.saveError.title'), description: t('mealPlanner.saveError.description') })
   }
 }
 </script>
@@ -378,8 +380,8 @@ async function saveDayMeals() {
   <page-layout>
     <template #content-header>
       <neb-content-header
-        title="Meal planner"
-        description="Plan your meals for the days ahead"
+        :title="$t('mealPlanner.title')"
+        :description="$t('mealPlanner.description')"
         :type="pageHeaderType"
         has-separator
       />
@@ -408,7 +410,7 @@ async function saveDayMeals() {
 
         <template v-for="meal in meals" :key="`${meal}`">
           <p class="meal-label">
-            {{ meal }}
+            {{ $t(`mealPlanner.meals.${meal}`) }}
           </p>
 
           <div
@@ -448,7 +450,7 @@ async function saveDayMeals() {
 
           <div class="day-card-meals">
             <div v-for="meal in meals" :key="`mobile-${meal}-${day.toString()}`" class="day-card-meal" @click="openDayEditModal(day, meal)">
-              <span class="meal-title">{{ meal }}</span>
+              <span class="meal-title">{{ $t(`mealPlanner.meals.${meal}`) }}</span>
 
               <div class="meal-recipes">
                 <template v-if="plansByDay?.[day.format('YYYY-MM-DD')]?.meals[meal]?.length">
@@ -462,7 +464,7 @@ async function saveDayMeals() {
                   />
                 </template>
 
-                <span v-else class="no-recipes">No recipes</span>
+                <span v-else class="no-recipes">{{ $t('mealPlanner.noRecipes') }}</span>
               </div>
             </div>
           </div>
@@ -473,15 +475,15 @@ async function saveDayMeals() {
 
   <neb-modal
     v-model="ruleModal"
-    title="Select a rule"
-    subtitle="Choose a meal planning rule to apply to the selected days"
+    :title="$t('mealPlanner.selectRule.title')"
+    :subtitle="$t('mealPlanner.selectRule.subtitle')"
     header-icon="material-symbols:rule-rounded"
   >
     <template #content>
       <neb-select
         v-model="selectedRule"
         :options="rules!"
-        :label="`Select a rule for ${selection?.meal}`"
+        :label="$t('mealPlanner.selectRule.label', { meal: selection?.meal })"
         label-key="name"
         track-by-key="id"
         :on-new="handleCreateRule"
@@ -489,21 +491,21 @@ async function saveDayMeals() {
       />
 
       <neb-checkbox v-model="overWriteExistinMeals">
-        Overwrite existing meals
+        {{ $t('mealPlanner.overwriteExisting') }}
       </neb-checkbox>
     </template>
 
     <template #actions>
       <neb-button type="primary" :disabled="!selectedRule" @click="applyRule()">
-        Apply Rule
+        {{ $t('mealPlanner.applyRule') }}
       </neb-button>
     </template>
   </neb-modal>
 
   <neb-modal
     v-model="dayEditModal"
-    :title="`Edit ${editingMeal} - ${editingDay?.format('dddd, MMM D')}`"
-    subtitle="Add, edit, or remove recipes for this meal"
+    :title="$t('mealPlanner.editMeal.title', { meal: editingMeal, date: editingDay?.format('dddd, MMM D') })"
+    :subtitle="$t('mealPlanner.editMeal.subtitle')"
     header-icon="material-symbols:edit-calendar-rounded"
   >
     <template #content>
@@ -517,10 +519,10 @@ async function saveDayMeals() {
               <neb-select
                 v-model="item.recipe"
                 :options="recipes!"
-                label="Recipe"
+                :label="$t('recipes.create.recipe.label')"
                 label-key="name"
                 track-by-key="id"
-                placeholder="Select recipe"
+                :placeholder="$t('recipes.create.recipe.placeholder')"
                 :transform-fun="transformId"
                 use-only-tracked-key
                 required
@@ -529,7 +531,7 @@ async function saveDayMeals() {
 
               <neb-input
                 v-model="item.servings"
-                label="Servings"
+                :label="$t('mealPlanner.servings')"
                 type="number"
                 :min="1"
                 placeholder="1"
@@ -539,7 +541,7 @@ async function saveDayMeals() {
 
           <template #actions>
             <neb-button type="tertiary-neutral" @click="openRuleModalForSingleDay()">
-              Add by rule
+              {{ $t('mealPlanner.addByRule') }}
             </neb-button>
           </template>
         </neb-form-list>
@@ -548,7 +550,7 @@ async function saveDayMeals() {
 
     <template #actions>
       <neb-button type="primary" :disabled="!formValid || savingDayEdit" :loading="savingDayEdit" @click="saveDayMeals()">
-        Save
+        {{ $t('common.save') }}
       </neb-button>
     </template>
   </neb-modal>

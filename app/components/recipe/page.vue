@@ -2,6 +2,7 @@
 import type { Menu } from 'nebula/components/overlays/neb-menu.vue'
 import type { RecordId } from 'surrealdb'
 
+const { t } = useI18n()
 const props = defineProps<{
   recipeId: string
   guest?: true
@@ -169,11 +170,11 @@ async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
     checkedIngredients.value = []
     checkedRecipes.value = []
 
-    useNebToast({ type: 'success', title: 'Ingredients added', description: `Added ingredients to the shopping list.` })
+    useNebToast({ type: 'success', title: t('recipes.detail.ingredientsAdded.title'), description: t('recipes.detail.ingredientsAdded.description') })
   }
   catch (err) {
     console.error('Error adding ingredients to shopping list:', err)
-    useNebToast({ type: 'error', title: 'Failed to add ingredients', description: 'Could not add ingredients to shopping list.' })
+    useNebToast({ type: 'error', title: t('recipes.detail.ingredientsAddError.title'), description: t('recipes.detail.ingredientsAddError.description') })
   }
   finally {
     isAddingToList.value = false
@@ -195,11 +196,11 @@ async function togglePublic() {
 
     useNebToast({
       type: 'success',
-      title: recipe.value!.public ? 'Recipe is now public' : 'Recipe is now private',
-      description: recipe.value!.public ? 'Anyone with the link can view this recipe.' : 'Only household members can view this recipe.',
+      title: recipe.value!.public ? t('recipes.detail.nowPublic.title') : t('recipes.detail.nowPrivate.title'),
+      description: recipe.value!.public ? t('recipes.detail.nowPublic.description') : t('recipes.detail.nowPrivate.description'),
       actions: recipe.value!.public
         ? [{
-            text: 'Copy link',
+            text: t('recipes.detail.copyLink'),
             callback: () => copyPublicUrl(props.recipeId),
           }]
         : [],
@@ -207,7 +208,7 @@ async function togglePublic() {
   }
   catch (err) {
     console.error('Error updating recipe visibility:', err)
-    useNebToast({ type: 'error', title: 'Failed to update visibility', description: 'Could not change recipe visibility. Please try again.' })
+    useNebToast({ type: 'error', title: t('recipes.detail.visibilityError.title'), description: t('recipes.detail.visibilityError.description') })
   }
   finally {
     inProgress.value = false
@@ -216,7 +217,7 @@ async function togglePublic() {
 
 async function deleteRecipe() {
   try {
-    const confirmed = await useNebConfirm({ title: 'Confirm action!', description: 'Are you sure you want to delete this recipe? This action cannot be undone.' })
+    const confirmed = await useNebConfirm({ title: t('recipes.detail.deleteConfirm.title'), description: t('recipes.detail.deleteConfirm.description') })
     if (!confirmed)
       return
 
@@ -227,12 +228,12 @@ async function deleteRecipe() {
       .collect()
     clearRecipeCache()
 
-    useNebToast({ type: 'success', title: 'Recipe deleted!', description: 'The recipe has been deleted successfully.' })
+    useNebToast({ type: 'success', title: t('recipes.detail.deleteSuccess.title'), description: t('recipes.detail.deleteSuccess.description') })
     await navigateTo('/')
   }
   catch (err) {
     console.error('Error deleting recipe:', err)
-    useNebToast({ type: 'error', title: 'Failed to delete recipe!', description: 'Could not delete the recipe. Please try again.' })
+useNebToast({ type: 'error', title: t('recipes.detail.deleteError.title'), description: t('recipes.detail.deleteError.description') })
   }
   finally {
     inProgress.value = false
@@ -251,12 +252,12 @@ const menus = computed<Menu[]>(() => {
   return [
     ...recipe.value?.public
       ? [
-          { text: 'Copy public link', icon: 'material-symbols:copy-all-outline-rounded', callback: () => copyPublicUrl(props.recipeId) },
-          { text: 'Make private', icon: 'material-symbols:public-off-rounded', callback: togglePublic },
+          { text: t('recipes.detail.copyPublicLink'), icon: 'material-symbols:copy-all-outline-rounded', callback: () => copyPublicUrl(props.recipeId) },
+          { text: t('recipes.detail.makePrivate'), icon: 'material-symbols:public-off-rounded', callback: togglePublic },
         ]
-      : [{ text: 'Make public', icon: 'material-symbols:public', callback: togglePublic }],
-    { text: 'Copy recipe', icon: 'material-symbols:content-copy-outline-rounded', callback: copyRecipe, segment: recipe.value?.public },
-    { text: 'Delete recipe', icon: 'material-symbols:delete-outline-rounded', callback: deleteRecipe, segment: true, desctructive: true },
+      : [{ text: t('recipes.detail.makePublic'), icon: 'material-symbols:public', callback: togglePublic }],
+    { text: t('recipes.detail.copyRecipe'), icon: 'material-symbols:content-copy-outline-rounded', callback: copyRecipe, segment: recipe.value?.public },
+    { text: t('recipes.detail.deleteRecipe'), icon: 'material-symbols:delete-outline-rounded', callback: deleteRecipe, segment: true, desctructive: true },
   ]
 })
 
@@ -265,16 +266,16 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
 <template>
   <div class="recipe-detail">
-    <neb-state-content :status :refresh error-title="Failed to load recipe" :error-description="error?.message">
+    <neb-state-content :status :refresh :error-title="$t('recipes.detail.loadError.title')" :error-description="error?.message">
       <neb-empty-state
         v-if="!recipe"
         icon="material-symbols:menu-book-2-outline-rounded"
-        title="Recipe not found"
-        description="The recipe you're looking for doesn't exist or has been removed"
+        :title="$t('recipes.detail.empty.notFound.title')"
+        :description="$t('recipes.detail.empty.notFound.description')"
       >
         <neb-button v-if="!props.guest" @click="navigateTo('/')">
           <icon name="material-symbols:arrow-back-rounded" />
-          Back to Recipes
+          {{ $t('recipes.detail.backToRecipes') }}
         </neb-button>
       </neb-empty-state>
 
@@ -306,30 +307,30 @@ watch(currentHousehold, async () => await navigateTo('/'))
               <div class="recipe-meta">
                 <div class="meta-item">
                   <icon name="material-symbols:grocery" />
-                  <span>{{ recipe.ingredients?.length || 0 }} ingredients</span>
+                  <span>{{ $t('recipes.detail.ingredients', { count: recipe.ingredients?.length || 0 }) }}</span>
                 </div>
 
                 <div v-if="recipe.recipes?.length" class="meta-item">
                   <icon name="material-symbols:menu-book-outline-rounded" />
-                  <span>{{ recipe.recipes.length }} recipes</span>
+                  <span>{{ $t('recipes.detail.recipes', { count: recipe.recipes.length }) }}</span>
                 </div>
 
                 <div class="meta-item">
                   <icon name="material-symbols:format-list-numbered-rounded" />
-                  <span>{{ recipe.steps?.length || 0 }} steps</span>
+                  <span>{{ $t('recipes.detail.steps', { count: recipe.steps?.length || 0 }) }}</span>
                 </div>
 
                 <div v-if="recipe.cooking_time_minutes" class="meta-item">
                   <icon name="material-symbols:schedule-outline-rounded" />
-                  <span>{{ recipe.cooking_time_minutes }} min</span>
+                  <span>{{ recipe.cooking_time_minutes }} {{ $t('common.minutes') }}</span>
                 </div>
               </div>
 
               <div class="recipe-author">
                 <neb-avatar-card
                   :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '40px' }"
-                  :title="`By ${recipe.author?.username || 'Unknown'}`"
-                  :text="`Created on ${new Date(recipe.created_at).toLocaleDateString()}`"
+                  :title="$t('recipes.detail.byAuthor', { author: recipe.author?.username || 'Unknown' })"
+                  :text="$t('recipes.detail.createdOn', { date: new Date(recipe.created_at).toLocaleDateString() })"
                 />
               </div>
 
@@ -348,7 +349,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
           <main class="recipe-content">
             <section class="ingredients-section">
               <neb-content-header
-                title="Ingredients"
+                :title="$t('recipes.detail.ingredientsSection')"
                 type="page"
                 has-separator
               >
@@ -362,7 +363,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
                     <template #content="{ close }">
                       <div class="ingredients-dropdown">
-                        <neb-content-header v-if="portions" title="Portions:" type="paragraph" has-separator>
+                        <neb-content-header v-if="portions" :title="$t('recipes.detail.portions')" type="paragraph" has-separator>
                           <template #actions>
                             <div class="portion-controls">
                               <neb-button small square type="tertiary-neutral" @click="decrementPortions()">
@@ -380,7 +381,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
                         <div class="add-to-list-wrapper">
                           <neb-content-header
-                            :title="checkedIngredients.length ? `Add to shopping list (${checkedIngredients.length + checkedRecipes.length}):` : 'Add to shopping list:'"
+                            :title="checkedIngredients.length ? $t('recipes.detail.addToListSelected', { count: checkedIngredients.length + checkedRecipes.length }) : $t('recipes.detail.addToList')"
                             type="paragraph"
                           />
 
@@ -432,7 +433,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
                       <span v-if="subRecipe.description" class="sub-recipe-description">{{ subRecipe.description }}</span>
                     </div>
 
-                    <neb-tooltip title="This ingredient is a recipe">
+                    <neb-tooltip :title="$t('recipes.detail.tooltip.isRecipe')">
                       <icon name="material-symbols:menu-book-outline-rounded" />
                     </neb-tooltip>
                   </div>
@@ -460,7 +461,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
                     <neb-tooltip
                       v-if="ingredient.skip_from_shopping_list && !props.guest"
-                      title="This ingredient will be skipped from being added to shopping lists"
+                      :title="$t('recipes.detail.tooltip.skipFromList')"
                     >
                       <icon name="material-symbols:receipt-long-off-outline-rounded" />
                     </neb-tooltip>
@@ -469,13 +470,13 @@ watch(currentHousehold, async () => await navigateTo('/'))
               </div>
 
               <p v-else class="empty-message">
-                No ingredients listed for this recipe.
+                {{ $t('recipes.detail.empty.noIngredients') }}
               </p>
             </section>
 
             <section class="instructions-section">
               <neb-content-header
-                title="Instructions"
+                :title="$t('recipes.detail.instructionsSection')"
                 type="page"
                 has-separator
               />
@@ -493,7 +494,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
               </div>
 
               <p v-else class="empty-message">
-                No instructions provided for this recipe.
+                {{ $t('recipes.detail.empty.noInstructions') }}
               </p>
             </section>
           </main>

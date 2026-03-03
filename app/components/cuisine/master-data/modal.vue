@@ -148,20 +148,20 @@ function handleSave(item: OutCuisine) {
     @saved="handleSave"
   >
     <template #form="{ data, isFormValid }">
-      <neb-input v-model="data.name" label="Name" required />
+      <neb-input v-model="data.name" :label="$t('common.name.label')" required />
 
       <div class="flex-row">
-        <neb-input v-model="data.color" label="Color" type="color" required />
+        <neb-input v-model="data.color" :label="$t('common.color.label')" type="color" required />
 
         <emoji-picker
           v-model="data.flag"
-          label="Flag"
+          :label="$t('masterData.cuisine.flag.label')"
           :emojis="flagOptions"
-          placeholder="Select a flag"
+          :placeholder="$t('masterData.cuisine.flag.placeholder')"
         />
       </div>
 
-      <neb-content-header v-if="isFormValid" title="Preview" type="paragraph" vertical-gap="var(--space-2)">
+      <neb-content-header v-if="isFormValid" :title="$t('common.preview')" type="paragraph" vertical-gap="var(--space-2)">
         <template #bottom>
           <cuisine-badge :cuisine="data as InCuisine" />
         </template>

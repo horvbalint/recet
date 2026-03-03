@@ -2,17 +2,18 @@
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
 import type { OutIngredientCategory } from '~/db'
 
+const { t } = useI18n()
 const getQuery = computed(() => surql`SELECT * FROM ingredient_category WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC`)
 
-const columns = {
-  name: { text: 'Name' },
-} satisfies Columns<OutIngredientCategory>
+const columns = computed(() => ({
+  name: { text: t('masterData.ingredientCategory.columns.name') },
+}) satisfies Columns<OutIngredientCategory>)
 </script>
 
 <template>
   <master-data-layout
     table="ingredient_category"
-    name="category"
+    :name="$t('masterData.ingredientCategory.name')"
     icon="material-symbols:category-outline-rounded"
     :get-query
     :columns

@@ -89,21 +89,21 @@ function handleSave(item: OutRecipeTag) {
     @saved="handleSave"
   >
     <template #form="{ data, isFormValid }">
-      <neb-input v-model="data.name" label="Name" required />
+      <neb-input v-model="data.name" :label="$t('common.name.label')" required />
 
       <div class="flex-row">
-        <neb-input v-model="data.color" label="Color" type="color" required />
+        <neb-input v-model="data.color" :label="$t('common.color.label')" type="color" required />
 
         <emoji-picker
           v-model="data.icon"
-          label="Icon"
+          :label="$t('masterData.recipeTag.icon.label')"
           :emojis
-          placeholder="Select an icon"
+          :placeholder="$t('masterData.recipeTag.icon.placeholder')"
         />
         <!-- <neb-select v-model="data.icon" no-search label="Icon" :options="iconOptions" placeholder="Select an icon" /> -->
       </div>
 
-      <neb-content-header v-if="isFormValid" title="Preview" type="paragraph" vertical-gap="var(--space-2)">
+      <neb-content-header v-if="isFormValid" :title="$t('common.preview')" type="paragraph" vertical-gap="var(--space-2)">
         <template #bottom>
           <recipe-tag-badge :tag="data as InRecipeTag" />
         </template>

@@ -1,5 +1,744 @@
 {
-  "demo": {
-    "hello": "Hello, World!"
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "saveChanges": "Save Changes",
+    "create": "Create",
+    "delete": "Delete",
+    "edit": "Edit",
+    "retry": "Retry",
+    "done": "Done",
+    "copy": "Copy",
+    "add": "Add",
+    "import": "Import",
+    "undo": "Undo",
+    "name": {
+      "label": "Name"
+    },
+    "color": {
+      "label": "Color"
+    },
+    "category": {
+      "label": "Category"
+    },
+    "preview": "Preview",
+    "minutes": "min",
+    "confirm": {},
+    "email": {},
+    "password": {},
+    "description": {},
+    "role": {}
+  },
+  "nav": {
+    "groups": {
+      "planning": "Planning",
+      "household": "Household",
+      "data": "Data"
+    },
+    "recipes": "Recipes",
+    "mealPlanner": "Meal Planner",
+    "shoppingLists": "Shopping Lists",
+    "members": "Members",
+    "settings": "Settings",
+    "masterData": "Master Data",
+    "pwa": {
+      "newVersion": {
+        "button": "✨ New version available ✨",
+        "tooltip": {
+          "title": "There is a new version available.",
+          "text": "To update, click this button and wait for the page to reload."
+        }
+      },
+      "install": {
+        "button": "✨ Install with one click ✨",
+        "tooltip": {
+          "title": "Install Recet as an app!",
+          "text": "Click this button to install Recet on your device in an instant."
+        }
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "description": "Sign in to your account to continue",
+      "email": {
+        "label": "Email",
+        "placeholder": "Enter your email"
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "Enter your password"
+      },
+      "submit": "Sign In",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up here",
+      "error": {
+        "title": "Login failed",
+        "description": "Invalid email or password."
+      }
+    },
+    "signup": {
+      "title": "Create Account",
+      "description": "Sign up to start managing your recipes",
+      "username": {
+        "label": "Username",
+        "placeholder": "Enter your username"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "Enter your email"
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "Enter your password"
+      },
+      "confirmPassword": {
+        "label": "Confirm Password",
+        "placeholder": "Confirm your password"
+      },
+      "submit": "Create Account",
+      "hasAccount": "Already have an account?",
+      "signInLink": "Sign in here",
+      "success": {
+        "title": "Account created!",
+        "description": "Your account has been created successfully. Please sign in."
+      },
+      "error": {
+        "title": "Signup failed",
+        "description": "An unexpected error occurred. Please try again."
+      },
+      "passwordMismatch": {
+        "title": "Password mismatch",
+        "description": "Passwords do not match. Please try again."
+      }
+    }
+  },
+  "household": {
+    "selector": {
+      "select": "Select Household",
+      "create": "Create Household",
+      "join": "Join Household"
+    },
+    "create": {
+      "title": "Create Household",
+      "name": {
+        "label": "Household Name",
+        "placeholder": "Enter household name"
+      },
+      "submit": "Create Household",
+      "success": {
+        "title": "Household created!",
+        "description": "{name} has been created successfully."
+      },
+      "error": {
+        "title": "Creation failed",
+        "description": "Could not create household. Please try again."
+      }
+    },
+    "join": {
+      "title": "Join Household",
+      "token": {
+        "label": "Invitation Token",
+        "placeholder": "Paste the invitation token"
+      },
+      "submit": "Join",
+      "success": {
+        "title": "Household joined!",
+        "description": "You are now a member of {name}."
+      },
+      "error": {
+        "title": "Failed to join",
+        "description": "Invalid invitation token."
+      }
+    },
+    "onboarding": {
+      "title": "First you need a household",
+      "description": "Welcome! Let's set up your household to start managing recipes and shopping lists together.",
+      "tabs": {
+        "create": "Create a household",
+        "join": "Join a household"
+      },
+      "name": {
+        "placeholder": "e.g., The Smith Family, Our Home"
+      },
+      "createButton": "Create Household",
+      "joinButton": "Join Household",
+      "orJoin": "or join a household",
+      "orCreate": "or create a new household",
+      "welcome": "Welcome to {name}!"
+    }
+  },
+  "recipes": {
+    "list": {
+      "title": "Recipes",
+      "description": "Discover and explore delicious recipes from our collection",
+      "addButton": "Add Recipe",
+      "addFirstButton": "Add Your First Recipe",
+      "filters": "Filters",
+      "empty": {
+        "noResults": {
+          "title": "No recipes found",
+          "description": "Try adjusting your search terms to find what you're looking for"
+        },
+        "noData": {
+          "title": "No recipes yet",
+          "description": "Start building your recipe collection by adding your first recipe"
+        }
+      },
+      "error": {
+        "title": "Failed to load recipes"
+      }
+    },
+    "card": {
+      "ingredients": "{count} ingredients",
+      "recipes": "{count} recipes",
+      "steps": "{count} steps"
+    },
+    "detail": {
+      "ingredients": "{count} ingredients",
+      "recipes": "{count} recipes",
+      "steps": "{count} steps",
+      "ingredientsSection": "Ingredients",
+      "instructionsSection": "Instructions",
+      "portions": "Portions:",
+      "addToList": "Add to shopping list:",
+      "addToListSelected": "Add to shopping list ({count}):",
+      "byAuthor": "By {author}",
+      "createdOn": "Created on {date}",
+      "backToRecipes": "Back to Recipes",
+      "copyLink": "Copy link",
+      "copyPublicLink": "Copy public link",
+      "makePrivate": "Make private",
+      "makePublic": "Make public",
+      "copyRecipe": "Copy recipe",
+      "deleteRecipe": "Delete recipe",
+      "empty": {
+        "notFound": {
+          "title": "Recipe not found",
+          "description": "The recipe you're looking for doesn't exist or has been removed"
+        },
+        "noIngredients": "No ingredients listed for this recipe.",
+        "noInstructions": "No instructions provided for this recipe."
+      },
+      "tooltip": {
+        "isRecipe": "This ingredient is a recipe",
+        "skipFromList": "This ingredient will be skipped from being added to shopping lists",
+        "publicRecipe": {
+          "title": "Public recipe",
+          "text": "This recipe is public and can be viewed by anyone with its public link."
+        }
+      },
+      "ingredientsAdded": {
+        "title": "Ingredients added",
+        "description": "Added ingredients to the shopping list."
+      },
+      "ingredientsAddError": {
+        "title": "Failed to add ingredients",
+        "description": "Could not add ingredients to shopping list."
+      },
+      "linkCopied": {
+        "title": "Public link copied!",
+        "description": "The public link has been copied to your clipboard."
+      },
+      "nowPublic": {
+        "title": "Recipe is now public",
+        "description": "Anyone with the link can view this recipe."
+      },
+      "nowPrivate": {
+        "title": "Recipe is now private",
+        "description": "Only household members can view this recipe."
+      },
+      "visibilityError": {
+        "title": "Failed to update visibility",
+        "description": "Could not change recipe visibility. Please try again."
+      },
+      "deleteConfirm": {
+        "title": "Confirm action!",
+        "description": "Are you sure you want to delete this recipe? This action cannot be undone."
+      },
+      "deleteSuccess": {
+        "title": "Recipe deleted!",
+        "description": "The recipe has been deleted successfully."
+      },
+      "deleteError": {
+        "title": "Failed to delete recipe!",
+        "description": "Could not delete the recipe. Please try again."
+      },
+      "loadError": {
+        "title": "Failed to load recipe"
+      }
+    },
+    "create": {
+      "title": {
+        "create": "Create Recipe",
+        "edit": "Edit Recipe",
+        "copy": "Copy Recipe"
+      },
+      "description": {
+        "create": "Add a new recipe to your collection",
+        "edit": "Edit the details of the recipe",
+        "copy": "Edit the details before saving the copied recipe"
+      },
+      "importButton": "Import recipe",
+      "saveButton": "Save Recipe",
+      "basicInfo": "Basic Information",
+      "name": {
+        "label": "Recipe Name",
+        "placeholder": "Enter recipe name"
+      },
+      "portionCount": {
+        "label": "Portion count",
+        "placeholder": "e.g., 4"
+      },
+      "cookingTime": {
+        "label": "Cooking time (minutes)",
+        "placeholder": "e.g., 30"
+      },
+      "image": {
+        "label": "Recipe Image",
+        "placeholder": "Upload an image for the recipe"
+      },
+      "cuisine": {
+        "label": "Cuisine",
+        "placeholder": "Select cuisine"
+      },
+      "meals": {
+        "label": "Meals",
+        "placeholder": "Select meals"
+      },
+      "tags": {
+        "label": "Tags",
+        "placeholder": "Select tags"
+      },
+      "recipesSection": "Recipes",
+      "recipe": {
+        "label": "Recipe",
+        "placeholder": "Select recipe"
+      },
+      "ingredientsSection": "Ingredients",
+      "ingredient": {
+        "label": "Ingredient",
+        "placeholder": "Select ingredient"
+      },
+      "amount": "Amount",
+      "unit": {
+        "label": "Unit",
+        "placeholder": "Select unit"
+      },
+      "ingredientDescription": {
+        "label": "Description",
+        "placeholder": "e.g., for the sauce, for serving"
+      },
+      "instructionsSection": "Instructions",
+      "step": {
+        "label": "Step {number}",
+        "placeholder": "Describe this step..."
+      },
+      "import": {
+        "title": "Import recipe",
+        "tabs": {
+          "url": "From URL",
+          "text": "From text"
+        },
+        "url": {
+          "label": "Website URL"
+        },
+        "text": {
+          "label": "Recipe Text",
+          "placeholder": "Paste the recipe text here."
+        },
+        "hint": "Imported: {value}"
+      },
+      "createSuccess": {
+        "title": "Recipe created!",
+        "description": "Your recipe has been saved successfully."
+      },
+      "updateSuccess": {
+        "title": "Recipe updated!",
+        "description": "Your recipe has been saved successfully."
+      },
+      "error": {
+        "title": "Save failed!",
+        "description": "Could not save the recipe. Please try again."
+      },
+      "importError": {
+        "title": "Import failed!",
+        "description": "Could not import the recipe. Please try again."
+      }
+    }
+  },
+  "shoppingLists": {
+    "list": {
+      "title": "Shopping Lists",
+      "description": "Manage your household shopping lists",
+      "newButton": "New List",
+      "createFirstButton": "Create First List",
+      "empty": {
+        "title": "No shopping lists yet",
+        "description": "Create your first shopping list to get started."
+      }
+    },
+    "card": {
+      "itemsCount": "{count} items",
+      "viewButton": "View List",
+      "deleteConfirm": {
+        "title": "Confirm deletion!",
+        "description": "Are you sure you want to delete this shopping list? This action cannot be undone."
+      },
+      "deleteSuccess": {
+        "title": "List deleted",
+        "description": "Shopping list has been deleted."
+      },
+      "deleteError": {
+        "title": "Delete failed",
+        "description": "Could not delete the shopping list."
+      }
+    },
+    "modal": {
+      "title": {
+        "create": "Create Shopping List",
+        "edit": "Edit Shopping List"
+      },
+      "name": {
+        "label": "List Name",
+        "placeholder": "e.g., Weekly Groceries, Party Shopping"
+      },
+      "shop": {
+        "label": "Shop",
+        "placeholder": "Select a shop"
+      },
+      "createButton": "Create List",
+      "updateSuccess": {
+        "title": "List updated",
+        "description": "\"{name}\" has been updated."
+      },
+      "createSuccess": {
+        "title": "List created",
+        "description": "\"{name}\" has been created."
+      },
+      "error": {
+        "title": "Save failed",
+        "description": "Could not save the shopping list."
+      }
+    },
+    "detail": {
+      "itemsCount": "{count} items",
+      "addItemButton": "Add Item",
+      "addFirstButton": "Add First Item",
+      "shop": {
+        "placeholder": "Shop"
+      },
+      "itemModal": {
+        "addTitle": "Add Item",
+        "editTitle": "Edit Item"
+      },
+      "item": {
+        "label": "Item",
+        "placeholder": "Search an ingredient or add a custom item"
+      },
+      "quantity": {
+        "label": "Quantity",
+        "placeholder": "e.g., 2"
+      },
+      "unit": {
+        "label": "Unit",
+        "placeholder": "Select unit"
+      },
+      "category": {
+        "label": "Category",
+        "placeholder": "Select a category"
+      },
+      "saveChanges": "Save Changes",
+      "itemRemoved": "Item removed",
+      "fromRecipe": "From {name}",
+      "empty": {
+        "title": "No items yet",
+        "description": "Add your first item to start shopping."
+      },
+      "error": {
+        "title": "Update failed",
+        "description": "Could not save the changes to the database"
+      },
+      "liveUpdateWarning": {
+        "title": "Live update not available!",
+        "description": "Could not set up live updates for this shopping list."
+      }
+    }
+  },
+  "mealPlanner": {
+    "title": "Meal planner",
+    "description": "Plan your meals for the days ahead",
+    "meals": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    },
+    "noRecipes": "No recipes",
+    "selectRule": {
+      "title": "Select a rule",
+      "subtitle": "Choose a meal planning rule to apply to the selected days",
+      "label": "Select a rule for {meal}"
+    },
+    "overwriteExisting": "Overwrite existing meals",
+    "applyRule": "Apply Rule",
+    "addByRule": "Add by rule",
+    "editMeal": {
+      "title": "Edit {meal} - {date}",
+      "subtitle": "Add, edit, or remove recipes for this meal"
+    },
+    "servings": "Servings",
+    "recipeState": {
+      "todo": "To do",
+      "prepared": "Prepared",
+      "done": "Done",
+      "served": "Served"
+    },
+    "ruleApplied": {
+      "title": "Meal plan updated",
+      "description": "The selected meal planning rule has been applied successfully."
+    },
+    "mealsSaved": {
+      "title": "Meals saved",
+      "description": "Your meal plan has been updated."
+    },
+    "updateError": {
+      "title": "Update failed",
+      "description": "Could not update the recipe state."
+    },
+    "moveError": {
+      "title": "Move failed",
+      "description": "Could not move the recipe. Please try again."
+    },
+    "saveError": {
+      "title": "Save failed",
+      "description": "Could not save the meals. Please try again."
+    }
+  },
+  "members": {
+    "title": "Household Members",
+    "description": "Manage who has access to this household and their permissions",
+    "inviteButton": "Invite Member",
+    "columns": {
+      "username": "Username",
+      "email": "Email",
+      "role": "Role"
+    },
+    "pendingInvitations": "Pending Invitations",
+    "invite": {
+      "title": "Invite Member",
+      "role": {
+        "label": "Role",
+        "placeholder": "Select a role"
+      },
+      "createButton": "Create Invitation",
+      "tokenInstructions": "Share this token with the person you want to invite. It can only be used once.",
+      "tokenCopied": {
+        "title": "Token copied!",
+        "description": "Share it with the person you want to invite."
+      },
+      "error": {
+        "title": "Failed to create invitation",
+        "description": "Could not create the invitation. Please try again."
+      }
+    },
+    "revokeConfirm": {
+      "title": "Revoke invitation?",
+      "description": "This invitation token will no longer work."
+    },
+    "revokeSuccess": "Invitation revoked!",
+    "revokeError": {
+      "title": "Failed to revoke invitation",
+      "description": "Please try again."
+    },
+    "editRole": {
+      "title": "Edit Member Role",
+      "updateButton": "Update Role",
+      "success": {
+        "title": "Role updated!",
+        "description": "The member role has been successfully updated."
+      },
+      "error": {
+        "title": "Failed to update role!",
+        "description": "Could not update the member role. Please try again."
+      }
+    },
+    "remove": {
+      "confirm": {
+        "title": "Remove member from household?",
+        "description": "Are you sure you want to remove {username} from this household? This action cannot be undone."
+      },
+      "success": {
+        "title": "Member removed!",
+        "description": "The member has been successfully removed from the household."
+      },
+      "error": {
+        "title": "Removal failed!",
+        "description": "Could not remove the member from the household. Please try again."
+      }
+    },
+    "roles": {
+      "owner": "owner",
+      "writer": "writer",
+      "guest": "guest"
+    }
+  },
+  "settings": {
+    "title": "Household Settings",
+    "description": "Manage your household configuration and preferences",
+    "general": "General settings",
+    "name": {
+      "label": "Household Name",
+      "placeholder": "Enter household name"
+    },
+    "language": "Language",
+    "success": {
+      "title": "Household updated!",
+      "description": "The household has been successfully updated."
+    },
+    "error": {
+      "title": "Update failed!",
+      "description": "Could not update the household. Please try again."
+    }
+  },
+  "masterData": {
+    "title": "Master Data Management",
+    "description": "Manage units, meal types, cuisines, tags, ingredients, categories, and shops for your recipes",
+    "tabs": {
+      "units": "Units",
+      "mealTypes": "Meal Types",
+      "cuisines": "Cuisines",
+      "tags": "Tags",
+      "categories": "Categories",
+      "shops": "Shops",
+      "ingredients": "Ingredients",
+      "mealRules": "Meal Rules"
+    },
+    "addButton": "Add {name}",
+    "modal": {
+      "createTitle": "Create new {name}",
+      "editTitle": "Edit {name}"
+    },
+    "deleteConfirm": {
+      "title": "Are you sure you want to delete this item?",
+      "description": "This action cannot be undone."
+    },
+    "deleteSuccess": {
+      "title": "Successfully deleted!",
+      "description": "The item got removed from the database."
+    },
+    "deleteError": {
+      "title": "Deletion failed!",
+      "description": "We could not remove the item from the database."
+    },
+    "createSuccess": {
+      "title": "{name} created!",
+      "description": "The {name} was saved successfully."
+    },
+    "updateSuccess": {
+      "title": "{name} updated!",
+      "description": "The {name} was updated successfully."
+    },
+    "saveError": {
+      "title": "Save failed!",
+      "description": "Could not {action} the {name}. Please try again."
+    },
+    "unit": {
+      "name": "unit",
+      "columns": {
+        "name": "Name"
+      }
+    },
+    "meal": {
+      "name": "meal type",
+      "columns": {
+        "name": "Name",
+        "color": "Color"
+      }
+    },
+    "cuisine": {
+      "name": "cuisine",
+      "columns": {
+        "name": "Name",
+        "flag": "Flag",
+        "color": "Color"
+      },
+      "flag": {
+        "label": "Flag",
+        "placeholder": "Select a flag"
+      }
+    },
+    "recipeTag": {
+      "name": "tag",
+      "columns": {
+        "name": "Name",
+        "icon": "Icon",
+        "color": "Color"
+      },
+      "icon": {
+        "label": "Icon",
+        "placeholder": "Select an icon"
+      }
+    },
+    "ingredientCategory": {
+      "name": "category",
+      "columns": {
+        "name": "Name"
+      }
+    },
+    "ingredient": {
+      "name": "ingredient",
+      "columns": {
+        "name": "Name",
+        "category": "Category"
+      },
+      "category": {
+        "placeholder": "Select a category"
+      },
+      "skipFromList": "Skip from shopping list"
+    },
+    "shop": {
+      "name": "shop",
+      "columns": {
+        "name": "Name"
+      },
+      "categories": {
+        "title": "Categories & order",
+        "description": "Set the order of categories so that they appear in this order in the shopping list."
+      }
+    },
+    "mealRule": {
+      "name": "meal rule",
+      "name_placeholder": "e.g., No Meat Mondays",
+      "columns": {
+        "name": "Name",
+        "conditionCount": "Condition Count"
+      },
+      "conditions": "Conditions"
+    }
+  },
+  "filter": {
+    "include": "Include",
+    "exclude": "Exclude",
+    "noneExcluded": "None excluded",
+    "showAdvanced": "Show advanced options",
+    "hideAdvanced": "Hide advanced options",
+    "meals": {
+      "label": "Meals",
+      "placeholder": "Filter by meal type"
+    },
+    "tags": {
+      "label": "Tags",
+      "placeholder": "Filter by tag"
+    },
+    "cuisines": {
+      "label": "Cuisines",
+      "placeholder": "Filter by cuisine"
+    },
+    "ingredients": {
+      "label": "Ingredients",
+      "placeholder": "Filter by ingredient"
+    }
   }
 }

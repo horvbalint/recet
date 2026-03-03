@@ -10,16 +10,18 @@ const formData = ref({
 
 const isFormValid = ref(false)
 
+const { t } = useI18n()
+
 async function handleSubmit() {
   if (formData.value.password !== formData.value.confirmPassword) {
-    useNebToast({ type: 'error', title: 'Password mismatch', description: 'Passwords do not match. Please try again.' })
+    useNebToast({ type: 'error', title: t('auth.signup.passwordMismatch.title'), description: t('auth.signup.passwordMismatch.description') })
     return
   }
 
   try {
     await signUp(formData.value.email, formData.value.username, formData.value.password)
 
-    useNebToast({ type: 'success', title: 'Account created!', description: 'Your account has been created successfully. Please sign in.' })
+    useNebToast({ type: 'success', title: t('auth.signup.success.title'), description: t('auth.signup.success.description') })
 
     goToLogin()
   }
@@ -27,9 +29,9 @@ async function handleSubmit() {
     console.error('Signup error:', error)
 
     if (error instanceof SurrealError)
-      useNebToast({ type: 'error', title: 'Signup failed', description: error.message })
+      useNebToast({ type: 'error', title: t('auth.signup.error.title'), description: error.message })
     else
-      useNebToast({ type: 'error', title: 'Signup failed', description: 'An unexpected error occurred. Please try again.' })
+      useNebToast({ type: 'error', title: t('auth.signup.error.title'), description: t('auth.signup.error.description') })
   }
 }
 
@@ -42,8 +44,8 @@ function goToLogin() {
   <div class="auth-page">
     <div class="auth-card">
       <neb-content-header
-        title="Create Account"
-        description="Sign up to start managing your recipes"
+        :title="$t('auth.signup.title')"
+        :description="$t('auth.signup.description')"
         type="section"
       />
 
@@ -52,34 +54,34 @@ function goToLogin() {
           <div class="form-fields">
             <neb-input
               v-model="formData.username"
-              label="Username"
-              placeholder="Enter your username"
+              :label="$t('auth.signup.username.label')"
+              :placeholder="$t('auth.signup.username.placeholder')"
               required
             />
 
             <neb-input
               v-model="formData.email"
-              label="Email"
+              :label="$t('auth.signup.email.label')"
               type="email"
-              placeholder="Enter your email"
+              :placeholder="$t('auth.signup.email.placeholder')"
               required
               class="email-input"
             />
 
             <neb-input
               v-model="formData.password"
-              label="Password"
+              :label="$t('auth.signup.password.label')"
               type="password"
-              placeholder="Enter your password"
+              :placeholder="$t('auth.signup.password.placeholder')"
               required
               class="password-input"
             />
 
             <neb-input
               v-model="formData.confirmPassword"
-              label="Confirm Password"
+              :label="$t('auth.signup.confirmPassword.label')"
               type="password"
-              placeholder="Confirm your password"
+              :placeholder="$t('auth.signup.confirmPassword.placeholder')"
               required
             />
           </div>
@@ -92,13 +94,13 @@ function goToLogin() {
             class="submit-button"
             @click="handleSubmit()"
           >
-            Create Account
+            {{ $t('auth.signup.submit') }}
           </neb-button>
 
           <div class="auth-link">
-            <span>Already have an account?</span>
+            <span>{{ $t('auth.signup.hasAccount') }}</span>
             <neb-button type="link" @click="goToLogin()">
-              Sign in here
+              {{ $t('auth.signup.signInLink') }}
             </neb-button>
           </div>
         </div>

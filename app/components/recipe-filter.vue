@@ -53,7 +53,7 @@ watch(hasExcludeFilters, (has) => {
         <div class="section-header">
           <h4 class="section-title">
             <icon name="material-symbols:check-circle-outline-rounded" />
-            Include
+            {{ $t('filter.include') }}
           </h4>
 
           <div v-if="filledGroupCount > 1" class="top-operator">
@@ -66,14 +66,14 @@ watch(hasExcludeFilters, (has) => {
         <div class="filter-group">
           <neb-expand :when="advancedMode">
             <div class="filter-group-header">
-              <span class="filter-label">Meals</span>
+              <span class="filter-label">{{ $t('filter.meals.label') }}</span>
               <match-operator-toggle v-if="modelValue.include.meals.items.length > 1" v-model="modelValue.include.meals.operator" />
             </div>
           </neb-expand>
 
           <neb-select
             v-model="modelValue.include.meals.items"
-            placeholder="Filter by meal type"
+            :placeholder="$t('filter.meals.placeholder')"
             :options="filterData.meals"
             label-key="name"
             track-by-key="id"
@@ -95,14 +95,14 @@ watch(hasExcludeFilters, (has) => {
         <div class="filter-group">
           <neb-expand :when="advancedMode">
             <div class="filter-group-header">
-              <span class="filter-label">Tags</span>
+              <span class="filter-label">{{ $t('filter.tags.label') }}</span>
               <match-operator-toggle v-if="modelValue.include.tags.items.length > 1" v-model="modelValue.include.tags.operator" />
             </div>
           </neb-expand>
 
           <neb-select
             v-model="modelValue.include.tags.items"
-            placeholder="Filter by tag"
+            :placeholder="$t('filter.tags.placeholder')"
             :options="filterData.tags"
             label-key="name"
             track-by-key="id"
@@ -123,12 +123,12 @@ watch(hasExcludeFilters, (has) => {
 
         <div class="filter-group">
           <neb-expand :when="advancedMode">
-            <span class="filter-label">Cuisines</span>
+            <span class="filter-label">{{ $t('filter.cuisines.label') }}</span>
           </neb-expand>
 
           <neb-select
             v-model="modelValue.include.cuisines.items"
-            placeholder="Filter by cuisine"
+            :placeholder="$t('filter.cuisines.placeholder')"
             :options="filterData.cuisines"
             label-key="name"
             track-by-key="id"
@@ -150,14 +150,14 @@ watch(hasExcludeFilters, (has) => {
         <div class="filter-group">
           <neb-expand :when="advancedMode">
             <div class="filter-group-header">
-              <span class="filter-label">Ingredients</span>
+              <span class="filter-label">{{ $t('filter.ingredients.label') }}</span>
               <match-operator-toggle v-if="modelValue.include.ingredients.items.length > 1" v-model="modelValue.include.ingredients.operator" />
             </div>
           </neb-expand>
 
           <neb-select
             v-model="modelValue.include.ingredients.items"
-            placeholder="Filter by ingredient"
+            :placeholder="$t('filter.ingredients.placeholder')"
             :options="filterData.ingredients"
             label-key="name"
             track-by-key="id"
@@ -175,15 +175,15 @@ watch(hasExcludeFilters, (has) => {
         <div class="section-header">
           <h4 class="section-title">
             <icon name="material-symbols:cancel-outline-rounded" />
-            Exclude
+            {{ $t('filter.exclude') }}
           </h4>
         </div>
 
         <div class="filter-groups">
           <neb-select
             v-model="modelValue.exclude.meals"
-            label="Meals"
-            placeholder="None excluded"
+            :label="$t('filter.meals.label')"
+            :placeholder="$t('filter.noneExcluded')"
             :options="filterData.meals"
             label-key="name"
             track-by-key="id"
@@ -203,8 +203,8 @@ watch(hasExcludeFilters, (has) => {
 
           <neb-select
             v-model="modelValue.exclude.tags"
-            label="Tags"
-            placeholder="None excluded"
+            :label="$t('filter.tags.label')"
+            :placeholder="$t('filter.noneExcluded')"
             :options="filterData.tags"
             label-key="name"
             track-by-key="id"
@@ -224,8 +224,8 @@ watch(hasExcludeFilters, (has) => {
 
           <neb-select
             v-model="modelValue.exclude.cuisines"
-            label="Cuisines"
-            placeholder="None excluded"
+            :label="$t('filter.cuisines.label')"
+            :placeholder="$t('filter.noneExcluded')"
             :options="filterData.cuisines"
             label-key="name"
             track-by-key="id"
@@ -245,8 +245,8 @@ watch(hasExcludeFilters, (has) => {
 
           <neb-select
             v-model="modelValue.exclude.ingredients"
-            label="Ingredients"
-            placeholder="None excluded"
+            :label="$t('filter.ingredients.label')"
+            :placeholder="$t('filter.noneExcluded')"
             :options="filterData.ingredients"
             label-key="name"
             track-by-key="id"
@@ -262,11 +262,11 @@ watch(hasExcludeFilters, (has) => {
     <neb-button small type="link-neutral" @click="advancedMode = !advancedMode">
       <template v-if="advancedMode">
         <icon name="material-symbols:keyboard-arrow-up-rounded" />
-        Hide advanced options
+        {{ $t('filter.hideAdvanced') }}
       </template>
       <template v-else>
         <icon name="material-symbols:keyboard-arrow-down-rounded" />
-        Show advanced options
+        {{ $t('filter.showAdvanced') }}
       </template>
     </neb-button>
   </div>

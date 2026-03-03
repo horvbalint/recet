@@ -26,11 +26,11 @@ function handleSave(item: OutMeal) {
     @saved="handleSave"
   >
     <template #form="{ data, isFormValid }">
-      <neb-input v-model="data.name" label="Name" required />
+      <neb-input v-model="data.name" :label="$t('common.name.label')" required />
 
-      <neb-input v-model="data.color" label="Color" type="color" required />
+      <neb-input v-model="data.color" :label="$t('common.color.label')" type="color" required />
 
-      <neb-content-header v-if="isFormValid" title="Preview" type="paragraph" vertical-gap="var(--space-2)">
+      <neb-content-header v-if="isFormValid" :title="$t('common.preview')" type="paragraph" vertical-gap="var(--space-2)">
         <template #bottom>
           <meal-badge :meal="data as InMeal" />
         </template>

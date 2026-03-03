@@ -6,11 +6,12 @@ import 'dayjs/locale/hu'
 export const currentHousehold = ref<OutHousehold | null>(null)
 
 const houseHoldQueryKey = 'member-households'
-export const householdQuery = useAsyncData(houseHoldQueryKey, async () => {
-  const [households] = await db
+// I can't make this an async function, cause if I write async EVERYTHIN DIES. SO FUN :))
+export const householdQuery = useAsyncData(houseHoldQueryKey, () => {
+  return db
     .query(surql`SELECT VALUE out.{ id, name, language } FROM member WHERE in = $auth`)
     .collect<[OutHousehold[]]>()
-  return households
+    .then(results => results[0])
 }, {
   immediate: false,
   getCachedData: (key, nuxt) => nuxt.payload.data[key],
@@ -53,6 +54,8 @@ export async function joinHousehold(token: string) {
 export function switchHousehold(household: OutHousehold) {
   currentHousehold.value = household
   localStorage.setItem('currentHousehold', household.id.toString())
+
+  useNuxtApp().$i18n.setLocale(household.language)
 }
 
 watch(currentHousehold, () => {

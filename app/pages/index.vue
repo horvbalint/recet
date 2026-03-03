@@ -82,15 +82,15 @@ onBeforeUnmount(() => {
   <page-layout>
     <template #content-header>
       <neb-content-header
-        title="Recipes"
-        description="Discover and explore delicious recipes from our collection"
+        :title="$t('recipes.list.title')"
+        :description="$t('recipes.list.description')"
         :type="pageHeaderType"
         has-separator
       >
         <template v-if="recipes.length" #actions>
           <neb-button small type="primary" @click="$router.push('/recipe/create')">
             <icon name="material-symbols:add-rounded" />
-            Add Recipe
+            {{ $t('recipes.list.addButton') }}
           </neb-button>
         </template>
       </neb-content-header>
@@ -109,7 +109,7 @@ onBeforeUnmount(() => {
             @click="toggleFilter()"
           >
             <icon name="material-symbols:filter-list-rounded" />
-            <span class="filter-span">Filters</span>
+            <span class="filter-span">{{ $t('recipes.list.filters') }}</span>
             <span v-if="conditionCount">({{ conditionCount }})</span>
           </neb-button>
         </div>
@@ -124,28 +124,28 @@ onBeforeUnmount(() => {
 
       <neb-loading-state v-if="status === 'pending' && !recipes.length" />
 
-      <neb-error-state v-else-if="status === 'error'" title="Failed to load recipes" :description="error?.message">
+      <neb-error-state v-else-if="status === 'error'" :title="$t('recipes.list.error.title')" :description="error?.message">
         <neb-button @click="refresh">
-          Retry
+          {{ $t('common.retry') }}
         </neb-button>
       </neb-error-state>
 
       <template v-else-if="!recipes.length">
         <neb-empty-state
           v-if="searchTerm"
-          title="No recipes found"
-          description="Try adjusting your search terms to find what you're looking for"
+          :title="$t('recipes.list.empty.noResults.title')"
+          :description="$t('recipes.list.empty.noResults.description')"
         />
 
         <neb-empty-state
           v-else
           icon="material-symbols:menu-book-2-outline-rounded"
-          title="No recipes yet"
-          description="Start building your recipe collection by adding your first recipe"
+          :title="$t('recipes.list.empty.noData.title')"
+          :description="$t('recipes.list.empty.noData.description')"
         >
           <neb-button type="primary" @click="$router.push('/recipe/create')">
             <icon name="material-symbols:add-rounded" />
-            Add Your First Recipe
+            {{ $t('recipes.list.addFirstButton') }}
           </neb-button>
         </neb-empty-state>
       </template>

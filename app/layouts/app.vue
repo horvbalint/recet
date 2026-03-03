@@ -1,29 +1,30 @@
 <script setup lang="ts">
+const { t } = useI18n()
 const navigationGroups = computed(() => {
   const householdItems = [
-    { id: 'members', name: 'Members', path: '/members', icon: 'material-symbols:group-outline-rounded' },
+    { id: 'members', name: t('nav.members'), path: '/members', icon: 'material-symbols:group-outline-rounded' },
   ]
 
   if (isCurrHouseholdOwner.value)
-    householdItems.push({ id: 'settings', name: 'Settings', path: '/settings', icon: 'material-symbols:settings-outline-rounded' })
+    householdItems.push({ id: 'settings', name: t('nav.settings'), path: '/settings', icon: 'material-symbols:settings-outline-rounded' })
 
   return [
     {
-      title: 'Planning',
+      title: t('nav.groups.planning'),
       items: [
-        { id: 'recipes', name: 'Recipes', path: '/', icon: 'material-symbols:menu-book-2-outline-rounded' },
-        { id: 'meal-planner', name: 'Meal Planner', path: '/meal-planner', icon: 'material-symbols:calendar-month-outline-rounded' },
-        { id: 'shopping-lists', name: 'Shopping Lists', path: '/shopping-lists', icon: 'material-symbols:shopping-cart-outline-rounded' },
+        { id: 'recipes', name: t('nav.recipes'), path: '/', icon: 'material-symbols:menu-book-2-outline-rounded' },
+        { id: 'meal-planner', name: t('nav.mealPlanner'), path: '/meal-planner', icon: 'material-symbols:calendar-month-outline-rounded' },
+        { id: 'shopping-lists', name: t('nav.shoppingLists'), path: '/shopping-lists', icon: 'material-symbols:shopping-cart-outline-rounded' },
       ],
     },
     {
-      title: 'Household',
+      title: t('nav.groups.household'),
       items: householdItems,
     },
     {
-      title: 'Data',
+      title: t('nav.groups.data'),
       items: [
-        { id: 'master-data', name: 'Master Data', path: '/master-data', icon: 'material-symbols:category-outline-rounded' },
+        { id: 'master-data', name: t('nav.masterData'), path: '/master-data', icon: 'material-symbols:category-outline-rounded' },
       ],
     },
   ]
@@ -108,22 +109,22 @@ function update() {
         <neb-tooltip
           v-if="$pwa?.needRefresh"
           class="pwa-button"
-          title="There is a new version available."
-          text="To update, click this button and wait for the page to reload."
+          :title="$t('nav.pwa.newVersion.tooltip.title')"
+          :text="$t('nav.pwa.newVersion.tooltip.text')"
         >
           <neb-button type="link" full-width :disabled="installing" :loading="installing" @click="update()">
-            ✨ New version available ✨
+            {{ $t('nav.pwa.newVersion.button') }}
           </neb-button>
         </neb-tooltip>
 
         <neb-tooltip
           v-else-if="$pwa?.showInstallPrompt"
           class="pwa-button"
-          title="Install Recet as an app!"
-          text="Click this button to install Recet on your device in an instant."
+          :title="$t('nav.pwa.install.tooltip.title')"
+          :text="$t('nav.pwa.install.tooltip.text')"
         >
           <neb-button type="link" full-width :disabled="installing" :loading="installing" @click="install()">
-            ✨ Install with one click ✨
+            {{ $t('nav.pwa.install.button') }}
           </neb-button>
         </neb-tooltip>
       </aside>

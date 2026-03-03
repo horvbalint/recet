@@ -15,21 +15,23 @@ async function handleSignin() {
   catch (err) {
     console.error(err)
 
-    useNebToast({ type: 'error', title: 'Login failed', description: 'Invalid email or password.' })
+    useNebToast({ type: 'error', title: t('auth.login.error.title'), description: t('auth.login.error.description') })
   }
 }
 
 function goToSignup() {
   startTransitionThen(() => navigateTo('/auth/signup'))
 }
+
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="auth-page">
     <div class="auth-card">
       <neb-content-header
-        title="Welcome Back"
-        description="Sign in to your account to continue"
+        :title="$t('auth.login.title')"
+        :description="$t('auth.login.description')"
         type="section"
       />
 
@@ -39,18 +41,18 @@ function goToSignup() {
             <neb-input
               v-model="formData.email"
               class="email-input"
-              label="Email"
+              :label="$t('auth.login.email.label')"
               type="email"
-              placeholder="Enter your email"
+              :placeholder="$t('auth.login.email.placeholder')"
               required
             />
 
             <neb-input
               v-model="formData.password"
               class="password-input"
-              label="Password"
+              :label="$t('auth.login.password.label')"
               type="password"
-              placeholder="Enter your password"
+              :placeholder="$t('auth.login.password.placeholder')"
               required
               @keyup.enter="handleSignin()"
             />
@@ -64,13 +66,13 @@ function goToSignup() {
             class="submit-button"
             @click="handleSignin()"
           >
-            Sign In
+            {{ $t('auth.login.submit') }}
           </neb-button>
 
           <div class="auth-link">
-            <span>Don't have an account?</span>
+            <span>{{ $t('auth.login.noAccount') }}</span>
             <neb-button type="link" @click="goToSignup()">
-              Sign up here
+              {{ $t('auth.login.signUpLink') }}
             </neb-button>
           </div>
         </div>

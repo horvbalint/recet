@@ -4,9 +4,10 @@ import type { Recipe } from '~/pages/index.vue'
 import { and, containsAll, containsAny, eq, inside, lte, matches, not, or, raw } from 'surrealdb'
 
 export function copyPublicUrl(recipeId: RecordId<'recipe'>['id']) {
+  const { t } = useI18n()
   const publicUrl = `${window.location.origin}/public/recipe/${recipeId}`
   navigator.clipboard.writeText(publicUrl)
-  useNebToast({ type: 'success', title: 'Link copied to clipboard!', description: 'Share this link with anyone to let them view the recipe.' })
+  useNebToast({ type: 'success', title: t('recipes.detail.linkCopied.title'), description: t('recipes.detail.linkCopied.description') })
 }
 
 // VIEW TRANSITION

@@ -3,6 +3,7 @@ import type { LiveSubscription, RecordId, Uuid } from 'surrealdb'
 import type { OutIngredient, OutIngredientCategory, OutRecipe, OutShop, OutShoppingList, OutUnit } from '~/db'
 import { raw, Table } from 'surrealdb'
 
+const { t } = useI18n()
 const route = useRoute()
 const listId = route.params.id as string
 
@@ -99,7 +100,7 @@ async function setUpLiveQuery() {
   }
   catch (err) {
     console.error(err)
-    useNebToast({ type: 'warning', title: 'Live update not available!', description: 'Could not set up live updates for this shopping list.' })
+    useNebToast({ type: 'warning', title: t('shoppingLists.detail.liveUpdateWarning.title'), description: t('shoppingLists.detail.liveUpdateWarning.description') })
   }
 }
 setUpLiveQuery()
@@ -152,7 +153,7 @@ async function wrapUpdate(logicFun: () => Promise<unknown>) {
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: 'Update failed', description: 'Could not save the changes to the database' })
+    useNebToast({ type: 'error', title: t('shoppingLists.detail.error.title'), description: t('shoppingLists.detail.error.description') })
   }
   finally {
     isLoading.value = false
@@ -201,10 +202,10 @@ async function removeItem(item: ShoppingListItem) {
 
   undoToast = useNebToast({
     type: 'success',
-    title: `Item removed`,
+    title: t('shoppingLists.detail.itemRemoved'),
     timeout: 3000,
     actions: [{
-      text: 'Undo',
+      text: t('common.undo'),
       callback() {
         undoToast?.destroy()
         wrapUpdate(() => db.create(item.id).content(itemToDbItem(item)))
@@ -237,8 +238,8 @@ function startEditItem(item: Optional<ShoppingListItem, 'id'>) {
   itemModal.value = item
 }
 
-const modalTitle = computed(() => itemModal.value?.id ? 'Edit Item' : 'Add Item')
-const modalSubmitText = computed(() => itemModal.value?.id ? 'Save Changes' : 'Add Item')
+const modalTitle = computed(() => itemModal.value?.id ? t('shoppingLists.detail.itemModal.editTitle') : t('shoppingLists.detail.itemModal.addTitle'))
+const modalSubmitText = computed(() => itemModal.value?.id ? t('shoppingLists.detail.saveChanges') : t('common.add'))
 
 watch(currentHousehold, () => goToShoppingLists())
 
@@ -272,8 +273,8 @@ function onUnitCreated(unit: OutUnit) {
     <template #content-header>
       <neb-content-header
         has-separator
-        :title="data?.shoppingList.name || 'Shopping List'"
-        :description="`${items?.length || 0} items`"
+        :title="data?.shoppingList.name || $t('shoppingLists.list.title')"
+        :description="$t('shoppingLists.detail.itemsCount', { count: items?.length || 0 })"
         icon="material-symbols:shopping-cart-outline-rounded"
         :type="pageHeaderType"
       >
@@ -286,7 +287,7 @@ function onUnitCreated(unit: OutUnit) {
               track-by-key="id"
               label-key="name"
               :transform-fun="transformId"
-              placeholder="Shop"
+              :placeholder="$t('shoppingLists.detail.shop.placeholder')"
               no-search
               allow-empty
             />
@@ -294,7 +295,7 @@ function onUnitCreated(unit: OutUnit) {
 
           <neb-button type="primary" small @click="startAddItem()">
             <icon name="material-symbols:add-rounded" />
-            Add Item
+            {{ $t('shoppingLists.detail.addItemButton') }}
           </neb-button>
         </template>
       </neb-content-header>
@@ -337,7 +338,7 @@ function onUnitCreated(unit: OutUnit) {
 
                   <nuxt-link v-if="item.recipe" class="item-recipe" :to="`/recipe/${item.recipe.id.id}`" @click.stop>
                     <icon name="material-symbols:link-rounded" />
-                    From {{ item.recipe.name }}
+                    {{ $t('shoppingLists.detail.fromRecipe', { name: item.recipe.name }) }}
                   </nuxt-link>
                 </div>
 
@@ -353,11 +354,11 @@ function onUnitCreated(unit: OutUnit) {
         <neb-empty-state
           v-else
           icon="material-symbols:shopping-cart-outline-rounded"
-          title="No items yet"
-          description="Add your first item to start shopping."
+          :title="$t('shoppingLists.detail.empty.title')"
+          :description="$t('shoppingLists.detail.empty.description')"
         >
           <neb-button type="primary" @click="startAddItem()">
-            Add First Item
+            {{ $t('shoppingLists.detail.addFirstButton') }}
           </neb-button>
         </neb-empty-state>
       </div>
@@ -375,8 +376,8 @@ function onUnitCreated(unit: OutUnit) {
         <div class="modal-form-content">
           <suggestion-input
             v-model="itemModal!.item"
-            label="Item"
-            placeholder="Search an ingredient or add a custom item"
+            :label="$t('shoppingLists.detail.item.label')"
+            :placeholder="$t('shoppingLists.detail.item.placeholder')"
             :options="data!.ingredients"
             label-key="name"
             required
@@ -387,17 +388,17 @@ function onUnitCreated(unit: OutUnit) {
           <div class="amount-row">
             <neb-input
               v-model="itemModal!.amount"
-              label="Quantity"
+              :label="$t('shoppingLists.detail.quantity.label')"
               type="number"
-              placeholder="e.g., 2"
+              :placeholder="$t('shoppingLists.detail.quantity.placeholder')"
               step="0.1"
             />
 
             <neb-select
               v-model="itemModal!.unit"
               :options="data!.units"
-              label="Unit"
-              placeholder="Select unit"
+              :label="$t('shoppingLists.detail.unit.label')"
+              :placeholder="$t('shoppingLists.detail.unit.placeholder')"
               track-by-key="id"
               label-key="name"
               :transform-fun="transformId"
@@ -410,8 +411,8 @@ function onUnitCreated(unit: OutUnit) {
           <neb-select
             v-model="itemModal!.category"
             :options="data!.categories"
-            label="Category"
-            placeholder="Select a category"
+            :label="$t('shoppingLists.detail.category.label')"
+            :placeholder="$t('shoppingLists.detail.category.placeholder')"
             track-by-key="id"
             label-key="name"
             :transform-fun="transformId"
@@ -423,7 +424,7 @@ function onUnitCreated(unit: OutUnit) {
 
       <template #actions>
         <neb-button type="secondary" @click="closeModal()">
-          Cancel
+          {{ $t('common.cancel') }}
         </neb-button>
 
         <neb-button

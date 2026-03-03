@@ -2,12 +2,11 @@
 import type { Menu } from 'nebula/components/overlays/neb-menu.vue'
 import type { RecordId } from 'surrealdb'
 
-const { t } = useI18n()
 const props = defineProps<{
   recipeId: string
   guest?: true
 }>()
-
+const { t } = useI18n()
 interface Recipe {
   id: RecordId<'recipe'>
   name: string
@@ -66,17 +65,17 @@ const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncDat
         cuisine.{name, color, flag},
         tags.{name, color, icon},
         meal.{name, color},
-        ingredients.map(|$i| {
-          amount: $i.amount,
-          ingredient: $i.ingredient.name,
-          unit: $i.unit.name,
-          description: $i.description,
-          skip_from_shopping_list: $i.ingredient.skip_from_shopping_list
-        }),
-        recipes.map(|$r| {
-          recipe: $r.recipe.{id, name},
-          description: $r.description
-        })
+        ingredients.{
+          amount,
+          ingredient: ingredient.name,
+          unit: unit.name,
+          description,
+          skip_from_shopping_list: ingredient.skip_from_shopping_list
+        },
+        recipes.{
+          recipe.{id, name},
+          description
+        }
       FROM ONLY
         type::record('recipe', ${props.recipeId})
     `)
@@ -201,7 +200,7 @@ async function togglePublic() {
       actions: recipe.value!.public
         ? [{
             text: t('recipes.detail.copyLink'),
-            callback: () => copyPublicUrl(props.recipeId),
+            callback: () => copyPublicUrl(t, props.recipeId),
           }]
         : [],
     })
@@ -233,7 +232,7 @@ async function deleteRecipe() {
   }
   catch (err) {
     console.error('Error deleting recipe:', err)
-useNebToast({ type: 'error', title: t('recipes.detail.deleteError.title'), description: t('recipes.detail.deleteError.description') })
+    useNebToast({ type: 'error', title: t('recipes.detail.deleteError.title'), description: t('recipes.detail.deleteError.description') })
   }
   finally {
     inProgress.value = false
@@ -252,7 +251,7 @@ const menus = computed<Menu[]>(() => {
   return [
     ...recipe.value?.public
       ? [
-          { text: t('recipes.detail.copyPublicLink'), icon: 'material-symbols:copy-all-outline-rounded', callback: () => copyPublicUrl(props.recipeId) },
+          { text: t('recipes.detail.copyPublicLink'), icon: 'material-symbols:copy-all-outline-rounded', callback: () => copyPublicUrl(t, props.recipeId) },
           { text: t('recipes.detail.makePrivate'), icon: 'material-symbols:public-off-rounded', callback: togglePublic },
         ]
       : [{ text: t('recipes.detail.makePublic'), icon: 'material-symbols:public', callback: togglePublic }],

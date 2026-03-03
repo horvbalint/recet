@@ -3,8 +3,7 @@ import type { InMealRuleConditions } from '~/db'
 import type { Recipe } from '~/pages/index.vue'
 import { and, containsAll, containsAny, eq, inside, lte, matches, not, or, raw } from 'surrealdb'
 
-export function copyPublicUrl(recipeId: RecordId<'recipe'>['id']) {
-  const { t } = useI18n()
+export function copyPublicUrl(t: TranslateFunction, recipeId: RecordId<'recipe'>['id']) {
   const publicUrl = `${window.location.origin}/public/recipe/${recipeId}`
   navigator.clipboard.writeText(publicUrl)
   useNebToast({ type: 'success', title: t('recipes.detail.linkCopied.title'), description: t('recipes.detail.linkCopied.description') })

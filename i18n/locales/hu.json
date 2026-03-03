@@ -209,8 +209,8 @@
       "backToRecipes": "Vissza a receptekhez",
       "copyLink": "Link másolása",
       "copyPublicLink": "Publikus link másolása",
-      "makePrivate": "Privát",
-      "makePublic": "Publikus",
+      "makePrivate": "Megosztás visszavonása",
+      "makePublic": "Megosztás",
       "copyRecipe": "Recept másolása",
       "deleteRecipe": "Recept törlése",
       "empty": {

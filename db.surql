@@ -390,8 +390,6 @@ DEFINE FUNCTION OVERWRITE fn::add_recipe_to_shopping_list(
 };
 
 DEFINE API OVERWRITE "/invitation/accept" FOR post
-	MIDDLEWARE
-		api::timeout(1s)
 	THEN {
 		IF $access != 'mobile_user' && $access != 'desktop_user' {
 			RETURN { status: 403, body: { error: "Forbidden" } };
@@ -430,5 +428,14 @@ DEFINE API OVERWRITE "/recipe/scrape/:type" FOR get
 		RETURN { status: 200, body: $result };
 	};
 
+DEFINE API OVERWRITE "/is-ai-enabled" FOR get
+	THEN {
+		IF $access != 'mobile_user' && $access != 'desktop_user' {
+			RETURN { status: 403, body: { error: "Forbidden" } };
+		};
+
+		LET $enabled = $openAiBaseUrl != NONE && $openAiModel != NONE && $openAiToken != NONE;
+		RETURN { status: 200, body: $enabled };
+	};
 
 COMMIT;

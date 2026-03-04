@@ -323,6 +323,12 @@ function createImportHint(value: string | number | undefined) {
   if (value)
     return t('recipes.create.import.hint', { value })
 }
+
+const { data: isAiEnabled } = useAsyncData(async () => {
+  const [response] = await db.query<[{ body: boolean, status: number }]>(surql`api::invoke('/is-ai-enabled')`)
+  if (response.status === 200)
+    return response.body
+})
 </script>
 
 <template>
@@ -336,6 +342,7 @@ function createImportHint(value: string | number | undefined) {
       >
         <template #actions>
           <neb-button
+            v-if="isAiEnabled"
             type="secondary"
             small
             @click="importModal = true"

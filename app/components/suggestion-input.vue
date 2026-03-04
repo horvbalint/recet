@@ -1,6 +1,6 @@
 <script lang="ts" setup generic="LabelKey extends PropertyKey, T extends Option<LabelKey>">
 import type { RecordId } from 'surrealdb'
-import * as JsSearch from 'js-search'
+import Fuse from 'fuse.js'
 
 export type Option<LabelKey extends PropertyKey> = {
   id: RecordId
@@ -40,11 +40,10 @@ const processedOptions = computed<ProcessedOption[]>(() =>
 )
 
 const searcher = computed(() => {
-  const searcher = new JsSearch.Search('trackValue')
-  searcher.addIndex('labelValue')
-  searcher.addDocuments(processedOptions.value)
-
-  return searcher
+  return new Fuse(processedOptions.value, {
+    includeScore: false,
+    keys: ['labelValue'],
+  })
 })
 
 const inputText = ref(
@@ -68,8 +67,8 @@ const suggestion = computed(() => {
   if (inputText.value.length < 2 || typeof modelValue.value !== 'string')
     return null
 
-  const [result] = searcher.value.search(inputText.value) as ProcessedOption[]
-  return result || null
+  const [result] = searcher.value.search(inputText.value)
+  return result?.item || null
 })
 
 async function acceptSuggestion() {

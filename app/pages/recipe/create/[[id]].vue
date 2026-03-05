@@ -509,6 +509,7 @@ const { data: isAiEnabled } = useAsyncData(async () => {
             :label="$t('recipes.create.ingredientsSection')"
             class="form-section"
             :with-initial-item="!formData.id"
+            @remove="importedRecipe?.ingredients.splice($event, 1)"
           >
             <template #default="{ item: ingredient, index }">
               <div class="ingredient-fields">

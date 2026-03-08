@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import type { InShoppingList, OutShop, OutShoppingList } from '~/db'
 
-const { t } = useI18n()
 const props = defineProps<{
   initialData?: Pick<InShoppingList, 'name' | 'shop'> | null
 }>()
-
 const emit = defineEmits<{
   change: []
 }>()
-
+const { t } = useI18n()
 const modelValue = defineModel<boolean>({ required: true })
 
 const { data: shops } = useAsyncData('shops', async () => {
@@ -47,7 +45,6 @@ async function handleSubmit() {
       await db
         .query(surql`CREATE shopping_list CONTENT ${{
           ...formData.value,
-          items: [],
           household: currentHousehold.value!.id,
         }}`)
         .collect<[OutShoppingList]>()

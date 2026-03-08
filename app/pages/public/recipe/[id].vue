@@ -5,6 +5,6 @@ const recipeId = route.params.id as string
 
 <template>
   <page-layout>
-    <recipe-page :recipe-id="recipeId" guest />
+    <recipe-page :recipe-id="recipeId" is-guest />
   </page-layout>
 </template>

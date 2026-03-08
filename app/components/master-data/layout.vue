@@ -2,7 +2,6 @@
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
 import type { BoundQuery } from 'surrealdb'
 
-const { t } = useI18n()
 const props = defineProps<{
   table: string
   columns: Columns<T>
@@ -10,7 +9,7 @@ const props = defineProps<{
   name: string
   icon: string
 }>()
-
+const { t } = useI18n()
 const showModal = ref(false)
 
 const { data, status, refresh } = useAsyncData(`${props.table}-master-data-layout`, async () => {
@@ -62,14 +61,14 @@ function closeModal() {
       :status="status"
       :refresh="refresh"
     >
-      <template #actions>
+      <template v-if="isCurrHouseholdEditor" #actions>
         <neb-button small @click="handleCreateClick()">
           <Icon name="material-symbols:add-rounded" />
           {{ $t('masterData.addButton', { name: props.name }) }}
         </neb-button>
       </template>
 
-      <template #row-actions="{ data: { original } }">
+      <template v-if="isCurrHouseholdEditor" #row-actions="{ data: { original } }">
         <Icon
           name="material-symbols:edit-outline-rounded"
           class="row-action"

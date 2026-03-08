@@ -223,9 +223,9 @@ const roleDictionary: Record<OutMember['role'], string> = {
           </neb-badge>
         </template>
 
-        <template #row-actions="{ data: { original } }">
-          <icon v-if="isCurrHouseholdOwner" class="row-action" name="material-symbols:edit-outline-rounded" @click="handleEditMember(original)" />
-          <icon v-if="isCurrHouseholdOwner" class="row-action delete-action" name="material-symbols:delete-outline-rounded" @click="handleDeleteMember(original)" />
+        <template v-if="isCurrHouseholdOwner" #row-actions="{ data: { original } }">
+          <icon class="row-action" name="material-symbols:edit-outline-rounded" @click="handleEditMember(original)" />
+          <icon class="row-action delete-action" name="material-symbols:delete-outline-rounded" @click="handleDeleteMember(original)" />
         </template>
       </neb-table>
 

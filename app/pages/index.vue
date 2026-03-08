@@ -87,7 +87,7 @@ onBeforeUnmount(() => {
         :type="pageHeaderType"
         has-separator
       >
-        <template v-if="recipes.length" #actions>
+        <template v-if="recipes.length && isCurrHouseholdEditor" #actions>
           <neb-button small type="primary" @click="$router.push('/recipe/create')">
             <icon name="material-symbols:add-rounded" />
             {{ $t('recipes.list.addButton') }}

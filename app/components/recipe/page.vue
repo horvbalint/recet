@@ -4,7 +4,7 @@ import type { RecordId } from 'surrealdb'
 
 const props = defineProps<{
   recipeId: string
-  guest?: true
+  isGuest: boolean
 }>()
 const { t } = useI18n()
 interface Recipe {
@@ -272,7 +272,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
         :title="$t('recipes.detail.empty.notFound.title')"
         :description="$t('recipes.detail.empty.notFound.description')"
       >
-        <neb-button v-if="!props.guest" @click="navigateTo('/')">
+        <neb-button @click="navigateTo('/')">
           <icon name="material-symbols:arrow-back-rounded" />
           {{ $t('recipes.detail.backToRecipes') }}
         </neb-button>
@@ -282,7 +282,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
         <header>
           <div class="recipe-hero">
             <recipe-image class="recipe-image" :recipe :width-px="600" :height-px="400">
-              <div v-if="!props.guest" class="recipe-actions">
+              <div v-if="!isGuest" class="recipe-actions">
                 <neb-button type="secondary-neutral" small :disabled="inProgress" :loading="inProgress" @click="editRecipe()">
                   <icon name="material-symbols:edit-outline-rounded" />
                 </neb-button>
@@ -352,7 +352,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
                 type="page"
                 has-separator
               >
-                <template v-if="!props.guest" #actions>
+                <template v-if="!isGuest || portions" #actions>
                   <neb-dropdown :floating-options="{ placement: 'bottom-end' }">
                     <template #trigger="{ toggle }">
                       <neb-button type="tertiary-neutral" small :disabled="isAddingToList" :loading="isAddingToList" @click="toggle()">
@@ -362,7 +362,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
                     <template #content="{ close }">
                       <div class="ingredients-dropdown">
-                        <neb-content-header v-if="portions" :title="$t('recipes.detail.portions')" type="paragraph" has-separator>
+                        <neb-content-header v-if="portions" :title="$t('recipes.detail.portions')" type="paragraph" :has-separator="!isGuest">
                           <template #actions>
                             <div class="portion-controls">
                               <neb-button small square type="tertiary-neutral" @click="decrementPortions()">
@@ -378,7 +378,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
                           </template>
                         </neb-content-header>
 
-                        <div class="add-to-list-wrapper">
+                        <div v-if="!isGuest" class="add-to-list-wrapper">
                           <neb-content-header
                             :title="checkedIngredients.length ? $t('recipes.detail.addToListSelected', { count: checkedIngredients.length + checkedRecipes.length }) : $t('recipes.detail.addToList')"
                             type="paragraph"
@@ -459,7 +459,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
                     </div>
 
                     <neb-tooltip
-                      v-if="ingredient.skip_from_shopping_list && !props.guest"
+                      v-if="ingredient.skip_from_shopping_list && !isGuest"
                       :title="$t('recipes.detail.tooltip.skipFromList')"
                     >
                       <icon name="material-symbols:receipt-long-off-outline-rounded" />

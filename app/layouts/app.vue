@@ -8,14 +8,21 @@ const navigationGroups = computed(() => {
   if (isCurrHouseholdOwner.value)
     householdItems.push({ id: 'settings', name: t('nav.settings'), path: '/settings', icon: 'material-symbols:settings-outline-rounded' })
 
+  const planningItems = [
+    { id: 'recipes', name: t('nav.recipes'), path: '/', icon: 'material-symbols:menu-book-2-outline-rounded' },
+  ]
+
+  if (isCurrHouseholdEditor.value) {
+    planningItems.push(
+      { id: 'meal-planner', name: t('nav.mealPlanner'), path: '/meal-planner', icon: 'material-symbols:calendar-month-outline-rounded' },
+      { id: 'shopping-lists', name: t('nav.shoppingLists'), path: '/shopping-lists', icon: 'material-symbols:shopping-cart-outline-rounded' },
+    )
+  }
+
   return [
     {
       title: t('nav.groups.planning'),
-      items: [
-        { id: 'recipes', name: t('nav.recipes'), path: '/', icon: 'material-symbols:menu-book-2-outline-rounded' },
-        { id: 'meal-planner', name: t('nav.mealPlanner'), path: '/meal-planner', icon: 'material-symbols:calendar-month-outline-rounded' },
-        { id: 'shopping-lists', name: t('nav.shoppingLists'), path: '/shopping-lists', icon: 'material-symbols:shopping-cart-outline-rounded' },
-      ],
+      items: planningItems,
     },
     {
       title: t('nav.groups.household'),

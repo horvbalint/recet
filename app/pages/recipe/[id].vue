@@ -12,6 +12,6 @@ onBeforeRouteLeave((to, _, next) => {
 
 <template>
   <page-layout>
-    <recipe-page :recipe-id="recipeId" />
+    <recipe-page :recipe-id="recipeId" :is-guest="!isCurrHouseholdEditor" />
   </page-layout>
 </template>

@@ -285,8 +285,10 @@ async function importRecipe() {
 
     const [{ status, body: recipe }] = await db
       .query(surql`api::invoke('/recipe/scrape/' + ${importSourceType.value}, {
-        query: {
+        method: 'post',
+        body: {
           source: ${importSource.value},
+          household: ${currentHousehold.value!.id},
         }
       })`)
       .collect<[{ body: ImportedRecipe, status: number }]>()

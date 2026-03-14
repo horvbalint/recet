@@ -415,16 +415,17 @@ DEFINE API OVERWRITE "/invitation/accept" FOR post
 		RETURN { status: 200, body: $household };
 	};
 
-DEFINE API OVERWRITE "/recipe/scrape/:type" FOR get
+DEFINE API OVERWRITE "/recipe/scrape/:type" FOR post
 	THEN {
 		IF $access != 'mobile_user' && $access != 'desktop_user' {
 			RETURN { status: 403, body: { error: "Forbidden" } };
 		};
 
 		LET $type = $request.params.type;
-		LET $source = $request.query.source;
+		LET $source = $request.body.source;
+		LET $household = $request.body.household;
 
-		LET $result = mod::recet::scrape_for_recipe($type, $source);
+		LET $result = mod::recet::scrape_for_recipe($household, $type, $source);
 		RETURN { status: 200, body: $result };
 	};
 

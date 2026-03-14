@@ -6,7 +6,11 @@ use surrealdb_types::{RecordId, SurrealValue, object, vars};
 use surrealism::{imports::sql_with_vars, sql, surrealism};
 
 #[surrealism]
-fn scrape_for_recipe(source_type: String, source_text: String) -> Result<RecipeInfo> {
+fn scrape_for_recipe(
+    household: RecordId,
+    source_type: String,
+    source_text: String,
+) -> Result<RecipeInfo> {
     let text = if source_type == "text" {
         source_text
     } else if source_type == "url" {
@@ -47,25 +51,25 @@ fn scrape_for_recipe(source_type: String, source_text: String) -> Result<RecipeI
     let mut info: RecipeInfo = serde_json::de::from_str(&response.choices[0].message.content)?;
 
     for info in &mut info.ingredients {
-        info.ingredient = find_by_name("ingredient", info.name.clone())?;
+        info.ingredient = find_by_name(&household, "ingredient", info.name.clone())?;
 
         if let Some(unit_string) = &info.unit_string {
-            info.unit = find_by_name("unit", unit_string.clone())?;
+            info.unit = find_by_name(&household, "unit", unit_string.clone())?;
         }
     }
 
     if let Some(cuisine_string) = &info.cuisine_string {
-        info.cuisine = find_by_name("cuisine", cuisine_string.clone())?;
+        info.cuisine = find_by_name(&household, "cuisine", cuisine_string.clone())?;
     }
 
     for tag_string in &info.tag_strings {
-        if let Some(tag) = find_by_name("recipe_tag", tag_string.clone())? {
+        if let Some(tag) = find_by_name(&household, "recipe_tag", tag_string.clone())? {
             info.tags.push(tag);
         }
     }
 
     for meal_string in &info.meal_strings {
-        if let Some(meal) = find_by_name("meal", meal_string.clone())? {
+        if let Some(meal) = find_by_name(&household, "meal", meal_string.clone())? {
             info.meals.push(meal);
         }
     }
@@ -73,11 +77,14 @@ fn scrape_for_recipe(source_type: String, source_text: String) -> Result<RecipeI
     Ok(info)
 }
 
-fn find_by_name(table: &str, name: String) -> Result<Option<RecordId>> {
+fn find_by_name(household: &RecordId, table: &str, name: String) -> Result<Option<RecordId>> {
     let result: Option<RecordId> = sql_with_vars(
-        format!("SELECT VALUE id FROM ONLY {table} WHERE name @@ $name LIMIT 1"),
+        format!(
+            "SELECT VALUE id FROM ONLY {table} WHERE name @@ $name && household = $household LIMIT 1"
+        ),
         vars! {
-            name: name
+            name: name,
+            household: household.clone()
         },
     )?;
 

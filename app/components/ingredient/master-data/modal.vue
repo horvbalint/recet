@@ -57,7 +57,6 @@ function onCategoryCreated() {
         use-only-tracked-key
         :placeholder="$t('masterData.ingredient.category.placeholder')"
         allow-empty
-        no-search
         @new="handleCreateCategory($event)"
       />
 

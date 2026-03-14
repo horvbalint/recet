@@ -23,7 +23,9 @@ const { data: categories } = await useAsyncData(async () => {
   return result
 })
 
-const [parent, dragCategories] = useDragAndDrop(props.initialData?.categories || categories.value!)
+const [parent, dragCategories] = useDragAndDrop(props.initialData?.categories || categories.value!, {
+  dragHandle: '.drag-indicator',
+})
 
 function transformBeforeCreate(data: any) {
   return {
@@ -70,7 +72,7 @@ function handleSave(item: OutShop) {
           :key="category.id.toString()"
           class="drag-item"
         >
-          <icon name="material-symbols:drag-indicator" />
+          <icon class="drag-indicator" name="material-symbols:drag-indicator" />
 
           <div class="category-content">
             <span class="category-name">{{ category.name }}</span>

@@ -167,7 +167,11 @@ async function updateRecipe() {
   }
   catch (error) {
     console.error(error)
-    useNebToast({ type: 'error', title: t('recipes.create.error.title'), description: t('recipes.create.error.description') })
+    useNebToast({
+      type: 'error',
+      title: t('recipes.create.error.title'),
+      description: error instanceof Error ? error.message : t('recipes.create.error.description'),
+    })
   }
   finally {
     submitting.value = false

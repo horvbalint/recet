@@ -409,7 +409,6 @@ function onUnitCreated(unit: OutUnit) {
               label-key="name"
               :transform-fun="transformId"
               allow-empty
-              no-search
               @new="handleCreateUnit($event)"
             />
           </div>
@@ -423,7 +422,6 @@ function onUnitCreated(unit: OutUnit) {
             label-key="name"
             :transform-fun="transformId"
             allow-empty
-            no-search
           />
         </div>
       </template>

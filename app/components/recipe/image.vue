@@ -17,7 +17,7 @@ const props = defineProps<{
 }>()
 
 const { data: imageUrl, refresh, error } = useAsyncData(`recipe-image-${props.recipe.id.id}`, () => {
-  return getRecipeImageUrl(props.recipe.id)
+  // return getRecipeImageUrl(props.recipe.id)
 }, {
   immediate: false,
 })

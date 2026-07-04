@@ -15,26 +15,26 @@
     "generate-icons": "pwa-assets-generator"
   },
   "dependencies": {
-    "@formkit/drag-and-drop": "0.5.3",
-    "@nuxtjs/i18n": "^10.2.3",
+    "@formkit/drag-and-drop": "0.6.1",
+    "@nuxtjs/i18n": "10.4.0",
     "@vite-pwa/assets-generator": "1.0.2",
     "@vue/reactivity": "3.5.29",
     "blurhash": "2.0.5",
     "dayjs": "1.11.19",
-    "fuse.js": "^7.1.0",
+    "fuse.js": "7.1.0",
     "nebula": "github:horvbalint/nebula",
     "nuxt": "4.3.1",
-    "sortablejs": "^1.15.6",
+    "sortablejs": "1.15.6",
     "surreal-ts": "3.0.0",
     "surrealdb": "2.0.0",
     "vue": "3.5.29",
-    "vue-tsc": "^3.1.5"
+    "vue-tsc": "3.1.5"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "7.2.0",
+    "@antfu/eslint-config": "9.1.0",
     "@nuxtjs/color-mode": "4.0.0",
-    "@types/sortablejs": "^1.15.9",
+    "@types/sortablejs": "1.15.9",
     "@vite-pwa/nuxt": "1.0.7",
-    "eslint": "9.39.1"
+    "eslint": "10.3.0"
   }
 }

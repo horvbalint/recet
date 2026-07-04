@@ -277,6 +277,10 @@ DEFINE FIELD OVERWRITE recipe ON shopping_list_item TYPE option<record<recipe>> 
 DEFINE FIELD OVERWRITE marked ON shopping_list_item TYPE option<bool>;
 fn::define_meta_fields("shopping_list_item");
 
+DEFINE EVENT OVERWRITE update_shopping_list_date ON shopping_list_item WHEN $event = "CREATE" || $event = "UPDATE" THEN (
+	UPDATE ONLY $after.shopping_list SET updated_at = time::now()
+);
+
 // TABLE: meal_plan
 fn::define_household_table("meal_plan");
 DEFINE FIELD OVERWRITE household ON meal_rule TYPE record<household>;

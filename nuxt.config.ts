@@ -196,6 +196,19 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    // plugins: [
+    //   {
+    //     name: 'fix-route-rules-undefined-path',
+    //     transform(code: string, id: string) {
+    //       if (id.includes('route-rules.mjs')) {
+    //         return code.replace(
+    //           'export default (path) => defu(',
+    //           'export default (path) => path == null ? {} : defu(',
+    //         )
+    //       }
+    //     },
+    //   },
+    // ],
     optimizeDeps: {
       include: [
         'blurhash',

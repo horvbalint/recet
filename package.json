@@ -18,23 +18,23 @@
     "@formkit/drag-and-drop": "0.6.1",
     "@nuxtjs/i18n": "10.4.0",
     "@vite-pwa/assets-generator": "1.0.2",
-    "@vue/reactivity": "3.5.29",
+    "@vue/reactivity": "3.5.39",
     "blurhash": "2.0.5",
-    "dayjs": "1.11.19",
-    "fuse.js": "7.1.0",
+    "dayjs": "1.11.21",
+    "fuse.js": "7.4.2",
     "nebula": "github:horvbalint/nebula",
-    "nuxt": "4.3.1",
-    "sortablejs": "1.15.6",
+    "nuxt": "4.4.8",
+    "sortablejs": "1.15.7",
     "surreal-ts": "3.0.0",
-    "surrealdb": "2.0.0",
-    "vue": "3.5.29",
-    "vue-tsc": "3.1.5"
+    "surrealdb": "2.0.4",
+    "vue": "3.5.39",
+    "vue-tsc": "3.3.6"
   },
   "devDependencies": {
     "@antfu/eslint-config": "9.1.0",
-    "@nuxtjs/color-mode": "4.0.0",
+    "@nuxtjs/color-mode": "4.0.1",
     "@types/sortablejs": "1.15.9",
-    "@vite-pwa/nuxt": "1.0.7",
-    "eslint": "10.3.0"
+    "@vite-pwa/nuxt": "1.1.1",
+    "eslint": "10.6.0"
   }
 }

@@ -26,7 +26,7 @@
     "nuxt": "4.4.8",
     "sortablejs": "1.15.7",
     "surreal-ts": "3.0.0",
-    "surrealdb": "2.0.4",
+    "surrealdb": "2.0.8",
     "vue": "3.5.39",
     "vue-tsc": "3.3.6"
   },

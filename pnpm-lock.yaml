@@ -42,8 +42,8 @@ importers:
         specifier: 3.0.0
         version: 3.0.0
       surrealdb:
-        specifier: 2.0.4
-        version: 2.0.4(tslib@2.8.1)(typescript@5.9.3)
+        specifier: 2.0.8
+        version: 2.0.8(tslib@2.8.1)(typescript@5.9.3)
       vue:
         specifier: 3.5.39
         version: 3.5.39(typescript@5.9.3)
@@ -7364,8 +7364,8 @@ packages:
     resolution: {integrity: sha512-/GCvKIcR58bpWm4NtynS3anhnD4ZTAHN9EkN/Cb8Qao2cUcgNMfiT0fs+uwMJbDOpW07CRJsX2h/CF8zWzd5SA==}
     hasBin: true
 
-  surrealdb@2.0.4:
-    resolution: {integrity: sha512-tCmMzcsLB/CVDZtxsj/xOWY6NWy9MrX2abMuwnVpAI5xj7kvnq9noRtc1nhjuDihei/Njfkxe/NYMxy7ZLLl4g==}
+  surrealdb@2.0.8:
+    resolution: {integrity: sha512-nkoTAdnfJYc0EvB2Hut0MET/UiWTOT6+TJODoubHzoC952gJvjEbHMx5TLrecUYo1vIN3/qBgwMIcLKK0WC7zQ==}
     peerDependencies:
       tslib: ^2.6.3
       typescript: ^5.0.0 || ^6.0.0
@@ -16676,7 +16676,7 @@ snapshots:
       surreal-ts-linux-x64: 3.0.0
       surreal-ts-windows-x64: 3.0.0
 
-  surrealdb@2.0.4(tslib@2.8.1)(typescript@5.9.3):
+  surrealdb@2.0.8(tslib@2.8.1)(typescript@5.9.3):
     dependencies:
       '@surrealdb/sqon': 0.1.0(tslib@2.8.1)(typescript@5.9.3)
       tslib: 2.8.1

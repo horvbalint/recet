@@ -35,7 +35,7 @@ export function getRecipeViewTransitionNames(recipeId: RecordId<'recipe'>['id'])
 // RECIPE IMAGE HANDLING
 export async function getRecipeImage(recipeId: RecordId<'recipe'>) {
   const [buffer] = await db
-    .query(surql`file::get(type::file('recipe_images', ${recipeId.id}))`)
+    .query(surql`fn::get_recipe_image(type::file('recipe_images', ${recipeId.id}))`)
     .collect<[ArrayBuffer | null]>()
 
   if (buffer)

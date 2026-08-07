@@ -443,4 +443,8 @@ DEFINE API OVERWRITE "/is-ai-enabled" FOR get
 		RETURN { status: 200, body: $enabled };
 	};
 
+DEFINE FUNCTION OVERWRITE fn::get_recipe_image($file_handle: file) {
+	$file_handle.get()
+};
+
 COMMIT;

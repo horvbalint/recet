@@ -1,19 +1,8 @@
 {
   "servers": {
     "SurrealDB": {
-      "type": "stdio",
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--network",
-        "host",
-        "--pull",
-        "always",
-        "surrealdb/surrealmcp:latest",
-        "start"
-      ]
+      "type": "http",
+      "url": "https://mcp.surrealdb.com"
     }
   }
 }

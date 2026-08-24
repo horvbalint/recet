@@ -134,6 +134,11 @@ async function onRuleCreated(rule: OutMealRule) {
   selectedRule.value = rule
 }
 
+// recipes used within this many days of a target day get zero chance of being picked
+const RECIPE_RECENCY_EXCLUSION_DAYS = 2
+// chance ramps back up to normal between the exclusion window and this many days
+const RECIPE_RECENCY_RAMP_DAYS = 14
+
 async function applyRule() {
   const startDay = selection.value!.start.isBefore(selection.value!.curr) ? selection.value!.start : selection.value!.curr
   const dayCount = Math.abs(selection.value!.start.diff(selection.value!.curr, 'day')) + 1
@@ -141,12 +146,57 @@ async function applyRule() {
   const selectedDays = Array.from({ length: dayCount }).map((_, i) => startDay.add(i, 'day'))
 
   const whereConditions = constructWhereConditions(selectedRule.value!, undefined)
-  const query = surql`SELECT id FROM recipe WHERE ${whereConditions} ORDER BY rand() LIMIT ${dayCount}`
 
-  const [recipes] = await db.query(query).collect<[Pick<OutRecipe, 'id'>[]]>()
-  const enoughRecipes = recipes.length >= dayCount
-    ? recipes
-    : [...recipes, ...Array.from({ length: dayCount - recipes.length }).map((_, i) => recipes[i % recipes.length])]
+  const chosenRecipes: Pick<OutRecipe, 'id'>[] = []
+  const usedRecipeIds: RecordId<'recipe'>[] = []
+
+  for (const day of selectedDays) {
+    // weight is computed per day since a recipe's recency is relative to the day it would be planned for
+    const [picked] = await db.query(surql`
+      SELECT
+        id,
+        {
+          LET $lastUsed = (
+            SELECT VALUE date FROM ONLY meal_plan
+            WHERE household = ${currentHousehold.value?.id}
+              && date >= ${day.subtract(RECIPE_RECENCY_RAMP_DAYS, 'day').toDate()}
+              && date <= ${day.toDate()}
+              && (
+                meals.breakfast.recipe CONTAINS $parent.id
+                || meals.lunch.recipe CONTAINS $parent.id
+                || meals.dinner.recipe CONTAINS $parent.id
+                || meals.snack.recipe CONTAINS $parent.id
+              )
+            ORDER BY date DESC
+            LIMIT 1
+          );
+          LET $daysSinceUsed = IF $lastUsed THEN duration::days(${day.toDate()} - $lastUsed) ELSE ${RECIPE_RECENCY_RAMP_DAYS} END;
+
+          RETURN math::pow(
+            math::clamp(
+              ($daysSinceUsed - ${RECIPE_RECENCY_EXCLUSION_DAYS}) / (${RECIPE_RECENCY_RAMP_DAYS} - ${RECIPE_RECENCY_EXCLUSION_DAYS}),
+              0, 1
+            ),
+            2
+          );
+        } AS weight,
+        rand() AS random
+      FROM ONLY recipe
+      WHERE ${whereConditions} && id NOTINSIDE ${usedRecipeIds}
+      ORDER BY weight DESC, random DESC
+      LIMIT 1
+    `).collect<[{ id: RecordId<'recipe'> } | undefined]>()
+
+    if (!picked)
+      break
+
+    chosenRecipes.push({ id: picked.id })
+    usedRecipeIds.push(picked.id)
+  }
+
+  const enoughRecipes = chosenRecipes.length >= dayCount
+    ? chosenRecipes
+    : [...chosenRecipes, ...Array.from({ length: dayCount - chosenRecipes.length }).map((_, i) => chosenRecipes[i % chosenRecipes.length])]
 
   const promises = selectedDays.map((day, i) => {
     const mealsOperator = overWriteExistinMeals.value ? '=' : '+='

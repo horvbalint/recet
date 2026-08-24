@@ -283,7 +283,6 @@ DEFINE EVENT OVERWRITE update_shopping_list_date ON shopping_list_item WHEN $eve
 
 // TABLE: meal_plan
 fn::define_household_table("meal_plan");
-DEFINE FIELD OVERWRITE household ON meal_rule TYPE record<household>;
 DEFINE FIELD OVERWRITE date ON meal_plan TYPE datetime;
 DEFINE FIELD OVERWRITE meals ON meal_plan TYPE object;
 FOR $meal IN ["breakfast", "lunch", "dinner", "snack"] {

@@ -151,7 +151,6 @@ async function applyRule() {
   const usedRecipeIds: RecordId<'recipe'>[] = []
 
   for (const day of selectedDays) {
-    // weight is computed per day since a recipe's recency is relative to the day it would be planned for
     const [picked] = await db.query(surql`
       SELECT
         id,

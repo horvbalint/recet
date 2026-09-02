@@ -49,7 +49,7 @@ const columns = computed(() => ({
 
 <style scoped>
 .no-category {
-  color: var(--neutral-color-400);
+  color: var(--neb-text-subtle);
   font-style: italic;
 }
 </style>

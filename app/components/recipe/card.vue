@@ -94,25 +94,25 @@ function handleMiddleClick() {
 
 <style scoped>
 .recipe-card {
-  background: #fff;
+  background: var(--neb-bg-raised);
   border-radius: var(--radius-default);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--neb-shadow-sm);
   overflow: hidden;
   transition: all var(--duration-default);
   cursor: pointer;
-  border: 1px solid var(--neutral-color-100);
+  border: 1px solid var(--neb-border-subtle);
 }
 
 .recipe-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--neb-shadow-md);
   transform: translateY(-2px);
-  border-color: var(--neutral-color-200);
+  border-color: var(--neb-border);
 }
 
 .image-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--neutral-color-100), var(--neutral-color-50));
+  background: linear-gradient(135deg, var(--neb-bg-muted), var(--neb-bg-subtle));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,7 +120,7 @@ function handleMiddleClick() {
 
 .image-placeholder .icon {
   font-size: 48px !important;
-  color: var(--neutral-color-400);
+  color: var(--neb-text-subtle);
 }
 
 .recipe-content {
@@ -145,7 +145,7 @@ function handleMiddleClick() {
 .recipe-title {
   font-size: var(--text-xl);
   font-weight: 600;
-  color: var(--neutral-color-900);
+  color: var(--neb-text);
   margin: 0;
   line-height: 1.3;
   width: fit-content;
@@ -163,13 +163,13 @@ function handleMiddleClick() {
   align-items: center;
   gap: var(--space-1);
   font-size: var(--text-sm);
-  color: var(--neutral-color-600);
+  color: var(--neb-text-muted);
   font-weight: 500;
 }
 
 .meta-item .icon {
   font-size: 18px !important;
-  color: var(--neutral-color-500);
+  color: var(--neb-text-subtle);
 }
 
 .recipe-tags {
@@ -204,33 +204,6 @@ function handleMiddleClick() {
 
   .meta-item {
     font-size: var(--text-xs);
-  }
-}
-
-.dark-mode {
-  .recipe-card {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
-  }
-
-  .recipe-card:hover {
-    border-color: var(--neutral-color-700);
-  }
-
-  .recipe-title {
-    color: var(--neutral-color-100);
-  }
-
-  .meta-item {
-    color: var(--neutral-color-400);
-  }
-
-  .meta-item .icon {
-    color: var(--neutral-color-500);
-  }
-
-  .image-placeholder {
-    background: linear-gradient(135deg, var(--neutral-color-800), var(--neutral-color-900));
   }
 }
 </style>

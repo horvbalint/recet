@@ -101,7 +101,7 @@ function handleSave(item: OutShop) {
 }
 
 .drag-item:hover {
-  background: var(--neutral-color-50);
+  background: var(--neb-bg-hover);
 }
 
 .drag-item:active {
@@ -109,14 +109,14 @@ function handleSave(item: OutShop) {
 }
 
 .drag-item .icon {
-  color: var(--neutral-color-400);
+  color: var(--neb-text-subtle);
   transition: color var(--duration-default);
   cursor: grab;
   padding: var(--space-1);
 }
 
-.drag-item:hover .drag-handle {
-  color: var(--neutral-color-600);
+.drag-item:hover .icon {
+  color: var(--neb-text-muted);
 }
 
 .category-content {
@@ -125,32 +125,10 @@ function handleSave(item: OutShop) {
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-sm);
-  color: var(--neutral-color-800);
+  color: var(--neb-text);
 }
 
 .category-name {
   font-weight: 500;
-}
-
-.dark-mode {
-  .drag-item:hover {
-    background: var(--neutral-color-800);
-  }
-
-  .drag-handle {
-    color: var(--neutral-color-500);
-  }
-
-  .drag-item:hover .drag-handle {
-    color: var(--neutral-color-300);
-  }
-
-  .category-name {
-    color: var(--neutral-color-400);
-  }
-
-  .category-badge {
-    color: var(--neutral-color-300);
-  }
 }
 </style>

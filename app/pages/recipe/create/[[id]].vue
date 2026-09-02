@@ -658,9 +658,10 @@ const { data: isAiEnabled } = useAsyncData(async () => {
 
 <style scoped>
 .form-container {
+  background: var(--neb-bg-raised);
   border-radius: var(--radius-large);
-  border: 1px solid var(--neutral-color-100);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--neb-border-subtle);
+  box-shadow: var(--neb-shadow-sm);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -674,7 +675,7 @@ const { data: isAiEnabled } = useAsyncData(async () => {
 }
 
 .form-section:not(:last-child) {
-  border-bottom: 1px solid var(--neutral-color-100);
+  border-bottom: 1px solid var(--neb-border-subtle);
 }
 
 .basic-info-fields {
@@ -742,17 +743,6 @@ const { data: isAiEnabled } = useAsyncData(async () => {
 @media (--mobile-lg-viewport) {
   .form-section {
     padding: var(--space-3) !important;
-  }
-}
-
-.dark-mode {
-  .form-container {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
-  }
-
-  .form-section {
-    border-color: var(--neutral-color-800);
   }
 }
 </style>

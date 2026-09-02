@@ -355,9 +355,9 @@ const roleDictionary: Record<OutMember['role'], string> = {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--neutral-color-100);
+  border: 1px solid var(--neb-border-subtle);
   border-radius: var(--radius-default);
-  background: var(--neutral-color-25);
+  background: var(--neb-bg-raised);
 }
 
 .invitation-info {
@@ -368,7 +368,7 @@ const roleDictionary: Record<OutMember['role'], string> = {
 
 .invitation-token {
   font-size: var(--text-sm);
-  color: var(--neutral-color-600);
+  color: var(--neb-text-muted);
 }
 
 .invite-form {
@@ -385,7 +385,7 @@ const roleDictionary: Record<OutMember['role'], string> = {
 
 .token-instructions {
   font-size: var(--text-sm);
-  color: var(--neutral-color-600);
+  color: var(--neb-text-muted);
 }
 
 .token-field {
@@ -393,32 +393,15 @@ const roleDictionary: Record<OutMember['role'], string> = {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--neutral-color-100);
+  border: 1px solid var(--neb-border-subtle);
   border-radius: var(--radius-default);
-  background: var(--neutral-color-25);
+  background: var(--neb-bg-raised);
 }
 
 .token-value {
   flex: 1;
   font-size: var(--text-sm);
   word-break: break-all;
-  color: var(--neutral-color-700);
-}
-
-.dark-mode {
-  .invitation-item,
-  .token-field {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
-  }
-
-  .invitation-token,
-  .token-instructions {
-    color: var(--neutral-color-400);
-  }
-
-  .token-value {
-    color: var(--neutral-color-300);
-  }
+  color: var(--neb-text);
 }
 </style>

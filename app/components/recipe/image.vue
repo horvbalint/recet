@@ -17,7 +17,7 @@ const props = defineProps<{
 }>()
 
 const { data: imageUrl, refresh, error } = useAsyncData(`recipe-image-${props.recipe.id.id}`, () => {
-  return getRecipeImageUrl(props.recipe.id)
+  // return getRecipeImageUrl(props.recipe.id)
 }, {
   immediate: false,
 })
@@ -105,14 +105,14 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
 .image-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--neutral-color-100), var(--neutral-color-50));
+  background: linear-gradient(135deg, var(--neb-bg-muted), var(--neb-bg-subtle));
   display: flex;
   align-items: center;
   justify-content: center;
 
   .icon {
     font-size: 64px !important;
-    color: var(--neutral-color-400);
+    color: var(--neb-text-subtle);
   }
 }
 
@@ -129,12 +129,6 @@ const viewTransitions = getRecipeViewTransitionNames(props.recipe.id.id)
   .icon {
     font-size: 20px !important;
     margin: -4px;
-  }
-}
-
-.dark-mode {
-  .image-placeholder {
-    background: linear-gradient(135deg, var(--neutral-color-800), var(--neutral-color-900));
   }
 }
 </style>

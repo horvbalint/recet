@@ -54,14 +54,14 @@ const columns = computed(() => ({
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 1px solid var(--neutral-color-200);
+  border: 1px solid var(--neb-border);
   flex-shrink: 0;
 }
 
 .color-value {
   font-family: monospace;
   font-size: var(--text-sm);
-  color: var(--neutral-color-600);
+  color: var(--neb-text-muted);
 }
 
 .flag-emoji {
@@ -69,17 +69,7 @@ const columns = computed(() => ({
 }
 
 .no-flag {
-  color: var(--neutral-color-400);
+  color: var(--neb-text-subtle);
   font-style: italic;
-}
-
-.dark-mode {
-  .color-indicator {
-    border: 1px solid var(--neutral-color-700);
-  }
-
-  .color-value {
-    color: var(--neutral-color-300);
-  }
 }
 </style>

@@ -134,7 +134,7 @@ const selectedTab = ref<'create' | 'join'>('create')
 <style scoped>
 .onboarding-page {
   min-height: 100vh;
-  background: var(--neutral-color-25);
+  background: var(--neb-bg-page);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,10 +150,10 @@ const selectedTab = ref<'create' | 'join'>('create')
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
-  background: #fff;
+  background: var(--neb-bg-raised);
   border-radius: var(--radius-large);
-  border: 1px solid var(--neutral-color-100);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--neb-border-subtle);
+  box-shadow: var(--neb-shadow-lg);
   padding: var(--space-8);
 }
 
@@ -170,16 +170,16 @@ const selectedTab = ref<'create' | 'join'>('create')
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--neb-shadow-md);
 
   .icon {
     font-size: 34px !important;
-    color: white;
+    color: var(--neb-text-on-solid);
   }
 }
 
 .header-icon :deep(svg) {
-  color: white;
+  color: var(--neb-text-on-solid);
   width: 32px;
   height: 32px;
 }
@@ -217,13 +217,6 @@ const selectedTab = ref<'create' | 'join'>('create')
 
   .onboarding-card {
     padding: var(--space-6);
-  }
-}
-
-.dark-mode {
-  .onboarding-card {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
   }
 }
 </style>

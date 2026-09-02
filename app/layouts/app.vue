@@ -159,28 +159,28 @@ function update() {
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background: var(--neutral-color-25);
+  background: var(--neb-bg-page);
 }
 
 .sidebar {
   width: 280px;
-  background: white;
-  color: var(--neutral-color-900);
+  background: var(--neb-bg-raised);
+  color: var(--neb-text);
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--neutral-color-200);
+  border-right: 1px solid var(--neb-border-subtle);
   position: fixed;
   height: 100vh;
   left: 0;
   top: 0;
   z-index: 100;
   transition: transform var(--duration-default) ease;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--neb-shadow-lg);
 }
 
 .sidebar-header {
   padding: 24px 20px;
-  border-bottom: 1px solid var(--neutral-color-200);
+  border-bottom: 1px solid var(--neb-border-subtle);
 }
 
 .brand {
@@ -192,13 +192,13 @@ function update() {
 
 .brand-icon {
   font-size: 32px !important;
-  color: var(--primary-color-500);
+  color: var(--primary-color);
 }
 
 .brand-text {
   font-size: 24px;
   font-weight: 700;
-  color: var(--neutral-color-900);
+  color: var(--neb-text);
 }
 
 .household-section {
@@ -221,7 +221,7 @@ function update() {
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--neutral-color-500);
+  color: var(--neb-text-muted);
   letter-spacing: 0.5px;
 }
 
@@ -236,7 +236,7 @@ function update() {
   align-items: center;
   gap: 12px;
   padding: 12px 20px;
-  color: var(--neutral-color-600);
+  color: var(--neb-text-muted);
   text-decoration: none;
   transition: all 0.2s ease;
   border-radius: 0;
@@ -244,14 +244,14 @@ function update() {
 }
 
 .nav-item:hover {
-  background: var(--neutral-color-100);
-  color: var(--neutral-color-900);
+  background: var(--neb-bg-active);
+  color: var(--neb-text);
 }
 
 .nav-item.active {
-  background: var(--primary-color-50);
-  color: var(--primary-color-700);
-  border-right: 3px solid var(--accent-color-500);
+  background: var(--neb-bg-selected);
+  color: var(--neb-text-primary);
+  /* border-right: 3px solid var(--neb-text-primary); */
 }
 
 .nav-item.active::before {
@@ -261,7 +261,7 @@ function update() {
   top: 0;
   height: 100%;
   width: 3px;
-  background: var(--accent-color-500);
+  background: var(--neb-text-primary);
 }
 
 .nav-icon {
@@ -285,9 +285,9 @@ function update() {
 
 .top-bar {
   display: none;
-  background: white;
+  background: var(--neb-bg-raised);
   padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--neutral-color-200);
+  border-bottom: 1px solid var(--neb-border-subtle);
   align-items: center;
   gap: 16px;
 }
@@ -327,8 +327,8 @@ function update() {
       right: 10px;
       width: 10px;
       height: 10px;
-      border: 2px solid white;
-      background: var(--primary-color);
+      border: 2px solid var(--neb-bg-raised);
+      background: var(--neb-bg-primary-solid);
       border-radius: 50%;
     }
   }
@@ -339,54 +339,8 @@ function update() {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--neb-bg-backdrop);
     z-index: 99;
-  }
-}
-
-.dark-mode {
-  .sidebar {
-    background: var(--neutral-color-950);
-    border-color: var(--neutral-color-800);
-    box-shadow: none;
-  }
-
-  .mobile-menu-button {
-    .indicator-dot {
-      border: 2px solid var(--neutral-color-900);
-    }
-  }
-
-  .sidebar-header {
-    border-bottom: 1px solid var(--neutral-color-800);
-  }
-
-  .brand-text {
-    color: white;
-    border-bottom-color: var(--neutral-color-800);
-  }
-
-  .nav-group-title {
-    color: var(--neutral-color-400);
-  }
-
-  .nav-item {
-    color: var(--neutral-color-300);
-
-    &:hover {
-      background: var(--neutral-color-800);
-      color: white;
-    }
-
-    &.active {
-      background: var(--primary-color-600);
-      color: white;
-    }
-  }
-
-  .top-bar {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
   }
 }
 </style>

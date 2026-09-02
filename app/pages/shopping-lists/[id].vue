@@ -476,7 +476,7 @@ function onUnitCreated(unit: OutUnit) {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(var(--neutral-color-component-50), 0.5);
+  background: var(--neb-bg-backdrop);
   z-index: 10;
 }
 
@@ -493,24 +493,24 @@ function onUnitCreated(unit: OutUnit) {
 }
 
 .category-section {
-  background: #fff;
+  background: var(--neb-bg-raised);
   border-radius: var(--radius-large);
-  border: 1px solid var(--neutral-color-200);
+  border: 1px solid var(--neb-border-subtle);
   overflow: hidden;
 }
 
 .category-title {
   font-size: var(--text-lg);
   font-weight: 500;
-  color: var(--neutral-color-900);
+  color: var(--neb-text);
   margin: 0;
   padding: var(--space-3) var(--space-4);
-  background: var(--neutral-color-50);
-  border-bottom: 1px solid var(--neutral-color-200);
+  background: var(--neb-bg-subtle);
+  border-bottom: 1px solid var(--neb-border-subtle);
 }
 
 .category-count {
-  color: var(--neutral-color-600);
+  color: var(--neb-text-muted);
 }
 
 .items-list {
@@ -523,7 +523,7 @@ function onUnitCreated(unit: OutUnit) {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--neutral-color-100);
+  border-bottom: 1px solid var(--neb-border-subtle);
   transition: all var(--duration-default);
 }
 
@@ -550,7 +550,7 @@ function onUnitCreated(unit: OutUnit) {
 
 .item-name {
   font-size: var(--text-md);
-  color: var(--neutral-color-900);
+  color: var(--neb-text);
 }
 
 .item-recipe {
@@ -558,7 +558,7 @@ function onUnitCreated(unit: OutUnit) {
   align-items: center;
   gap: var(--space-1);
   font-size: var(--text-xs);
-  color: var(--primary-color-600);
+  color: var(--neb-text-primary);
   text-decoration: none;
   width: fit-content;
 
@@ -574,11 +574,11 @@ function onUnitCreated(unit: OutUnit) {
 .star-wrapper {
   display: flex;
   align-items: center;
-  color: var(--neutral-color-400);
+  color: var(--neb-text-subtle);
   cursor: pointer;
 
   .active {
-    color: var(--warning-color-500);
+    color: var(--neb-text-warning);
   }
 }
 
@@ -600,40 +600,6 @@ function onUnitCreated(unit: OutUnit) {
 
   .item-card {
     padding: var(--space-3) var(--space-4);
-  }
-}
-
-/* Dark mode support */
-.dark-mode {
-  .category-section {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
-  }
-
-  .category-title {
-    color: var(--neutral-color-100);
-    background: var(--neutral-color-800);
-    border-color: var(--neutral-color-700);
-  }
-
-  .category-count {
-    color: var(--neutral-color-400);
-  }
-
-  .item-card {
-    border-color: var(--neutral-color-800);
-  }
-
-  .item-name {
-    color: var(--neutral-color-100);
-  }
-
-  .item-recipe {
-    color: var(--primary-color-400);
-  }
-
-  .loading-state {
-    background: rgba(var(--neutral-color-component-950), 0.5);
   }
 }
 </style>

@@ -3,16 +3,14 @@ import type { ShoppingList } from '~/pages/shopping-lists/index.vue'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
-const { t } = useI18n()
 const props = defineProps<{
   list: ShoppingList
 }>()
-
 const emit = defineEmits<{
   view: []
   changed: []
 }>()
-
+const { t } = useI18n()
 dayjs.extend(relativeTime)
 
 const showEditModal = ref(false)
@@ -96,10 +94,10 @@ async function deleteList() {
 
 <style scoped>
 .list-card {
-  background: #fff;
+  background: var(--neb-bg-raised);
   border-radius: var(--radius-large);
-  border: 1px solid var(--neutral-color-200);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--neb-border-subtle);
+  box-shadow: var(--neb-shadow-sm);
   padding: var(--space-5);
   cursor: pointer;
   transition: all var(--duration-default);
@@ -109,8 +107,8 @@ async function deleteList() {
 }
 
 .list-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary-color-200);
+  box-shadow: var(--neb-shadow-md);
+  border-color: var(--neb-border-primary-strong);
 }
 
 .list-header {
@@ -129,7 +127,7 @@ async function deleteList() {
 .list-name {
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
-  color: var(--neutral-color-900);
+  color: var(--neb-text);
   margin: 0;
 }
 
@@ -141,7 +139,7 @@ async function deleteList() {
 
 .updated-time {
   font-size: var(--text-sm);
-  color: var(--neutral-color-500);
+  color: var(--neb-text-muted);
 }
 
 .list-actions {
@@ -153,26 +151,6 @@ async function deleteList() {
 @media (--tablet-viewport) {
   .list-card {
     padding: var(--space-4);
-  }
-}
-
-/* Dark mode support */
-.dark-mode {
-  .list-card {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
-  }
-
-  .list-card:hover {
-    border-color: var(--primary-color-600);
-  }
-
-  .list-name {
-    color: var(--neutral-color-100);
-  }
-
-  .updated-time {
-    color: var(--neutral-color-400);
   }
 }
 </style>

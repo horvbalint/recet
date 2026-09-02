@@ -655,7 +655,7 @@ async function saveDayMeals() {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   text-transform: uppercase;
-  color: var(--neutral-color-700);
+  color: var(--neb-text-muted);
   padding: var(--space-2) 0;
 }
 
@@ -667,16 +667,16 @@ header {
   gap: 2px;
   padding: var(--space-2) 0;
   font-size: var(--text-xs);
-  color: var(--neutral-color-700);
+  color: var(--neb-text-muted);
 
   &.today {
-    color: var(--primary-color-600);
+    color: var(--neb-text-primary);
   }
 
   .day-name {
     text-transform: uppercase;
     font-weight: 500;
-    font-size: var(--text-2xs);
+    font-size: var(--text-xs);
     letter-spacing: 0.05em;
   }
 
@@ -691,7 +691,7 @@ header {
   flex-direction: column;
   gap: var(--space-1);
   padding: var(--space-2);
-  border: 1px solid var(--neutral-color-200);
+  border: 1px solid var(--neb-border);
   border-radius: var(--radius-small);
   transition:
     background-color 0.15s ease,
@@ -699,16 +699,16 @@ header {
   cursor: pointer;
 
   &:hover {
-    background-color: var(--neutral-color-50);
-    border-color: var(--neutral-color-300);
+    background-color: var(--neb-bg-hover);
+    border-color: var(--neb-border-strong);
   }
 
   &.selected {
-    background-color: var(--primary-color-100);
-    border-color: var(--primary-color-300);
+    background-color: var(--neb-bg-selected);
+    border-color: var(--neb-border-primary-strong);
   }
   &.today {
-    border-color: var(--primary-color-300);
+    border-color: var(--neb-border-primary-strong);
   }
   &.saving {
     opacity: 0.6;
@@ -739,42 +739,6 @@ header {
   }
 }
 
-.dark-mode {
-  .calendar {
-    border-color: var(--neutral-color-800);
-  }
-
-  .meal-label {
-    color: var(--neutral-color-300);
-  }
-
-  header {
-    color: var(--neutral-color-300);
-
-    &.today {
-      color: var(--primary-color-500);
-    }
-  }
-
-  .meal {
-    border-color: var(--neutral-color-700);
-
-    &:hover {
-      background-color: var(--neutral-color-900);
-      border-color: var(--neutral-color-600);
-    }
-
-    &.selected {
-      background-color: var(--primary-color-900);
-      border-color: var(--primary-color-700);
-    }
-
-    &.today {
-      border-color: var(--primary-color-700);
-    }
-  }
-}
-
 @media (--tablet-viewport) {
   .desktop-view {
     display: none;
@@ -787,7 +751,7 @@ header {
   }
 
   .day-card {
-    border: 1px solid var(--neutral-color-200);
+    border: 1px solid var(--neb-border);
     border-radius: var(--radius-large);
   }
 
@@ -796,13 +760,13 @@ header {
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-3);
-    background-color: var(--neutral-color-50);
-    border-bottom: 1px solid var(--neutral-color-200);
+    background-color: var(--neb-bg-subtle);
+    border-bottom: 1px solid var(--neb-border-subtle);
     border-radius: var(--radius-large) var(--radius-large) 0 0;
-    color: var(--neutral-color-700);
+    color: var(--neb-text-muted);
 
     &.today {
-      background: var(--primary-color-50);
+      background: var(--neb-bg-selected);
     }
 
     .day-name {
@@ -832,11 +796,11 @@ header {
     transition: background-color 0.15s ease;
 
     &:not(:last-child) {
-      border-bottom: 1px solid var(--neutral-color-100);
+      border-bottom: 1px solid var(--neb-border-subtle);
     }
 
     &:hover {
-      background-color: var(--neutral-color-50);
+      background-color: var(--neb-bg-hover);
     }
   }
 
@@ -844,7 +808,7 @@ header {
     text-transform: capitalize;
     font-weight: 600;
     font-size: var(--text-xs);
-    color: var(--neutral-color-700);
+    color: var(--neb-text-muted);
   }
 
   .meal-recipes {
@@ -855,36 +819,12 @@ header {
 
   .no-recipes {
     font-size: var(--text-xs);
-    color: var(--neutral-color-400);
+    color: var(--neb-text-subtle);
     font-style: italic;
   }
   .meal-edit-item {
     & > :last-child {
       width: 100%;
-    }
-  }
-
-  .dark-mode {
-    .day-card {
-      border-color: var(--neutral-color-700);
-    }
-    .day-card-header {
-      color: var(--neutral-color-300);
-      background-color: var(--neutral-color-900);
-      border-color: var(--neutral-color-700);
-    }
-    .day-card-meal {
-      border-color: var(--neutral-color-700);
-
-      &:hover {
-        background-color: var(--neutral-color-800);
-      }
-      &:not(:last-child) {
-        border-color: var(--neutral-color-800);
-      }
-    }
-    .meal-title {
-      color: var(--neutral-color-300);
     }
   }
 }

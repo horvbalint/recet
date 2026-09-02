@@ -15,14 +15,14 @@ defineProps<{
 
 <style scoped>
 .badge {
-  background: color-mix(in oklab, v-bind('meal.color') 10%, white);
-  border-color: color-mix(in oklab, v-bind('meal.color') 70%, white);
+  background: color-mix(in oklab, v-bind('meal.color') 10%, var(--neb-bg-raised));
+  border-color: color-mix(in oklab, v-bind('meal.color') 70%, var(--neb-bg-raised));
 }
 
 .dark-mode {
   .badge {
-    background: color-mix(in oklab, v-bind('meal.color') 20%, var(--neutral-color-950));
-    border-color: color-mix(in oklab, v-bind('meal.color') 60%, var(--neutral-color-950));
+    background: color-mix(in oklab, v-bind('meal.color') 20%, var(--neb-bg));
+    border-color: color-mix(in oklab, v-bind('meal.color') 60%, var(--neb-bg));
   }
 }
 </style>

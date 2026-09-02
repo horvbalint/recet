@@ -510,8 +510,8 @@ watch(currentHousehold, async () => await navigateTo('/'))
   margin: 0 auto;
   padding: var(--space-6);
   border-radius: var(--radius-large);
-  background: var(--neutral-color-25);
-  box-shadow: var(--shadow-md);
+  background: var(--neb-bg-page);
+  box-shadow: var(--neb-shadow-md);
 }
 
 .header-navigation {
@@ -530,7 +530,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
   :deep(canvas),
   :deep(.image-placeholder) {
     border-radius: var(--radius-large);
-    border: 1px solid var(--neutral-color-200);
+    border: 1px solid var(--neb-border);
   }
 
   .recipe-actions {
@@ -573,7 +573,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-md);
-  color: var(--neutral-color-700);
+  color: var(--neb-text);
   font-weight: 500;
 
   &.public {
@@ -583,7 +583,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
 .meta-item .icon {
   font-size: 20px !important;
-  color: var(--neutral-color-500);
+  color: var(--neb-text-muted);
 }
 
 .recipe-author {
@@ -612,8 +612,8 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
 .ingredients-section,
 .instructions-section {
-  background: #fff;
-  border: 1px solid var(--neutral-color-200);
+  background: var(--neb-bg-raised);
+  border: 1px solid var(--neb-border-subtle);
   border-radius: var(--radius-large);
   padding: var(--space-6);
   display: flex;
@@ -626,10 +626,10 @@ watch(currentHousehold, async () => await navigateTo('/'))
   flex-direction: column;
   gap: var(--space-4);
   padding: var(--space-4);
-  background: white;
-  border: 1px solid var(--neutral-color-200);
+  background: var(--neb-bg-raised);
+  border: 1px solid var(--neb-border-subtle);
   border-radius: var(--radius-default);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--neb-shadow-lg);
   min-width: 250px;
 
   :deep(.neb-content-wrapper) {
@@ -642,7 +642,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
   align-items: center;
   gap: var(--space-3);
   font-weight: 600;
-  border: 1px solid var(--neutral-color-200);
+  border: 1px solid var(--neb-border-subtle);
   border-radius: var(--radius-default);
   overflow: hidden;
 }
@@ -668,7 +668,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 .ingredient-item {
   gap: var(--space-3);
   padding: var(--space-3);
-  border: 1px solid var(--neutral-color-100);
+  border: 1px solid var(--neb-border-subtle);
   border-radius: var(--radius-default);
   transition: all var(--duration-default);
 }
@@ -680,17 +680,17 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
   .icon {
     font-size: 20px !important;
-    color: var(--neutral-color-400);
+    color: var(--neb-text-subtle);
 
     &:hover {
-      color: var(--neutral-color-600);
+      color: var(--neb-text-muted);
     }
   }
 }
 
 .ingredient-item:hover {
-  background: var(--neutral-color-25);
-  border-color: var(--neutral-color-200);
+  background: var(--neb-bg-hover);
+  border-color: var(--neb-border);
 }
 
 .ingredient-details {
@@ -713,21 +713,21 @@ watch(currentHousehold, async () => await navigateTo('/'))
 
 .ingredient-amount {
   font-weight: 600;
-  color: var(--neutral-color-900);
+  color: var(--neb-text);
 }
 
 .ingredient-unit {
-  color: var(--neutral-color-600);
+  color: var(--neb-text-muted);
   font-size: var(--text-sm);
 }
 
 .ingredient-name {
-  color: var(--neutral-color-700);
+  color: var(--neb-text);
   flex: 1;
 }
 
 .ingredient-description {
-  color: var(--neutral-color-500);
+  color: var(--neb-text-subtle);
   font-size: var(--text-sm);
   font-style: italic;
 }
@@ -742,47 +742,24 @@ watch(currentHousehold, async () => await navigateTo('/'))
   display: flex;
   gap: var(--space-4);
   padding: var(--space-4);
-  border: 1px solid var(--neutral-color-100);
+  border: 1px solid var(--neb-border-subtle);
   border-radius: var(--radius-default);
 }
 
 .step-description {
   font-size: var(--text-md);
   font-weight: normal;
-  color: var(--neutral-color-700);
+  color: var(--neb-text);
   user-select: text;
   word-break: break-word;
   cursor: text;
 }
 
 .empty-message {
-  color: var(--neutral-color-500);
+  color: var(--neb-text-subtle);
   font-style: italic;
   text-align: center;
   padding: var(--space-8);
-}
-
-.sub-recipe-trigger {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  cursor: pointer;
-}
-
-.sub-recipe-name {
-  font-size: var(--text-md);
-  font-weight: 500;
-  color: var(--neutral-color-700);
-}
-
-.sub-recipe-expand-icon {
-  font-size: 16px !important;
-  color: var(--neutral-color-400);
-  transition: color var(--duration-default);
-
-  .sub-recipe-trigger:hover & {
-    color: var(--neutral-color-600);
-  }
 }
 
 .sub-recipe-badge {
@@ -790,7 +767,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
 }
 
 .sub-recipe-description {
-  color: var(--neutral-color-500);
+  color: var(--neb-text-subtle);
   font-size: var(--text-sm);
   font-style: italic;
 }
@@ -820,10 +797,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
     height: 250px;
   }
 
-  .recipe-title {
-    font-size: var(--title-md);
-  }
-
   .recipe-meta {
     gap: var(--space-4);
   }
@@ -844,100 +817,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
   .step-item {
     padding: var(--space-3);
     gap: var(--space-3);
-  }
-}
-
-/* Dark Mode */
-.dark-mode {
-  .recipe-detail {
-    background: var(--neutral-color-950);
-  }
-
-  .recipe-title {
-    color: var(--neutral-color-100);
-  }
-
-  .meta-item {
-    color: var(--neutral-color-300);
-  }
-
-  .ingredients-section,
-  .instructions-section {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
-  }
-
-  .ingredients-section h2,
-  .instructions-section h2 {
-    color: var(--neutral-color-200);
-    border-color: var(--neutral-color-800);
-  }
-
-  .ingredients-dropdown {
-    background: var(--neutral-color-950);
-    border: 1px solid var(--neutral-color-800);
-  }
-
-  .portion-controls {
-    border: 1px solid var(--neutral-color-800);
-  }
-
-  .ingredient-item {
-    border-color: var(--neutral-color-800);
-  }
-
-  .ingredient-item:hover {
-    background: var(--neutral-color-800);
-    border-color: var(--neutral-color-700);
-  }
-
-  .sub-recipe-name {
-    color: var(--neutral-color-300);
-  }
-
-  .ingredient-amount {
-    color: var(--neutral-color-200);
-  }
-
-  .ingredient-unit {
-    color: var(--neutral-color-400);
-  }
-
-  .ingredient-name {
-    color: var(--neutral-color-300);
-  }
-
-  .step-item {
-    border-color: var(--neutral-color-800);
-  }
-
-  .step-description {
-    color: var(--neutral-color-300);
-  }
-
-  .recipe-image {
-    :deep(img),
-    :deep(canvas),
-    :deep(.image-placeholder) {
-      border: 1px solid var(--neutral-color-700);
-    }
-  }
-
-  .recipe-visibility {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
-
-    .visibility-label {
-      color: var(--neutral-color-200);
-
-      .icon {
-        color: var(--neutral-color-400);
-      }
-    }
-
-    .visibility-description {
-      color: var(--neutral-color-400);
-    }
   }
 }
 </style>

@@ -112,7 +112,7 @@ function goToLogin() {
 <style scoped>
 .auth-page {
   min-height: 100vh;
-  background: var(--neutral-color-25);
+  background: var(--neb-bg-page);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,10 +122,10 @@ function goToLogin() {
 .auth-card {
   width: 100%;
   max-width: 400px;
-  background: #fff;
+  background: var(--neb-bg-raised);
   border-radius: var(--radius-large);
-  border: 1px solid var(--neutral-color-100);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--neb-border-subtle);
+  box-shadow: var(--neb-shadow-sm);
   padding: var(--space-6);
   view-transition-name: auth-card;
 
@@ -169,7 +169,7 @@ function goToLogin() {
   justify-content: center;
   gap: var(--space-2);
   font-size: var(--text-sm);
-  color: var(--neutral-color-600);
+  color: var(--neb-text-muted);
 }
 
 @media (--mobile-lg-viewport) {
@@ -179,17 +179,6 @@ function goToLogin() {
 
   .auth-card {
     padding: var(--space-4);
-  }
-}
-
-.dark-mode {
-  .auth-card {
-    background: var(--neutral-color-900);
-    border-color: var(--neutral-color-800);
-  }
-
-  .auth-link {
-    color: var(--neutral-color-400);
   }
 }
 </style>

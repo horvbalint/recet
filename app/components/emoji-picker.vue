@@ -57,7 +57,7 @@ const modelValue = defineModel<string | null | undefined>()
     gap: var(--space-1);
 
     .icon {
-      color: var(--neutral-color-500);
+      color: var(--neb-text-muted);
       transition: transform var(--duration-default);
 
       &.open {
@@ -71,16 +71,16 @@ const modelValue = defineModel<string | null | undefined>()
   }
 
   .placeholder {
-    color: var(--neutral-color-400);
+    color: var(--neb-text-subtle);
     font-weight: normal;
   }
 }
 .emoji-grid {
-  background: white;
+  background: var(--neb-bg-raised);
   width: 250px;
-  border: 1px solid var(--neutral-color-200);
+  border: 1px solid var(--neb-border-subtle);
   border-radius: var(--radius-default);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--neb-shadow-lg);
   display: grid;
   grid-template-columns: repeat(auto-fit, 40px);
   gap: var(--space-1);

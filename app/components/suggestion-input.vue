@@ -165,7 +165,7 @@ watch(inputText, () => {
 
   p,
   .icon {
-    color: var(--neutral-color-500);
+    color: var(--neb-text-subtle);
     font-size: var(--text-xs) !important;
     user-select: none;
   }

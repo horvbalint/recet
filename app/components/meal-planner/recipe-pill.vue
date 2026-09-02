@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import type { OutMealPlan } from '~/db'
 
-const { t } = useI18n()
-type MealState = OutMealPlan['meals']['breakfast'][number]['state']
-
 const props = defineProps<{
   recipe: OutMealPlan['meals']['breakfast'][number]
 }>()
-
 const emit = defineEmits<{
   updateState: [state: MealState]
 }>()
+const { t } = useI18n()
+type MealState = OutMealPlan['meals']['breakfast'][number]['state']
 
 const stateOptions: MealState[] = ['todo', 'prepared', 'done', 'served']
 
@@ -79,86 +77,86 @@ function cycleState() {
   text-decoration: none;
 
   &.todo {
-    background-color: var(--neutral-color-100);
-    border: 1px solid var(--neutral-color-200);
+    background-color: var(--neb-bg-muted);
+    border: 1px solid var(--neb-border-subtle);
 
     &:hover {
-      background-color: var(--neutral-color-200);
-      border-color: var(--neutral-color-300);
+      background-color: var(--neb-bg-active);
+      border-color: var(--neb-border);
     }
 
     .recipe-name {
-      color: var(--neutral-color-700);
+      color: var(--neb-text);
     }
     .recipe-servings {
-      color: var(--neutral-color-600);
-      background-color: var(--neutral-color-200);
+      color: var(--neb-text-muted);
+      background-color: var(--neb-bg-muted);
     }
     .state-icon {
-      color: var(--neutral-color-500);
+      color: var(--neb-text-subtle);
     }
   }
 
   &.prepared {
-    background-color: var(--warning-color-50);
-    border: 1px solid var(--warning-color-200);
+    background-color: var(--neb-bg-warning-subtle);
+    border: 1px solid var(--neb-border-warning);
 
     &:hover {
-      background-color: var(--warning-color-100);
-      border-color: var(--warning-color-300);
+      background-color: var(--neb-bg-warning-hover);
+      border-color: var(--neb-border-warning-strong);
     }
 
     .recipe-name {
-      color: var(--warning-color-700);
+      color: var(--neb-text-warning);
     }
     .recipe-servings {
-      color: var(--warning-color-600);
-      background-color: var(--warning-color-100);
+      color: var(--neb-text-warning);
+      background-color: var(--neb-bg-warning);
     }
     .state-icon {
-      color: var(--warning-color-500);
+      color: var(--neb-text-warning);
     }
   }
 
   &.done {
-    background-color: var(--primary-color-50);
-    border: 1px solid var(--primary-color-200);
+    background-color: var(--neb-bg-primary-subtle);
+    border: 1px solid var(--neb-border-primary);
 
     &:hover {
-      background-color: var(--primary-color-100);
-      border-color: var(--primary-color-300);
+      background-color: var(--neb-bg-primary-hover);
+      border-color: var(--neb-border-primary-strong);
     }
 
     .recipe-name {
-      color: var(--primary-color-700);
+      color: var(--neb-text-primary);
     }
     .recipe-servings {
-      color: var(--primary-color-600);
-      background-color: var(--primary-color-100);
+      color: var(--neb-text-primary);
+      background-color: var(--neb-bg-primary);
     }
     .state-icon {
-      color: var(--primary-color-500);
+      color: var(--neb-text-primary);
     }
   }
 
   &.served {
-    background-color: var(--success-color-50);
-    border: 1px solid var(--success-color-200);
+    background-color: var(--neb-bg-success-subtle);
+    border: 1px solid var(--neb-border-success);
 
     &:hover {
-      background-color: var(--success-color-100);
-      border-color: var(--success-color-300);
+      background-color: var(--neb-bg-success-hover);
+      border-color: var(--neb-border-success-strong);
     }
 
     .recipe-name {
-      color: var(--success-color-700);
+      color: var(--neb-text-success);
     }
     .recipe-servings {
-      color: var(--success-color-600);
-      background-color: var(--success-color-100);
+      color: var(--neb-text-success);
+      background-color: var(--neb-bg-success);
     }
     .state-icon {
-      color: var(--success-color-500);
+      color: var(--neb-text-success);
     }
   }
 
@@ -174,7 +172,7 @@ function cycleState() {
 
   .recipe-servings {
     font-weight: 600;
-    font-size: var(--text-2xs);
+    font-size: var(--text-xs);
     padding: 2px 4px;
     border-radius: var(--radius-small);
   }
@@ -198,93 +196,5 @@ function cycleState() {
 
 .state-badge:hover {
   transform: scale(1.05);
-}
-
-.dark-mode {
-  .recipe-item {
-    &.todo {
-      background-color: var(--neutral-color-800);
-      border-color: var(--neutral-color-700);
-
-      &:hover {
-        background-color: var(--neutral-color-700);
-        border-color: var(--neutral-color-600);
-      }
-
-      .recipe-name {
-        color: var(--neutral-color-200);
-      }
-      .recipe-servings {
-        color: var(--neutral-color-300);
-        background-color: var(--neutral-color-700);
-      }
-      .state-icon {
-        color: var(--neutral-color-400);
-      }
-    }
-
-    &.prepared {
-      background-color: var(--warning-color-900);
-      border-color: var(--warning-color-800);
-
-      &:hover {
-        background-color: var(--warning-color-800);
-        border-color: var(--warning-color-700);
-      }
-
-      .recipe-name {
-        color: var(--warning-color-200);
-      }
-      .recipe-servings {
-        color: var(--warning-color-300);
-        background-color: var(--warning-color-800);
-      }
-      .state-icon {
-        color: var(--warning-color-400);
-      }
-    }
-
-    &.done {
-      background-color: var(--primary-color-900);
-      border-color: var(--primary-color-800);
-
-      &:hover {
-        background-color: var(--primary-color-800);
-        border-color: var(--primary-color-700);
-      }
-
-      .recipe-name {
-        color: var(--primary-color-200);
-      }
-      .recipe-servings {
-        color: var(--primary-color-300);
-        background-color: var(--primary-color-800);
-      }
-      .state-icon {
-        color: var(--primary-color-400);
-      }
-    }
-
-    &.served {
-      background-color: var(--success-color-900);
-      border-color: var(--success-color-800);
-
-      &:hover {
-        background-color: var(--success-color-800);
-        border-color: var(--success-color-700);
-      }
-
-      .recipe-name {
-        color: var(--success-color-200);
-      }
-      .recipe-servings {
-        color: var(--success-color-300);
-        background-color: var(--success-color-800);
-      }
-      .state-icon {
-        color: var(--success-color-400);
-      }
-    }
-  }
 }
 </style>

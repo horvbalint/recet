@@ -101,7 +101,7 @@ const availableLanguages = [
   gap: var(--space-5);
   padding: var(--space-6);
   border-radius: var(--radius-large);
-  border: 1px solid var(--neutral-color-200);
+  border: 1px solid var(--neb-border-subtle);
 }
 
 .form-content {
@@ -130,12 +130,6 @@ const availableLanguages = [
 @media (--tablet-viewport) {
   .flex-wrapper {
     flex-direction: column;
-  }
-}
-
-.dark-mode {
-  .settings-page {
-    border: 1px solid var(--neutral-color-800);
   }
 }
 </style>

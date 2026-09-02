@@ -282,8 +282,8 @@ watch(hasExcludeFilters, (has) => {
 .filter-section {
   padding: var(--space-4);
   border-radius: var(--radius-default);
-  background-color: var(--neutral-color-50);
-  border: 1px solid var(--neutral-color-200);
+  background-color: var(--neb-bg-subtle);
+  border: 1px solid var(--neb-border);
   transition:
     padding var(--duration-default) ease,
     background-color var(--duration-default) ease,
@@ -297,8 +297,8 @@ watch(hasExcludeFilters, (has) => {
 }
 
 .filter-section.exclude {
-  background-color: var(--error-color-50);
-  border-color: var(--error-color-200);
+  background-color: var(--neb-bg-error-subtle);
+  border-color: var(--neb-border-error);
   max-height: 100%;
 }
 
@@ -317,12 +317,12 @@ watch(hasExcludeFilters, (has) => {
   gap: var(--space-2);
   font-size: var(--text-md);
   font-weight: 600;
-  color: var(--neutral-color-800);
+  color: var(--neb-text);
   margin: 0;
 }
 
 .filter-section.exclude .section-title {
-  color: var(--error-color-600);
+  color: var(--neb-text-error);
 }
 
 .top-operator {
@@ -333,12 +333,12 @@ watch(hasExcludeFilters, (has) => {
 
 .operator-label {
   font-size: var(--text-sm);
-  color: var(--neutral-color-600);
+  color: var(--neb-text-muted);
 }
 
 .exclude-hint {
   font-size: var(--text-sm);
-  color: var(--neutral-color-500);
+  color: var(--neb-text-subtle);
   font-style: italic;
 }
 
@@ -371,42 +371,6 @@ watch(hasExcludeFilters, (has) => {
 .filter-label {
   font-size: var(--text-sm);
   font-weight: 500;
-  color: var(--neutral-color-800);
-}
-
-.dark-mode {
-  .filter-section {
-    background-color: var(--neutral-color-900);
-    border-color: var(--neutral-color-700);
-
-    &.simple {
-      background: none;
-    }
-  }
-
-  .filter-section.exclude {
-    background-color: color-mix(in srgb, var(--error-color-900) 30%, var(--neutral-color-900));
-    border-color: var(--error-color-800);
-  }
-
-  .section-title {
-    color: var(--neutral-color-200);
-  }
-
-  .filter-section.exclude .section-title {
-    color: var(--error-color-400);
-  }
-
-  .operator-label {
-    color: var(--neutral-color-400);
-  }
-
-  .exclude-hint {
-    color: var(--neutral-color-500);
-  }
-
-  .filter-label {
-    color: var(--neutral-color-300);
-  }
+  color: var(--neb-text);
 }
 </style>

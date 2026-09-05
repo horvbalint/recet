@@ -46,6 +46,10 @@ export async function signIn(email: string, password: string) {
   authUser.value = await db.auth<OutUser>() || null
 }
 
+export function hasStoredUserTokens() {
+  return !!localStorage.getItem(tokenKey)
+}
+
 export async function authenticateWithToken() {
   const tokens = localStorage.getItem(tokenKey)
   if (!tokens)

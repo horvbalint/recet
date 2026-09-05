@@ -1,20 +1,5 @@
 <script setup lang="ts">
-import type { RecordId } from 'surrealdb'
-
-interface CookIngredient {
-  ingredient: string
-  amount?: number
-  unit?: string
-  description?: string
-}
-
-interface CookSubRecipe {
-  recipe: {
-    id: RecordId<'recipe'>
-    name: string
-  }
-  description?: string
-}
+import type { CookIngredient, CookSubRecipe } from './ingredients.vue'
 
 const props = defineProps<{
   name: string
@@ -27,22 +12,24 @@ const props = defineProps<{
 const isOpen = defineModel<boolean>({ required: true })
 const portions = defineModel<number | undefined>('portions')
 
-const stepIndex = ref(0)
-const showIngredients = ref(!isMobile.value)
+// slide 0 is the ingredient list, so that everything can be gathered before the first step
+const slideIndex = ref(0)
+const showIngredients = ref(false)
 const checkedIngredients = ref<number[]>([])
-
-const currentStep = computed(() => props.steps[stepIndex.value] ?? '')
 
 // the recipe page falls back to a cached placeholder with no steps whenever its query has no
 // data, so an errored refresh can empty this out while cook mode is open
 const hasSteps = computed(() => props.steps.length > 0)
-const progress = computed(() => hasSteps.value ? (stepIndex.value + 1) / props.steps.length : 0)
+const slideCount = computed(() => props.steps.length + 1)
+const isIngredientSlide = computed(() => slideIndex.value === 0)
+const currentStep = computed(() => props.steps[slideIndex.value - 1] ?? '')
+const progress = computed(() => hasSteps.value ? (slideIndex.value + 1) / slideCount.value : 0)
 
-function goToStep(index: number) {
+function goToSlide(index: number) {
   if (!hasSteps.value)
     return
 
-  stepIndex.value = Math.min(Math.max(index, 0), props.steps.length - 1)
+  slideIndex.value = Math.min(Math.max(index, 0), slideCount.value - 1)
 }
 
 // SCREEN WAKE LOCK
@@ -68,9 +55,9 @@ useEventListener(document, 'visibilitychange', () => {
 
 watch(isOpen, (open) => {
   if (open) {
-    stepIndex.value = 0
+    slideIndex.value = 0
+    showIngredients.value = false
     checkedIngredients.value = []
-    showIngredients.value = !isMobile.value
 
     keepScreenAwake()
   }
@@ -89,12 +76,12 @@ onBeforeUnmount(() => releaseWakeLock())
 // NAVIGATION
 onKeyStroke('ArrowRight', () => {
   if (isOpen.value)
-    goToStep(stepIndex.value + 1)
+    goToSlide(slideIndex.value + 1)
 })
 
 onKeyStroke('ArrowLeft', () => {
   if (isOpen.value)
-    goToStep(stepIndex.value - 1)
+    goToSlide(slideIndex.value - 1)
 })
 
 onKeyStroke('Escape', () => {
@@ -102,25 +89,15 @@ onKeyStroke('Escape', () => {
     isOpen.value = false
 })
 
-const stepArea = useTemplateRef('step-area')
-useSwipe(stepArea, {
+const slideArea = useTemplateRef('slide-area')
+useSwipe(slideArea, {
   onSwipeEnd: (_event, direction) => {
     if (direction === 'left')
-      goToStep(stepIndex.value + 1)
+      goToSlide(slideIndex.value + 1)
     else if (direction === 'right')
-      goToStep(stepIndex.value - 1)
+      goToSlide(slideIndex.value - 1)
   },
 })
-
-function decrementPortions() {
-  if (portions.value && portions.value >= 2)
-    portions.value -= 1
-}
-
-function incrementPortions() {
-  if (portions.value)
-    portions.value += 1
-}
 </script>
 
 <template>
@@ -134,10 +111,16 @@ function incrementPortions() {
 
         <div class="header-title">
           <span class="recipe-name">{{ name }}</span>
-          <span class="step-counter">{{ $t('recipes.cook.stepCounter', { current: stepIndex + 1, total: steps.length }) }}</span>
+
+          <span class="slide-label">
+            {{ isIngredientSlide
+              ? $t('recipes.cook.prep')
+              : $t('recipes.cook.stepCounter', { current: slideIndex, total: steps.length }) }}
+          </span>
         </div>
 
         <neb-button
+          v-if="!isIngredientSlide"
           type="tertiary-neutral"
           small
           :title="showIngredients ? $t('recipes.cook.hideIngredients') : $t('recipes.cook.showIngredients')"
@@ -145,6 +128,8 @@ function incrementPortions() {
         >
           <icon name="material-symbols:grocery" />
         </neb-button>
+
+        <div v-else class="header-spacer" />
       </header>
 
       <div class="progress-track">
@@ -152,59 +137,42 @@ function incrementPortions() {
       </div>
 
       <div class="cook-body">
-        <main ref="step-area" class="step-area">
-          <recipe-cook-step :step="currentStep" />
+        <main ref="slide-area" class="slide-area">
+          <recipe-cook-ingredients
+            v-if="isIngredientSlide"
+            v-model:portions="portions"
+            v-model:checked="checkedIngredients"
+            :ingredients
+            :sub-recipes="subRecipes"
+            :portion-ratio="portionRatio"
+          />
+
+          <recipe-cook-step v-else :step="currentStep" />
         </main>
 
-        <aside v-if="showIngredients" class="ingredient-panel">
-          <neb-content-header :title="$t('recipes.cook.ingredients')" type="section">
-            <template v-if="portions" #actions>
-              <div class="portion-controls">
-                <neb-button small square type="tertiary-neutral" @click="decrementPortions()">
-                  <icon name="material-symbols:remove-rounded" />
-                </neb-button>
-
-                {{ portions }}
-
-                <neb-button small square type="tertiary-neutral" @click="incrementPortions()">
-                  <icon name="material-symbols:add-rounded" />
-                </neb-button>
-              </div>
-            </template>
-          </neb-content-header>
-
-          <div class="panel-list">
-            <neb-badge v-for="subRecipe in subRecipes" :key="subRecipe.recipe.id.id.toString()">
-              {{ subRecipe.recipe.name }}
-            </neb-badge>
-
-            <neb-checkbox
-              v-for="(ingredient, index) in ingredients"
-              :key="index"
-              v-model="checkedIngredients"
-              :value="index"
-              class="panel-ingredient"
-            >
-              <span v-if="ingredient.amount" class="ingredient-amount">{{ roundNumberIfNeeded(ingredient.amount * portionRatio) }}</span>
-              <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
-              <span>{{ ingredient.ingredient }}</span>
-            </neb-checkbox>
-          </div>
+        <aside v-if="showIngredients && !isIngredientSlide" class="ingredient-panel">
+          <recipe-cook-ingredients
+            v-model:portions="portions"
+            v-model:checked="checkedIngredients"
+            :ingredients
+            :sub-recipes="subRecipes"
+            :portion-ratio="portionRatio"
+          />
         </aside>
       </div>
 
       <footer class="cook-footer">
-        <neb-button type="secondary-neutral" :disabled="stepIndex === 0" @click="goToStep(stepIndex - 1)">
+        <neb-button type="secondary-neutral" :disabled="slideIndex === 0" @click="goToSlide(slideIndex - 1)">
           <icon name="material-symbols:arrow-back-rounded" />
           <span class="hide-on-mobile">{{ $t('recipes.cook.previous') }}</span>
         </neb-button>
 
-        <neb-button v-if="stepIndex >= steps.length - 1" @click="isOpen = false">
+        <neb-button v-if="slideIndex >= slideCount - 1" @click="isOpen = false">
           <icon name="material-symbols:check-rounded" />
           <span>{{ $t('recipes.cook.finish') }}</span>
         </neb-button>
 
-        <neb-button v-else @click="goToStep(stepIndex + 1)">
+        <neb-button v-else @click="goToSlide(slideIndex + 1)">
           <span class="hide-on-mobile">{{ $t('recipes.cook.next') }}</span>
           <icon name="material-symbols:arrow-forward-rounded" />
         </neb-button>
@@ -214,15 +182,18 @@ function incrementPortions() {
 </template>
 
 <style scoped>
+/* a definite height, not min-height: the scrolling children below only constrain themselves
+   when their ancestors resolve to a real height */
 .cook-mode {
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   background: var(--neb-bg-page);
 }
 
 .cook-header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -238,6 +209,10 @@ function incrementPortions() {
   min-width: 0;
 }
 
+.header-spacer {
+  width: 36px;
+}
+
 .recipe-name {
   font-weight: 600;
   color: var(--neb-text);
@@ -246,12 +221,13 @@ function incrementPortions() {
   white-space: nowrap;
 }
 
-.step-counter {
+.slide-label {
   font-size: var(--text-sm);
   color: var(--neb-text-subtle);
 }
 
 .progress-track {
+  flex-shrink: 0;
   height: 4px;
   background: var(--neb-bg-muted);
 }
@@ -270,48 +246,36 @@ function incrementPortions() {
   min-height: 0;
 }
 
-.step-area {
+.slide-area {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   padding: var(--space-12) var(--space-8);
   overflow-y: auto;
+}
+
+/* auto margins centre the slide vertically without the clipped overflow that
+   align-items: center produces once the content is taller than the area */
+.slide-area > * {
+  width: 100%;
+  max-width: 640px;
+  margin: auto;
 }
 
 .ingredient-panel {
   width: 340px;
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  min-height: 0;
   padding: var(--space-6);
   border-left: 1px solid var(--neb-border-subtle);
   background: var(--neb-bg-raised);
   overflow-y: auto;
 }
 
-.portion-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.panel-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  align-items: flex-start;
-}
-
-.panel-ingredient {
-  .ingredient-amount,
-  .ingredient-unit {
-    font-weight: 600;
-    color: var(--neb-text);
-  }
-}
-
 .cook-footer {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -321,17 +285,23 @@ function incrementPortions() {
 }
 
 @media (--tablet-viewport) {
-  .step-area {
-    padding: var(--space-6) var(--space-4);
-    align-items: flex-start;
-  }
-
   .cook-body {
     flex-direction: column;
   }
 
+  .slide-area {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .slide-area > * {
+    margin-block: 0 auto;
+  }
+
+  /* below the step rather than beside it, capped so the step and footer keep their room */
   .ingredient-panel {
     width: 100%;
+    max-height: 45%;
+    padding: var(--space-4);
     border-left: none;
     border-top: 1px solid var(--neb-border-subtle);
   }

@@ -297,6 +297,11 @@ watch(currentHousehold, async () => await navigateTo('/'))
                   </template>
                 </neb-menu>
               </div>
+
+              <neb-button v-if="recipe.steps?.length" class="cook-action" small @click="isCookModeOpen = true">
+                <icon name="material-symbols:chef-hat-outline-rounded" />
+                {{ $t('recipes.cook.start') }}
+              </neb-button>
             </recipe-image>
 
             <div class="recipe-info">
@@ -326,11 +331,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
                   <span>{{ recipe.cooking_time_minutes }} {{ $t('common.minutes') }}</span>
                 </div>
               </div>
-
-              <neb-button v-if="recipe.steps?.length" class="cook-button" @click="isCookModeOpen = true">
-                <icon name="material-symbols:chef-hat-outline-rounded" />
-                {{ $t('recipes.cook.start') }}
-              </neb-button>
 
               <div class="recipe-author">
                 <neb-avatar-card
@@ -550,6 +550,13 @@ watch(currentHousehold, async () => await navigateTo('/'))
     border: 1px solid var(--neb-border);
   }
 
+  .cook-action {
+    position: absolute;
+    bottom: var(--space-4);
+    right: var(--space-4);
+    box-shadow: var(--neb-shadow-md);
+  }
+
   .recipe-actions {
     position: absolute;
     top: var(--space-4);
@@ -601,11 +608,6 @@ watch(currentHousehold, async () => await navigateTo('/'))
 .meta-item .icon {
   font-size: 20px !important;
   color: var(--neb-text-muted);
-}
-
-.cook-button {
-  width: fit-content;
-  margin-top: var(--space-2);
 }
 
 .recipe-author {

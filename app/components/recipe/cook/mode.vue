@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { RecordId } from 'surrealdb'
-import type { StepDuration } from '~/composables/cook'
 
 interface CookIngredient {
   ingredient: string
@@ -28,79 +27,14 @@ const props = defineProps<{
 const isOpen = defineModel<boolean>({ required: true })
 const portions = defineModel<number | undefined>('portions')
 
-const { locale } = useI18n()
-
 const stepIndex = ref(0)
 const showIngredients = ref(!isMobile.value)
 const checkedIngredients = ref<number[]>([])
 
-const stepDurations = computed(() => props.steps.map(step => parseStepDurations(step, locale.value)))
-
 const currentStep = computed(() => props.steps[stepIndex.value] ?? '')
-const currentStepDurations = computed(() => stepDurations.value[stepIndex.value] ?? [])
 
 function goToStep(index: number) {
   stepIndex.value = Math.min(Math.max(index, 0), props.steps.length - 1)
-}
-
-// TIMERS
-interface RunningTimer {
-  stepIndex: number
-  seconds: number
-  endsAt: number
-  hasFired: boolean
-}
-
-const timers = ref<RunningTimer[]>([])
-
-// the remaining time is derived from a timestamp instead of being counted down, so that a
-// backgrounded tab - where intervals get throttled - still shows the right value on return
-const now = ref(Date.now())
-const { pause: pauseClock, resume: resumeClock } = useIntervalFn(() => now.value = Date.now(), 500, { immediate: false })
-
-function remainingSecondsOf(timer: RunningTimer) {
-  return Math.max(0, Math.ceil((timer.endsAt - now.value) / 1000))
-}
-
-const currentStepTimers = computed(() => {
-  const byDuration = new Map<number, { remainingSeconds: number, isFinished: boolean }>()
-
-  for (const timer of timers.value) {
-    if (timer.stepIndex !== stepIndex.value)
-      continue
-
-    const remainingSeconds = remainingSecondsOf(timer)
-    byDuration.set(timer.seconds, { remainingSeconds, isFinished: remainingSeconds === 0 })
-  }
-
-  return byDuration
-})
-
-const otherStepTimers = computed(() => timers.value.filter(timer => timer.stepIndex !== stepIndex.value))
-
-watch(now, () => {
-  for (const timer of timers.value) {
-    if (timer.hasFired || remainingSecondsOf(timer) > 0)
-      continue
-
-    timer.hasFired = true
-    playCookAlarm()
-  }
-})
-
-function startTimer(duration: StepDuration) {
-  primeCookAlarm()
-
-  timers.value.push({
-    stepIndex: stepIndex.value,
-    seconds: duration.seconds,
-    endsAt: Date.now() + duration.seconds * 1000,
-    hasFired: false,
-  })
-}
-
-function cancelTimer(duration: StepDuration) {
-  timers.value = timers.value.filter(timer => timer.stepIndex !== stepIndex.value || timer.seconds !== duration.seconds)
 }
 
 // SCREEN WAKE LOCK
@@ -127,24 +61,17 @@ useEventListener(document, 'visibilitychange', () => {
 watch(isOpen, (open) => {
   if (open) {
     stepIndex.value = 0
-    timers.value = []
     checkedIngredients.value = []
     showIngredients.value = !isMobile.value
 
-    resumeClock()
     keepScreenAwake()
   }
   else {
-    timers.value = []
-    pauseClock()
     releaseWakeLock()
   }
 })
 
-onBeforeUnmount(() => {
-  pauseClock()
-  releaseWakeLock()
-})
+onBeforeUnmount(() => releaseWakeLock())
 
 // NAVIGATION
 onKeyStroke('ArrowRight', () => {
@@ -213,13 +140,7 @@ function incrementPortions() {
 
       <div class="cook-body">
         <main ref="step-area" class="step-area">
-          <recipe-cook-step
-            :step="currentStep"
-            :durations="currentStepDurations"
-            :running-timers="currentStepTimers"
-            @start-timer="startTimer($event)"
-            @cancel-timer="cancelTimer($event)"
-          />
+          <recipe-cook-step :step="currentStep" />
         </main>
 
         <aside v-if="showIngredients" class="ingredient-panel">
@@ -264,21 +185,6 @@ function incrementPortions() {
           <icon name="material-symbols:arrow-back-rounded" />
           <span class="hide-on-mobile">{{ $t('recipes.cook.previous') }}</span>
         </neb-button>
-
-        <div class="other-timers">
-          <button
-            v-for="timer in otherStepTimers"
-            :key="`${timer.stepIndex}-${timer.seconds}`"
-            class="other-timer"
-            :class="{ finished: remainingSecondsOf(timer) === 0 }"
-            type="button"
-            @click="goToStep(timer.stepIndex)"
-          >
-            <icon name="material-symbols:timer-outline-rounded" />
-            <span>{{ formatTimerValue(remainingSecondsOf(timer)) }}</span>
-            <span class="timer-step">{{ $t('recipes.cook.timer.onStep', { step: timer.stepIndex + 1 }) }}</span>
-          </button>
-        </div>
 
         <neb-button v-if="stepIndex >= steps.length - 1" @click="isOpen = false">
           <icon name="material-symbols:check-rounded" />
@@ -401,36 +307,6 @@ function incrementPortions() {
   border-top: 1px solid var(--neb-border-subtle);
 }
 
-.other-timers {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  justify-content: center;
-}
-
-.other-timer {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--neb-border);
-  border-radius: var(--radius-large);
-  background: var(--neb-bg-raised);
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  color: var(--neb-text-subtle);
-  cursor: pointer;
-
-  &.finished {
-    border-color: var(--neb-border-success-strong);
-    color: var(--neb-text-success);
-  }
-}
-
-.timer-step {
-  color: var(--neb-text-subtle);
-}
-
 @media (--tablet-viewport) {
   .step-area {
     padding: var(--space-6) var(--space-4);
@@ -448,10 +324,6 @@ function incrementPortions() {
   }
 
   .hide-on-mobile {
-    display: none;
-  }
-
-  .timer-step {
     display: none;
   }
 }

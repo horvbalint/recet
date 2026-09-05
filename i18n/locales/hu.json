@@ -279,11 +279,7 @@
       "hideIngredients": "Hozzávalók elrejtése",
       "previous": "Előző",
       "next": "Következő",
-      "finish": "Kész",
-      "timer": {
-        "done": "Lejárt!",
-        "onStep": "{step}. lépés"
-      }
+      "finish": "Kész"
     },
     "create": {
       "title": {

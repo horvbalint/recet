@@ -279,11 +279,7 @@
       "hideIngredients": "Hide ingredients",
       "previous": "Previous",
       "next": "Next",
-      "finish": "Finish",
-      "timer": {
-        "done": "Time's up!",
-        "onStep": "step {step}"
-      }
+      "finish": "Finish"
     },
     "create": {
       "title": {

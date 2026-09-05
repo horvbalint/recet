@@ -184,7 +184,7 @@ const userMenus = computed<Menu[]>(() => [
 
 .sidebar {
   width: 280px;
-  background: var(--neb-bg-raised);
+  background: var(--neb-bg);
   color: var(--neb-text);
   display: flex;
   flex-direction: column;
@@ -305,7 +305,7 @@ const userMenus = computed<Menu[]>(() => [
 
 .top-bar {
   display: none;
-  background: var(--neb-bg-raised);
+  background: var(--neb-bg);
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--neb-border-subtle);
   align-items: center;
@@ -371,7 +371,7 @@ const userMenus = computed<Menu[]>(() => [
       right: 10px;
       width: 10px;
       height: 10px;
-      border: 2px solid var(--neb-bg-raised);
+      border: 2px solid var(--neb-bg);
       background: var(--neb-bg-primary-solid);
       border-radius: 50%;
     }

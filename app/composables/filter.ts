@@ -13,7 +13,6 @@ export function useFilterData() {
 
     return { meals, tags, cuisines, ingredients }
   }, {
-    getCachedData: (key, nuxt) => nuxt.payload.data[key],
     immediate: false,
   })
 }

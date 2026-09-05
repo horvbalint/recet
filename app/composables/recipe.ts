@@ -75,7 +75,6 @@ const filterConditions = ref<InMealRuleConditions>(createEmptyMealRuleConditions
 export function constructWhereConditions(conditions: InMealRuleConditions, searchTerm: string | undefined): ExprLike {
   const query_conditions = [
     eq('household', currentHousehold.value!.id),
-    lte('created_at', firstPageQueriedAt),
   ]
 
   if (searchTerm)
@@ -135,9 +134,15 @@ export function constructWhereConditions(conditions: InMealRuleConditions, searc
   return and(...query_conditions)
 }
 
+function constructListWhereConditions() {
+  return and(
+    constructWhereConditions(filterConditions.value, searchTerm.value),
+    lte('created_at', firstPageQueriedAt),
+  )
+}
+
 function constructCountQuery() {
-  const whereConditions = constructWhereConditions(filterConditions.value, searchTerm.value)
-  return surql`SELECT VALUE count() FROM ONLY recipe WHERE ${whereConditions} GROUP ALL`
+  return surql`SELECT VALUE count() FROM ONLY recipe WHERE ${constructListWhereConditions()} GROUP ALL`
 }
 
 export const fieldsNeededForRecipeCard = `
@@ -171,8 +176,7 @@ function constructRecipeQuery() {
       query.append(surql` WITH INDEX english_search_name`)
   }
 
-  const whereConditions = constructWhereConditions(filterConditions.value, searchTerm.value)
-  query.append(surql` WHERE ${whereConditions}`)
+  query.append(surql` WHERE ${constructListWhereConditions()}`)
 
   if (searchTerm.value)
     query.append(surql` ORDER BY score, created_at DESC`)
@@ -186,46 +190,58 @@ function constructRecipeQuery() {
   return query
 }
 
-export function clearRecipeCache() {
+const status = ref<'idle' | 'pending' | 'success' | 'error'>('idle')
+const error = ref<Error | null>(null)
+let currentRequestId = 0
+
+async function loadCurrentPage() {
+  const requestId = ++currentRequestId
+  status.value = 'pending'
+  error.value = null
+
+  try {
+    const [[page], [count]] = await Promise.all([
+      db.query(constructRecipeQuery()).collect<[Recipe[]]>(),
+      db.query(constructCountQuery()).collect<[number]>(),
+    ])
+
+    if (requestId !== currentRequestId)
+      return
+
+    recipes.value.push(...page)
+    recipeCount.value = count
+    status.value = 'success'
+  }
+  catch (err) {
+    if (requestId !== currentRequestId)
+      return
+
+    error.value = err as Error
+    status.value = 'error'
+  }
+}
+
+export function resetList() {
   pageIndex.value = 0
   recipes.value = []
   recipeCount.value = null
   firstPageQueriedAt = new Date()
+  status.value = 'idle'
+}
 
-  const cachedRequests = useNuxtApp().payload.data
-  const cardKeys = Object.keys(cachedRequests).filter(key => key.startsWith('recipe-card-'))
-  for (const key of cardKeys)
-    delete cachedRequests[key]
+function loadNextPage() {
+  pageIndex.value++
+  loadCurrentPage()
 }
 
 export function useRecipeState() {
-  const { data, status, error, refresh } = useAsyncData('recipes', async () => {
-    const recipeQuery = constructRecipeQuery()
-    const countQuery = constructCountQuery()
-
-    const [[recipes], [count]] = await Promise.all([
-      db.query(recipeQuery).collect<[Recipe[]]>(),
-      db.query(countQuery).collect<[number]>(),
-    ])
-
-    return { recipeChunks: recipes, recipeCount: count }
-  }, { immediate: false, watch: [pageIndex] })
-
-  if (recipeCount.value === null)
-    refresh()
-
-  watch(data, () => {
-    recipes.value.push(...data.value?.recipeChunks || [])
-    recipeCount.value = data.value?.recipeCount || 0
-  }, {
-    flush: 'sync',
-  })
+  if (status.value === 'idle')
+    loadCurrentPage()
 
   watch([currentHousehold, searchTerm, filterConditions], () => {
-    clearRecipeCache()
-    refresh()
+    resetList()
+    loadCurrentPage()
   }, {
-    flush: 'sync',
     deep: true,
   })
 
@@ -236,13 +252,13 @@ export function useRecipeState() {
     },
     recipes: {
       data: {
-        pageIndex,
         recipes,
         recipeCount,
       },
       status,
       error,
-      refresh,
+      refresh: loadCurrentPage,
+      loadNextPage,
     },
   }
 }

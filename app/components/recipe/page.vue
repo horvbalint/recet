@@ -191,7 +191,7 @@ async function togglePublic() {
       .collect()
 
     recipe.value!.public = !recipe.value!.public
-    clearRecipeCache()
+    resetList()
 
     useNebToast({
       type: 'success',
@@ -225,7 +225,7 @@ async function deleteRecipe() {
     await db
       .query(surql`DELETE type::record('recipe', ${props.recipeId})`)
       .collect()
-    clearRecipeCache()
+    resetList()
 
     useNebToast({ type: 'success', title: t('recipes.detail.deleteSuccess.title'), description: t('recipes.detail.deleteSuccess.description') })
     await navigateTo('/')
@@ -425,7 +425,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
                         </template>
 
                         <template #content="{ isOpen }">
-                          <recipe-card v-if="isOpen" :recipe-id="subRecipe.recipe.id" class="sub-recipe-card" />
+                          <recipe-card-loader v-if="isOpen" :recipe-id="subRecipe.recipe.id" class="sub-recipe-card" />
                         </template>
                       </neb-dropdown>
 

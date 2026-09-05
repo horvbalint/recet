@@ -33,7 +33,15 @@ const checkedIngredients = ref<number[]>([])
 
 const currentStep = computed(() => props.steps[stepIndex.value] ?? '')
 
+// the recipe page falls back to a cached placeholder with no steps whenever its query has no
+// data, so an errored refresh can empty this out while cook mode is open
+const hasSteps = computed(() => props.steps.length > 0)
+const progress = computed(() => hasSteps.value ? (stepIndex.value + 1) / props.steps.length : 0)
+
 function goToStep(index: number) {
+  if (!hasSteps.value)
+    return
+
   stepIndex.value = Math.min(Math.max(index, 0), props.steps.length - 1)
 }
 
@@ -69,6 +77,11 @@ watch(isOpen, (open) => {
   else {
     releaseWakeLock()
   }
+})
+
+watch(hasSteps, () => {
+  if (isOpen.value && !hasSteps.value)
+    isOpen.value = false
 })
 
 onBeforeUnmount(() => releaseWakeLock())
@@ -135,7 +148,7 @@ function incrementPortions() {
       </header>
 
       <div class="progress-track">
-        <div class="progress-value" :style="{ transform: `scaleX(${(stepIndex + 1) / steps.length})` }" />
+        <div class="progress-value" :style="{ transform: `scaleX(${progress})` }" />
       </div>
 
       <div class="cook-body">

@@ -1,31 +1,14 @@
 <script setup lang="ts">
 import type { Recipe } from '~/pages/index.vue'
-import { raw } from 'surrealdb'
 
 const props = defineProps<{
-  recipeId?: Recipe['id']
-  recipe?: Recipe
+  recipe: Recipe
 }>()
 
-if (!props.recipeId && !props.recipe)
-  throw new Error('Either recipeId or recipe prop must be provided to RecipeCard component.')
-
-const recipeId = props.recipeId || props.recipe!.id
-
-const { data: recipe, status, error } = useAsyncData(`recipe-card-${recipeId}`, async () => {
-  if (props.recipe)
-    return props.recipe
-
-  const [recipe] = await db.query<[Recipe]>(surql`SELECT ${raw(fieldsNeededForRecipeCard)} FROM ONLY ${recipeId}`)
-  return recipe
-}, {
-  getCachedData(key, nuxt) {
-    return nuxt.payload.data[key]
-  },
-})
+const recipeId = props.recipe.id
 
 async function handleCardClick() {
-  setCachedRecipe(recipe.value!)
+  setCachedRecipe(props.recipe)
 
   await nextTick()
   startTransitionThen(() => navigateTo(`/recipe/${recipeId.id}`))
@@ -42,53 +25,51 @@ function handleMiddleClick() {
 
 <template>
   <div class="recipe-card" @click="handleCardClick()" @click.middle="handleMiddleClick()">
-    <neb-state-content :status="status" :error-description="error?.message">
-      <recipe-image :recipe="recipe!" :width-px="400" :height-px="200">
-        <slot name="header-action" />
-      </recipe-image>
+    <recipe-image :recipe="recipe" :width-px="400" :height-px="200">
+      <slot name="header-action" />
+    </recipe-image>
 
-      <div class="recipe-content">
-        <div class="recipe-content-inner-wrapper">
-          <div class="recipe-header">
-            <h3 class="recipe-title">
-              {{ recipe!.name }}
-            </h3>
-          </div>
-
-          <div class="recipe-meta">
-            <div class="meta-item">
-              <icon name="material-symbols:grocery" />
-              <span>{{ $t('recipes.card.ingredients', { count: recipe!.ingredients }) }}</span>
-            </div>
-
-            <div v-if="recipe!.recipes" class="meta-item">
-              <icon name="material-symbols:menu-book-outline-rounded" />
-              <span>{{ $t('recipes.card.recipes', { count: recipe!.recipes }) }}</span>
-            </div>
-
-            <div class="meta-item">
-              <icon name="material-symbols:format-list-numbered-rounded" />
-              <span>{{ $t('recipes.card.steps', { count: recipe!.steps }) }}</span>
-            </div>
-
-            <div v-if="recipe!.cooking_time_minutes" class="meta-item">
-              <icon name="material-symbols:schedule-outline-rounded" />
-              <span>{{ recipe!.cooking_time_minutes }} {{ $t('common.minutes') }}</span>
-            </div>
-          </div>
+    <div class="recipe-content">
+      <div class="recipe-content-inner-wrapper">
+        <div class="recipe-header">
+          <h3 class="recipe-title">
+            {{ recipe.name }}
+          </h3>
         </div>
 
-        <div class="recipe-content-inner-wrapper">
-          <div v-if="recipe!.tags?.length" class="recipe-tags">
-            <recipe-tag-badge v-for="tag in recipe!.tags" :key="tag.name" :tag />
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <icon name="material-symbols:grocery" />
+            <span>{{ $t('recipes.card.ingredients', { count: recipe.ingredients }) }}</span>
           </div>
 
-          <div v-if="recipe!.meal?.length" class="meal-types">
-            <meal-badge v-for="meal in recipe!.meal" :key="meal.name" small :meal />
+          <div v-if="recipe.recipes" class="meta-item">
+            <icon name="material-symbols:menu-book-outline-rounded" />
+            <span>{{ $t('recipes.card.recipes', { count: recipe.recipes }) }}</span>
+          </div>
+
+          <div class="meta-item">
+            <icon name="material-symbols:format-list-numbered-rounded" />
+            <span>{{ $t('recipes.card.steps', { count: recipe.steps }) }}</span>
+          </div>
+
+          <div v-if="recipe.cooking_time_minutes" class="meta-item">
+            <icon name="material-symbols:schedule-outline-rounded" />
+            <span>{{ recipe.cooking_time_minutes }} {{ $t('common.minutes') }}</span>
           </div>
         </div>
       </div>
-    </neb-state-content>
+
+      <div class="recipe-content-inner-wrapper">
+        <div v-if="recipe.tags?.length" class="recipe-tags">
+          <recipe-tag-badge v-for="tag in recipe.tags" :key="tag.name" :tag />
+        </div>
+
+        <div v-if="recipe.meal?.length" class="meal-types">
+          <meal-badge v-for="meal in recipe.meal" :key="meal.name" small :meal />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 

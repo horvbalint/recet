@@ -130,7 +130,7 @@ async function createRecipe() {
     if (selectedImage.value)
       await setImageOnRecipe(result!.id, selectedImage.value)
 
-    clearRecipeCache()
+    resetList()
     useNebToast({ type: 'success', title: t('recipes.create.createSuccess.title'), description: t('recipes.create.createSuccess.description') })
     await navigateTo(`/recipe/${result!.id.id}`)
   }
@@ -161,7 +161,7 @@ async function updateRecipe() {
         await db.query(surql`UPDATE ONLY ${recipeToEdit.value!.id} SET image = NONE, image_blur_hash = NONE`)
     }
 
-    clearRecipeCache()
+    resetList()
     useNebToast({ type: 'success', title: t('recipes.create.updateSuccess.title'), description: t('recipes.create.updateSuccess.description') })
     await navigateTo(`/recipe/${recipeId}`)
   }

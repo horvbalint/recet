@@ -75,7 +75,6 @@ const filterConditions = ref<InMealRuleConditions>(createEmptyMealRuleConditions
 export function constructWhereConditions(conditions: InMealRuleConditions, searchTerm: string | undefined): ExprLike {
   const query_conditions = [
     eq('household', currentHousehold.value!.id),
-    lte('created_at', firstPageQueriedAt),
   ]
 
   if (searchTerm)
@@ -135,9 +134,15 @@ export function constructWhereConditions(conditions: InMealRuleConditions, searc
   return and(...query_conditions)
 }
 
+function constructListWhereConditions() {
+  return and(
+    constructWhereConditions(filterConditions.value, searchTerm.value),
+    lte('created_at', firstPageQueriedAt),
+  )
+}
+
 function constructCountQuery() {
-  const whereConditions = constructWhereConditions(filterConditions.value, searchTerm.value)
-  return surql`SELECT VALUE count() FROM ONLY recipe WHERE ${whereConditions} GROUP ALL`
+  return surql`SELECT VALUE count() FROM ONLY recipe WHERE ${constructListWhereConditions()} GROUP ALL`
 }
 
 export const fieldsNeededForRecipeCard = `
@@ -171,8 +176,7 @@ function constructRecipeQuery() {
       query.append(surql` WITH INDEX english_search_name`)
   }
 
-  const whereConditions = constructWhereConditions(filterConditions.value, searchTerm.value)
-  query.append(surql` WHERE ${whereConditions}`)
+  query.append(surql` WHERE ${constructListWhereConditions()}`)
 
   if (searchTerm.value)
     query.append(surql` ORDER BY score, created_at DESC`)
@@ -186,16 +190,11 @@ function constructRecipeQuery() {
   return query
 }
 
-export function clearRecipeCache() {
+export function resetList() {
   pageIndex.value = 0
   recipes.value = []
   recipeCount.value = null
   firstPageQueriedAt = new Date()
-
-  const cachedRequests = useNuxtApp().payload.data
-  const cardKeys = Object.keys(cachedRequests).filter(key => key.startsWith('recipe-card-'))
-  for (const key of cardKeys)
-    delete cachedRequests[key]
 }
 
 export function useRecipeState() {
@@ -222,7 +221,7 @@ export function useRecipeState() {
   })
 
   watch([currentHousehold, searchTerm, filterConditions], () => {
-    clearRecipeCache()
+    resetList()
     refresh()
   }, {
     flush: 'sync',

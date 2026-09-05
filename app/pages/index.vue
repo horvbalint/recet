@@ -33,13 +33,13 @@ export interface Recipe {
 const {
   recipes: {
     data: {
+      pageIndex,
       recipes,
       recipeCount,
     },
     status,
     error,
     refresh,
-    loadNextPage,
   },
   filter: {
     searchTerm,
@@ -61,7 +61,7 @@ async function toggleFilter() {
 const recipeLoader = useTemplateRef('recipe-loader')
 const observer = new IntersectionObserver(([entry]) => {
   if (entry!.isIntersecting && status.value !== 'pending')
-    loadNextPage()
+    pageIndex.value++
 }, {
   rootMargin: '100px',
 })

@@ -190,58 +190,41 @@ function constructRecipeQuery() {
   return query
 }
 
-const status = ref<'idle' | 'pending' | 'success' | 'error'>('idle')
-const error = ref<Error | null>(null)
-let currentRequestId = 0
-
-async function loadCurrentPage() {
-  const requestId = ++currentRequestId
-  status.value = 'pending'
-  error.value = null
-
-  try {
-    const [[page], [count]] = await Promise.all([
-      db.query(constructRecipeQuery()).collect<[Recipe[]]>(),
-      db.query(constructCountQuery()).collect<[number]>(),
-    ])
-
-    if (requestId !== currentRequestId)
-      return
-
-    recipes.value.push(...page)
-    recipeCount.value = count
-    status.value = 'success'
-  }
-  catch (err) {
-    if (requestId !== currentRequestId)
-      return
-
-    error.value = err as Error
-    status.value = 'error'
-  }
-}
-
 export function resetList() {
   pageIndex.value = 0
   recipes.value = []
   recipeCount.value = null
   firstPageQueriedAt = new Date()
-  status.value = 'idle'
-}
-
-function loadNextPage() {
-  pageIndex.value++
-  loadCurrentPage()
 }
 
 export function useRecipeState() {
-  if (status.value === 'idle')
-    loadCurrentPage()
+  const { data, status, error, refresh } = useAsyncData('recipes', async () => {
+    const recipeQuery = constructRecipeQuery()
+    const countQuery = constructCountQuery()
+
+    const [[recipes], [count]] = await Promise.all([
+      db.query(recipeQuery).collect<[Recipe[]]>(),
+      db.query(countQuery).collect<[number]>(),
+    ])
+
+    return { recipeChunks: recipes, recipeCount: count }
+  }, { immediate: false, watch: [pageIndex] })
+
+  if (recipeCount.value === null)
+    refresh()
+
+  watch(data, () => {
+    recipes.value.push(...data.value?.recipeChunks || [])
+    recipeCount.value = data.value?.recipeCount || 0
+  }, {
+    flush: 'sync',
+  })
 
   watch([currentHousehold, searchTerm, filterConditions], () => {
     resetList()
-    loadCurrentPage()
+    refresh()
   }, {
+    flush: 'sync',
     deep: true,
   })
 
@@ -252,13 +235,13 @@ export function useRecipeState() {
     },
     recipes: {
       data: {
+        pageIndex,
         recipes,
         recipeCount,
       },
       status,
       error,
-      refresh: loadCurrentPage,
-      loadNextPage,
+      refresh,
     },
   }
 }

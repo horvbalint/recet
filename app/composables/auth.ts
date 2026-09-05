@@ -17,8 +17,11 @@ export const isCurrHouseholdViewer = computed(() => ['owner', 'writer', 'guest']
 
 const tokenKey = 'recet_tokens'
 
+// only desktop_user and mobile_user are WITH REFRESH, so a token without one belongs to a
+// recipe_guest session: persisting it would overwrite the signed in user's refresh tokens
+// and log them out of their own account just by opening a public recipe link
 db.subscribe('auth', (tokens) => {
-  if (tokens)
+  if (tokens?.refresh)
     localStorage.setItem(tokenKey, JSON.stringify(tokens))
 })
 
@@ -58,25 +61,13 @@ export async function authenticateWithToken() {
   await db.authenticate(JSON.parse(tokens))
 }
 
-// the guest session's tokens are picked up by the subscriber above and would overwrite the
-// signed in user's refresh tokens, logging them out of their account just by opening a public link
 export async function signInAsRecipeGuest(recipeId: string) {
-  const userTokens = localStorage.getItem(tokenKey)
-
-  try {
-    await db.signin({
-      access: 'recipe_guest',
-      variables: {
-        recipe_id: recipeId,
-      },
-    })
-  }
-  finally {
-    if (userTokens)
-      localStorage.setItem(tokenKey, userTokens)
-    else
-      localStorage.removeItem(tokenKey)
-  }
+  await db.signin({
+    access: 'recipe_guest',
+    variables: {
+      recipe_id: recipeId,
+    },
+  })
 }
 
 export async function logout() {

@@ -59,7 +59,24 @@ export async function getRecipeImageUrl(recipeId: RecordId<'recipe'>) {
 export async function setImageOnRecipe(recipeId: RecordId<'recipe'>, image: File) {
   const buffer = await image.arrayBuffer()
   await db.query(surql`fn::add_image_to_recipe(${recipeId}, ${buffer})`)
+
+  revokeCachedRecipeImage(recipeId.id)
   cachedRecipeImages.delete(recipeId.id)
+}
+
+function revokeCachedRecipeImage(recipeId: RecordId<'recipe'>['id']) {
+  const url = cachedRecipeImages.get(recipeId)
+  if (url)
+    URL.revokeObjectURL(url)
+}
+
+// the cached urls point at blobs of a household we may no longer be able to read,
+// so they have to go whenever the session or the household changes
+export function clearRecipeImageCache() {
+  for (const recipeId of cachedRecipeImages.keys())
+    revokeCachedRecipeImage(recipeId)
+
+  cachedRecipeImages.clear()
 }
 
 // RECIPE STATE + QUERY

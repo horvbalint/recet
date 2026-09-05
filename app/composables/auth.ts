@@ -54,7 +54,47 @@ export async function authenticateWithToken() {
   await db.authenticate(JSON.parse(tokens))
 }
 
-export function logout() {
+// the guest session's tokens are picked up by the subscriber above and would overwrite the
+// signed in user's refresh tokens, logging them out of their account just by opening a public link
+export async function signInAsRecipeGuest(recipeId: string) {
+  const userTokens = localStorage.getItem(tokenKey)
+
+  try {
+    await db.signin({
+      access: 'recipe_guest',
+      variables: {
+        recipe_id: recipeId,
+      },
+    })
+  }
+  finally {
+    if (userTokens)
+      localStorage.setItem(tokenKey, userTokens)
+    else
+      localStorage.removeItem(tokenKey)
+  }
+}
+
+export async function logout() {
+  // the subscriber above only ever writes this key, so it has to be removed by hand,
+  // otherwise the auth middleware silently signs the user back in on the next navigation
+  localStorage.removeItem(tokenKey)
+  localStorage.removeItem(currentHouseholdKey)
+
   authUser.value = null
-  db.invalidate()
+  authMemberships.value = null
+  currentHousehold.value = null
+
+  clearRecipeImageCache()
+  resetList()
+  householdQuery.clear()
+
+  // every useAsyncData call caches by key in the payload, so without this the next user
+  // signing in on the same tab would be served the previous one's recipes
+  const cachedData = useNuxtApp().payload.data
+  for (const key of Object.keys(cachedData))
+    delete cachedData[key]
+
+  await db.invalidate()
+  await navigateTo('/auth/login')
 }

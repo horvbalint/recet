@@ -41,6 +41,7 @@
     "members": "Tagok",
     "settings": "Beállítások",
     "masterData": "Törzsadatok",
+    "signOut": "Kijelentkezés",
     "pwa": {
       "newVersion": {
         "button": "✨ Új verzió elérhető ✨",
@@ -267,6 +268,21 @@
       },
       "loadError": {
         "title": "Nem sikerült betölteni a receptet"
+      }
+    },
+    "cook": {
+      "start": "Főzés",
+      "close": "Bezárás",
+      "stepCounter": "{current}. lépés / {total}",
+      "ingredients": "Hozzávalók",
+      "showIngredients": "Hozzávalók mutatása",
+      "hideIngredients": "Hozzávalók elrejtése",
+      "previous": "Előző",
+      "next": "Következő",
+      "finish": "Kész",
+      "timer": {
+        "done": "Lejárt!",
+        "onStep": "{step}. lépés"
       }
     },
     "create": {

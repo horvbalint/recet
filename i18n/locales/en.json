@@ -41,6 +41,7 @@
     "members": "Members",
     "settings": "Settings",
     "masterData": "Master Data",
+    "signOut": "Sign out",
     "pwa": {
       "newVersion": {
         "button": "✨ New version available ✨",
@@ -267,6 +268,21 @@
       },
       "loadError": {
         "title": "Failed to load recipe"
+      }
+    },
+    "cook": {
+      "start": "Cook",
+      "close": "Close",
+      "stepCounter": "Step {current} of {total}",
+      "ingredients": "Ingredients",
+      "showIngredients": "Show ingredients",
+      "hideIngredients": "Hide ingredients",
+      "previous": "Previous",
+      "next": "Next",
+      "finish": "Finish",
+      "timer": {
+        "done": "Time's up!",
+        "onStep": "step {step}"
       }
     },
     "create": {

@@ -147,6 +147,8 @@ function incrementPortions() {
 
 watch(recipe, () => portions.value = recipe.value!.portions)
 
+const isCookModeOpen = ref(false)
+
 async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
   try {
     isAddingToList.value = true
@@ -325,6 +327,11 @@ watch(currentHousehold, async () => await navigateTo('/'))
                 </div>
               </div>
 
+              <neb-button v-if="recipe.steps?.length" class="cook-button" @click="isCookModeOpen = true">
+                <icon name="material-symbols:chef-hat-outline-rounded" />
+                {{ $t('recipes.cook.start') }}
+              </neb-button>
+
               <div class="recipe-author">
                 <neb-avatar-card
                   :avatar="{ text: recipe.author?.username?.[0]?.toUpperCase() || '?', size: '40px' }"
@@ -497,6 +504,16 @@ watch(currentHousehold, async () => await navigateTo('/'))
               </p>
             </section>
           </main>
+
+          <recipe-cook-mode
+            v-model="isCookModeOpen"
+            v-model:portions="portions"
+            :name="recipe.name"
+            :steps="recipe.steps"
+            :ingredients="recipe.ingredients"
+            :sub-recipes="recipe.recipes"
+            :portion-ratio="portionRatio"
+          />
         </neb-state-content>
       </template>
     </neb-state-content>
@@ -584,6 +601,11 @@ watch(currentHousehold, async () => await navigateTo('/'))
 .meta-item .icon {
   font-size: 20px !important;
   color: var(--neb-text-muted);
+}
+
+.cook-button {
+  width: fit-content;
+  margin-top: var(--space-2);
 }
 
 .recipe-author {

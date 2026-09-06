@@ -11,6 +11,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "typecheck": "vue-tsc --build",
     "generate-types": "surreal-ts -n recet -d recet --links-fetched -o ./app/db.ts",
     "generate-icons": "pwa-assets-generator"
   },

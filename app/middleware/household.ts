@@ -5,7 +5,7 @@ export default defineNuxtRouteMiddleware(async () => {
   if (error.value)
     throw createError({ message: error.value.message, cause: error.value })
 
-  const stored = localStorage.getItem('currentHousehold')
+  const stored = localStorage.getItem(currentHouseholdKey)
   const sameId = data.value!.find(h => h.id.toString() === stored)
 
   const householdToUse = sameId ?? data.value![0]

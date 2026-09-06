@@ -147,6 +147,8 @@ function incrementPortions() {
 
 watch(recipe, () => portions.value = recipe.value!.portions)
 
+const isCookModeOpen = ref(false)
+
 async function addToShoppingList(shoppingListId: RecordId<'shopping_list'>) {
   try {
     isAddingToList.value = true
@@ -295,6 +297,11 @@ watch(currentHousehold, async () => await navigateTo('/'))
                   </template>
                 </neb-menu>
               </div>
+
+              <neb-button v-if="recipe.steps?.length" type="secondary" class="cook-action" small @click="isCookModeOpen = true">
+                <icon name="material-symbols:chef-hat-outline-rounded" />
+                {{ $t('recipes.cook.start') }}
+              </neb-button>
             </recipe-image>
 
             <div class="recipe-info">
@@ -497,6 +504,17 @@ watch(currentHousehold, async () => await navigateTo('/'))
               </p>
             </section>
           </main>
+
+          <recipe-cook-mode
+            v-if="isCookModeOpen"
+            v-model:portions="portions"
+            :name="recipe.name"
+            :steps="recipe.steps"
+            :ingredients="recipe.ingredients"
+            :sub-recipes="recipe.recipes"
+            :portion-ratio="portionRatio"
+            @close="isCookModeOpen = false"
+          />
         </neb-state-content>
       </template>
     </neb-state-content>
@@ -531,6 +549,13 @@ watch(currentHousehold, async () => await navigateTo('/'))
   :deep(.image-placeholder) {
     border-radius: var(--radius-large);
     border: 1px solid var(--neb-border);
+  }
+
+  .cook-action {
+    position: absolute;
+    bottom: var(--space-4);
+    right: var(--space-4);
+    box-shadow: var(--neb-shadow-md);
   }
 
   .recipe-actions {

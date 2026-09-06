@@ -96,6 +96,9 @@ DEFINE FUNCTION OVERWRITE fn::has_guest_access($id: record) {
 		$auth.tags.includes($id) ||
 		$auth.cuisine = $id ||
 		$auth.meal.includes($id) ||
+		$auth.recipes.any(|$r| {
+			RETURN $r.recipe = $id;
+		}) ||
 		$auth.ingredients.any(|$i| {
 			RETURN $i.ingredient = $id || $i.unit = $id;
 		})

@@ -59,7 +59,22 @@ export async function getRecipeImageUrl(recipeId: RecordId<'recipe'>) {
 export async function setImageOnRecipe(recipeId: RecordId<'recipe'>, image: File) {
   const buffer = await image.arrayBuffer()
   await db.query(surql`fn::add_image_to_recipe(${recipeId}, ${buffer})`)
+
+  revokeCachedRecipeImage(recipeId.id)
   cachedRecipeImages.delete(recipeId.id)
+}
+
+export function clearRecipeImageCache() {
+  for (const recipeId of cachedRecipeImages.keys())
+    revokeCachedRecipeImage(recipeId)
+
+  cachedRecipeImages.clear()
+}
+
+function revokeCachedRecipeImage(recipeId: RecordId<'recipe'>['id']) {
+  const url = cachedRecipeImages.get(recipeId)
+  if (url)
+    URL.revokeObjectURL(url)
 }
 
 // RECIPE STATE + QUERY

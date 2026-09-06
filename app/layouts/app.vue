@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Menu } from '@nebula/components/overlays/neb-menu.vue'
+
 const { t } = useI18n()
 const navigationGroups = computed(() => {
   const householdItems = [
@@ -59,6 +61,10 @@ function update() {
   installing.value = true
   useNuxtApp().$pwa?.updateServiceWorker().finally(() => installing.value = false)
 }
+
+const userMenus = computed<Menu[]>(() => [
+  { text: t('nav.signOut'), icon: 'material-symbols:logout-rounded', callback: () => logout(), desctructive: true },
+])
 </script>
 
 <template>
@@ -134,6 +140,20 @@ function update() {
             {{ $t('nav.pwa.install.button') }}
           </neb-button>
         </neb-tooltip>
+
+        <div class="sidebar-footer">
+          <neb-menu full-width :menus="userMenus" :floating-options="{ placement: 'top-start' }">
+            <template #trigger="{ toggle }">
+              <neb-button class="user-button" type="tertiary-neutral" full-width @click="toggle()">
+                <div class="label">
+                  <icon name="material-symbols:account-circle-outline" />
+                  <span class="username">{{ authUser?.username }}</span>
+                </div>
+                <icon name="material-symbols:keyboard-arrow-up-rounded" />
+              </neb-button>
+            </template>
+          </neb-menu>
+        </div>
       </aside>
 
       <div class="main-area">
@@ -164,7 +184,7 @@ function update() {
 
 .sidebar {
   width: 280px;
-  background: var(--neb-bg-raised);
+  background: var(--neb-bg);
   color: var(--neb-text);
   display: flex;
   flex-direction: column;
@@ -285,7 +305,7 @@ function update() {
 
 .top-bar {
   display: none;
-  background: var(--neb-bg-raised);
+  background: var(--neb-bg);
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--neb-border-subtle);
   align-items: center;
@@ -298,6 +318,30 @@ function update() {
 
 .pwa-button {
   margin: var(--space-4);
+}
+
+.sidebar-footer {
+  padding: var(--space-2);
+  border-top: 1px solid var(--neb-border-subtle);
+}
+
+.user-button {
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+
+  .label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .username {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 @media (--tablet-viewport) {
@@ -327,7 +371,7 @@ function update() {
       right: 10px;
       width: 10px;
       height: 10px;
-      border: 2px solid var(--neb-bg-raised);
+      border: 2px solid var(--neb-bg);
       background: var(--neb-bg-primary-solid);
       border-radius: 50%;
     }

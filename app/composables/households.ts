@@ -5,6 +5,8 @@ import 'dayjs/locale/hu'
 
 export const currentHousehold = ref<OutHousehold | null>(null)
 
+export const currentHouseholdKey = 'currentHousehold'
+
 const houseHoldQueryKey = 'member-households'
 // I can't make this an async function, cause if I write async EVERYTHIN DIES. SO FUN :))
 export const householdQuery = useAsyncData(houseHoldQueryKey, () => {
@@ -53,7 +55,7 @@ export async function joinHousehold(token: string) {
 
 export function switchHousehold(household: OutHousehold) {
   currentHousehold.value = household
-  localStorage.setItem('currentHousehold', household.id.toString())
+  localStorage.setItem(currentHouseholdKey, household.id.toString())
 
   useNuxtApp().$i18n.setLocale(household.language)
 }

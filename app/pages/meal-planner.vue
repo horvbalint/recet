@@ -111,19 +111,17 @@ window.addEventListener('click', () => {
   }
 })
 
-// the meal_rule query has no FETCH, so relations come back as record ids (the In
-// shape), and a selected row always carries an id unlike the write shape
-type MealRuleRow = InMealRule & { id: RecordId<'meal_rule'> }
+type MealRule = InMealRule & { id: RecordId<'meal_rule'> }
 
 const overWriteExistinMeals = ref(false)
-const selectedRule = ref<MealRuleRow | null>(null)
+const selectedRule = ref<MealRule | null>(null)
 const createRuleModal = ref(false)
 const createRuleInitialName = ref('')
 
 const { data: rules, refresh: refreshRules } = useAsyncData(async () => {
   const [rules] = await db
     .query(`SELECT * FROM meal_rule WHERE household = ${currentHousehold.value?.id} ORDER BY name ASC`)
-    .collect<[MealRuleRow[]]>()
+    .collect<[MealRule[]]>()
 
   return rules
 })
@@ -133,7 +131,7 @@ function handleCreateRule(searchTerm: string) {
   createRuleModal.value = true
 }
 
-async function onRuleCreated(rule: MealRuleRow) {
+async function onRuleCreated(rule: MealRule) {
   await refreshRules()
   selectedRule.value = rule
 }

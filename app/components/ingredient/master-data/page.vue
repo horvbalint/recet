@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
-import type { BoundQuery } from 'surrealdb'
 import type { InIngredient, OutIngredient, OutIngredientCategory } from '~/db'
 
 interface OutIngredientWithCategory extends OutIngredient {
@@ -8,8 +7,7 @@ interface OutIngredientWithCategory extends OutIngredient {
 }
 
 const { t } = useI18n()
-// annotated so master-data-layout infers T, which the typed sortFunction below needs
-const getQuery = computed(() => surql`SELECT * FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH category` as BoundQuery<[OutIngredientWithCategory]>)
+const getQuery = computed(() => surql<[OutIngredientWithCategory]>`SELECT * FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH category`)
 
 const columns = computed(() => ({
   name: {
@@ -22,13 +20,11 @@ const columns = computed(() => ({
   },
 }) satisfies Columns<OutIngredientWithCategory>)
 
-// the row arrives with household and category fetched as objects, while the modal
-// writes InIngredient, which wants record ids for both
-function toInitialData(doc: OutIngredientWithCategory | null): Partial<InIngredient> | null {
+function toInIngredient(doc: OutIngredientWithCategory | null): Partial<InIngredient> | null {
   if (!doc)
     return null
-
-  return { ...doc, household: doc.household.id, category: doc.category?.id }
+  else
+    return { ...doc, household: doc.household.id, category: doc.category?.id }
 }
 </script>
 
@@ -50,7 +46,7 @@ function toInitialData(doc: OutIngredientWithCategory | null): Partial<InIngredi
     <template #modal="{ close, afterSave, docToEdit }">
       <ingredient-master-data-modal
         :model-value="true"
-        :initial-data="toInitialData(docToEdit)"
+        :initial-data="toInIngredient(docToEdit)"
         @update:model-value="close()"
         @saved="afterSave()"
       />

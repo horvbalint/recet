@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const formData = ref({
   email: '',
   password: '',
@@ -22,8 +24,6 @@ async function handleSignin() {
 function goToSignup() {
   startTransitionThen(() => navigateTo('/auth/signup'))
 }
-
-const { t } = useI18n()
 </script>
 
 <template>

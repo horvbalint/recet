@@ -89,6 +89,9 @@ async function setUpLiveQuery() {
     `)
     liveQuery = await db.liveOf(liveSelectToken)
     liveQuery.subscribe((event) => {
+      if (event.action === 'KILLED')
+        return
+
       const localItem = items.value?.find(i => i.id.id === event.recordId.id)
 
       if (event.action === 'DELETE' && !localItem)
@@ -315,18 +318,18 @@ function onUnitCreated(unit: OutUnit) {
       <div v-else-if="!!data" class="shopping-list-detail">
         <div v-if="Object.keys(groupedItems).length > 0" class="categories-container">
           <div
-            v-for="(items, categoryName) in groupedItems"
+            v-for="(categoryItems, categoryName) in groupedItems"
             :key="categoryName"
             class="category-section"
           >
             <h3 class="category-title">
               {{ categoryName }}
-              <span class="category-count">({{ items.length }})</span>
+              <span class="category-count">({{ categoryItems.length }})</span>
             </h3>
 
             <div class="items-list">
               <div
-                v-for="item in items"
+                v-for="item in categoryItems"
                 :key="`${categoryName}-${typeof item.item === 'object' ? item.item.id : item.item}`"
                 class="item-card"
                 @click="startEditItem(item)"

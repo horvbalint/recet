@@ -1,4 +1,4 @@
-import { applyDiagnostics, createRemoteEngines, Surreal, Value } from 'surrealdb'
+import { Surreal, Value } from 'surrealdb'
 
 export { surql } from 'surrealdb'
 

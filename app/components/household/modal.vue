@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { OutHousehold } from '~/db'
 
-const { t } = useI18n()
 const emit = defineEmits<{
   (event: 'created', household: OutHousehold): void
 }>()
-
+const { t } = useI18n()
 const modelValue = defineModel<boolean>()
 
 const householdName = ref('')

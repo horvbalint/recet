@@ -2,6 +2,7 @@
   "name": "nuxt-app",
   "type": "module",
   "private": true,
+  "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": "22"
   },
@@ -11,6 +12,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "typecheck": "vue-tsc --build",
     "generate-types": "surreal-ts -n recet -d recet --links-fetched -o ./app/db.ts",
     "generate-icons": "pwa-assets-generator"
   },
@@ -18,7 +21,7 @@
     "@formkit/drag-and-drop": "0.6.1",
     "@nuxtjs/i18n": "10.6.0",
     "@vite-pwa/assets-generator": "1.0.2",
-    "@vue/reactivity": "3.5.41",
+    "@vue/reactivity": "3.5.42",
     "blurhash": "2.0.5",
     "dayjs": "1.11.21",
     "fuse.js": "7.5.0",
@@ -27,8 +30,8 @@
     "sortablejs": "1.15.7",
     "surreal-ts": "3.0.0",
     "surrealdb": "2.0.8",
-    "vue": "3.5.41",
-    "vue-tsc": "3.3.9"
+    "vue": "3.5.42",
+    "vue-tsc": "3.3.11"
   },
   "devDependencies": {
     "@antfu/eslint-config": "9.3.0",

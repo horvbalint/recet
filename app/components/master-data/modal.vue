@@ -1,5 +1,4 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
-const { t } = useI18n()
 const props = withDefaults(defineProps<{
   table: string
   name: string
@@ -14,11 +13,10 @@ const props = withDefaults(defineProps<{
   transformBeforeCreate: (data: T) => data,
   transformBeforeEdit: (data: T) => data,
 })
-
 const emit = defineEmits<{
   saved: [item: any]
 }>()
-
+const { t } = useI18n()
 const modelValue = defineModel<boolean>({ required: true })
 
 const formData = ref<Partial<T>>({})

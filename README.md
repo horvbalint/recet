@@ -39,7 +39,7 @@ The project uses two currently experimental features:
 
 These experimental features are available in the v3 versions of SurrealDB.
 
-#### Steps:
+### Steps:
 - clone the repo
 - pnpm i
 - pnpm run dev

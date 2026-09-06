@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Dayjs } from 'dayjs'
 import type { BoundQuery, RecordId } from 'surrealdb'
-import type { OutMealPlan, OutMealRule, OutRecipe } from '~/db'
+import type { InMealRule, OutMealPlan, OutRecipe } from '~/db'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
@@ -111,15 +111,17 @@ window.addEventListener('click', () => {
   }
 })
 
+type MealRule = InMealRule & { id: RecordId<'meal_rule'> }
+
 const overWriteExistinMeals = ref(false)
-const selectedRule = ref<OutMealRule | null>(null)
+const selectedRule = ref<MealRule | null>(null)
 const createRuleModal = ref(false)
 const createRuleInitialName = ref('')
 
 const { data: rules, refresh: refreshRules } = useAsyncData(async () => {
   const [rules] = await db
     .query(`SELECT * FROM meal_rule WHERE household = ${currentHousehold.value?.id} ORDER BY name ASC`)
-    .collect<[OutMealRule[]]>()
+    .collect<[MealRule[]]>()
 
   return rules
 })
@@ -129,7 +131,7 @@ function handleCreateRule(searchTerm: string) {
   createRuleModal.value = true
 }
 
-async function onRuleCreated(rule: OutMealRule) {
+async function onRuleCreated(rule: MealRule) {
   await refreshRules()
   selectedRule.value = rule
 }

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { Columns } from '@nebula/components/table/neb-table-frame.vue'
-import type { OutIngredient, OutIngredientCategory } from '~/db'
+import type { InIngredient, OutIngredient, OutIngredientCategory } from '~/db'
 
 interface OutIngredientWithCategory extends OutIngredient {
   category?: OutIngredientCategory
 }
 
 const { t } = useI18n()
-const getQuery = computed(() => surql`SELECT * FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH category`)
+const getQuery = computed(() => surql<[OutIngredientWithCategory]>`SELECT * FROM ingredient WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC FETCH category`)
 
 const columns = computed(() => ({
   name: {
@@ -19,6 +19,13 @@ const columns = computed(() => ({
     sortFunction: (a, b) => a.formatted.category.localeCompare(b.formatted.category),
   },
 }) satisfies Columns<OutIngredientWithCategory>)
+
+function toInIngredient(doc: OutIngredientWithCategory | null): Partial<InIngredient> | null {
+  if (!doc)
+    return null
+  else
+    return { ...doc, household: doc.household.id, category: doc.category?.id }
+}
 </script>
 
 <template>
@@ -39,7 +46,7 @@ const columns = computed(() => ({
     <template #modal="{ close, afterSave, docToEdit }">
       <ingredient-master-data-modal
         :model-value="true"
-        :initial-data="{ ...docToEdit, category: docToEdit?.category?.id }"
+        :initial-data="toInIngredient(docToEdit)"
         @update:model-value="close()"
         @saved="afterSave()"
       />

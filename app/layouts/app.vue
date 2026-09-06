@@ -321,7 +321,7 @@ const userMenus = computed<Menu[]>(() => [
 }
 
 .sidebar-footer {
-  padding: var(--space-4);
+  padding: var(--space-2);
   border-top: 1px solid var(--neb-border-subtle);
 }
 

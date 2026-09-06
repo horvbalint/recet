@@ -9,21 +9,19 @@ const props = defineProps<{
   portionRatio: number
 }>()
 
-const isOpen = defineModel<boolean>({ required: true })
+const emit = defineEmits<{
+  close: []
+}>()
+
 const portions = defineModel<number | undefined>('portions')
 
-// slide 0 is the ingredient list, so that everything can be gathered before the first step
 const slideIndex = ref(0)
 const showIngredients = ref(false)
 const checkedIngredients = ref<number[]>([])
 
-// the recipe page falls back to a cached placeholder with no steps whenever its query has no
-// data, so an errored refresh can empty this out while cook mode is open
 const hasSteps = computed(() => props.steps.length > 0)
 const slideCount = computed(() => props.steps.length + 1)
 const isIngredientSlide = computed(() => slideIndex.value === 0)
-const currentStep = computed(() => props.steps[slideIndex.value - 1] ?? '')
-const progress = computed(() => hasSteps.value ? (slideIndex.value + 1) / slideCount.value : 0)
 
 function goToSlide(index: number) {
   if (!hasSteps.value)
@@ -49,45 +47,23 @@ async function keepScreenAwake() {
 
 // the OS drops the wake lock every time the page is hidden, so it has to be taken again
 useEventListener(document, 'visibilitychange', () => {
-  if (isOpen.value && document.visibilityState === 'visible')
+  if (document.visibilityState === 'visible')
     keepScreenAwake()
 })
 
-watch(isOpen, (open) => {
-  if (open) {
-    slideIndex.value = 0
-    showIngredients.value = false
-    checkedIngredients.value = []
-
-    keepScreenAwake()
-  }
-  else {
-    releaseWakeLock()
-  }
-})
-
-watch(hasSteps, () => {
-  if (isOpen.value && !hasSteps.value)
-    isOpen.value = false
-})
-
+onMounted(() => keepScreenAwake())
 onBeforeUnmount(() => releaseWakeLock())
 
+// guards against the recipe's steps being edited down to zero while cook mode is open
+watch(hasSteps, () => {
+  if (!hasSteps.value)
+    emit('close')
+})
+
 // NAVIGATION
-onKeyStroke('ArrowRight', () => {
-  if (isOpen.value)
-    goToSlide(slideIndex.value + 1)
-})
-
-onKeyStroke('ArrowLeft', () => {
-  if (isOpen.value)
-    goToSlide(slideIndex.value - 1)
-})
-
-onKeyStroke('Escape', () => {
-  if (isOpen.value)
-    isOpen.value = false
-})
+onKeyStroke('ArrowRight', () => goToSlide(slideIndex.value + 1))
+onKeyStroke('ArrowLeft', () => goToSlide(slideIndex.value - 1))
+onKeyStroke('Escape', () => emit('close'))
 
 const slideArea = useTemplateRef('slide-area')
 useSwipe(slideArea, {
@@ -101,10 +77,10 @@ useSwipe(slideArea, {
 </script>
 
 <template>
-  <neb-pop-up v-model="isOpen" :close-on-background-click="false">
+  <neb-pop-up :model-value="true" :close-on-background-click="false">
     <div class="cook-mode">
       <header class="cook-header">
-        <neb-button type="tertiary-neutral" small @click="isOpen = false">
+        <neb-button type="tertiary-neutral" small @click="emit('close')">
           <icon name="material-symbols:close-rounded" />
           <span class="hide-on-mobile">{{ $t('recipes.cook.close') }}</span>
         </neb-button>
@@ -133,7 +109,7 @@ useSwipe(slideArea, {
       </header>
 
       <div class="progress-track">
-        <div class="progress-value" :style="{ transform: `scaleX(${progress})` }" />
+        <div class="progress-value" :style="{ transform: `scaleX(${hasSteps ? (slideIndex + 1) / slideCount : 0})` }" />
       </div>
 
       <div class="cook-body">
@@ -147,7 +123,9 @@ useSwipe(slideArea, {
             :portion-ratio="portionRatio"
           />
 
-          <recipe-cook-step v-else :step="currentStep" />
+          <p v-else class="cook-step">
+            {{ steps[slideIndex - 1] ?? '' }}
+          </p>
         </main>
 
         <aside v-if="showIngredients && !isIngredientSlide" class="ingredient-panel">
@@ -167,7 +145,7 @@ useSwipe(slideArea, {
           <span class="hide-on-mobile">{{ $t('recipes.cook.previous') }}</span>
         </neb-button>
 
-        <neb-button v-if="slideIndex >= slideCount - 1" @click="isOpen = false">
+        <neb-button v-if="slideIndex >= slideCount - 1" @click="emit('close')">
           <icon name="material-symbols:check-rounded" />
           <span>{{ $t('recipes.cook.finish') }}</span>
         </neb-button>
@@ -182,8 +160,6 @@ useSwipe(slideArea, {
 </template>
 
 <style scoped>
-/* a definite height, not min-height: the scrolling children below only constrain themselves
-   when their ancestors resolve to a real height */
 .cook-mode {
   display: flex;
   flex-direction: column;
@@ -214,6 +190,8 @@ useSwipe(slideArea, {
 }
 
 .recipe-name {
+  width: 100%;
+  min-width: 0;
   font-weight: 600;
   color: var(--neb-text);
   overflow: hidden;
@@ -224,6 +202,13 @@ useSwipe(slideArea, {
 .slide-label {
   font-size: var(--text-sm);
   color: var(--neb-text-subtle);
+}
+
+.cook-step {
+  font-size: 32px;
+  line-height: 1.45;
+  color: var(--neb-text);
+  white-space: pre-wrap;
 }
 
 .progress-track {
@@ -286,6 +271,7 @@ useSwipe(slideArea, {
 
 @media (--tablet-viewport) {
   .cook-body {
+    position: relative;
     flex-direction: column;
   }
 
@@ -297,17 +283,25 @@ useSwipe(slideArea, {
     margin-block: 0 auto;
   }
 
-  /* below the step rather than beside it, capped so the step and footer keep their room */
+  .slide-area > .cook-step {
+    margin-block: auto;
+  }
+
   .ingredient-panel {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    max-height: 45%;
     padding: var(--space-4);
     border-left: none;
-    border-top: 1px solid var(--neb-border-subtle);
+    border-top: none;
   }
 
   .hide-on-mobile {
     display: none;
+  }
+
+  .cook-step {
+    font-size: 24px;
   }
 }
 </style>

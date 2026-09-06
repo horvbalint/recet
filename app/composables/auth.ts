@@ -61,18 +61,7 @@ export async function authenticateWithToken() {
   await db.authenticate(JSON.parse(tokens))
 }
 
-export async function signInAsRecipeGuest(recipeId: string) {
-  await db.signin({
-    access: 'recipe_guest',
-    variables: {
-      recipe_id: recipeId,
-    },
-  })
-}
-
 export async function logout() {
-  // the subscriber above only ever writes this key, so it has to be removed by hand,
-  // otherwise the auth middleware silently signs the user back in on the next navigation
   localStorage.removeItem(tokenKey)
   localStorage.removeItem(currentHouseholdKey)
 

@@ -64,11 +64,19 @@ function incrementPortions() {
         :key="index"
         v-model="checked"
         :value="index"
-        class="ingredient"
+        class="ingredient-item"
       >
-        <span v-if="ingredient.amount" class="amount">{{ roundNumberIfNeeded(ingredient.amount * portionRatio) }}</span>
-        <span v-if="ingredient.unit" class="unit">{{ ingredient.unit }}</span>
-        <span>{{ ingredient.ingredient }}</span>
+        <div class="ingredient-content">
+          <div class="ingredient-details">
+            <span v-if="ingredient.amount" class="ingredient-amount">{{ roundNumberIfNeeded(ingredient.amount * portionRatio) }}</span>
+            <span v-if="ingredient.unit" class="ingredient-unit">{{ ingredient.unit }}</span>
+            <span class="ingredient-name">{{ ingredient.ingredient }}</span>
+          </div>
+
+          <div v-if="ingredient.description" class="ingredient-description">
+            {{ ingredient.description }}
+          </div>
+        </div>
       </neb-checkbox>
     </div>
   </section>
@@ -90,15 +98,58 @@ function incrementPortions() {
 .ingredient-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  align-items: flex-start;
+  gap: var(--space-2);
 }
 
-.ingredient {
-  .amount,
-  .unit {
-    font-weight: 600;
-    color: var(--neb-text);
-  }
+.ingredient-item {
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--neb-border-subtle);
+  border-radius: var(--radius-default);
+  transition: all var(--duration-default);
+}
+
+.ingredient-item:hover {
+  background: var(--neb-bg-hover);
+  border-color: var(--neb-border);
+}
+
+.ingredient-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-1);
+  font-size: var(--text-md);
+  font-weight: normal;
+  cursor: text;
+  user-select: text;
+}
+
+.ingredient-details {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.ingredient-amount {
+  font-weight: 600;
+  color: var(--neb-text);
+}
+
+.ingredient-unit {
+  color: var(--neb-text-muted);
+  font-size: var(--text-sm);
+}
+
+.ingredient-name {
+  color: var(--neb-text);
+  flex: 1;
+}
+
+.ingredient-description {
+  color: var(--neb-text-subtle);
+  font-size: var(--text-sm);
+  font-style: italic;
 }
 </style>

@@ -64,19 +64,17 @@ export async function setImageOnRecipe(recipeId: RecordId<'recipe'>, image: File
   cachedRecipeImages.delete(recipeId.id)
 }
 
-function revokeCachedRecipeImage(recipeId: RecordId<'recipe'>['id']) {
-  const url = cachedRecipeImages.get(recipeId)
-  if (url)
-    URL.revokeObjectURL(url)
-}
-
-// the cached urls point at blobs of a household we may no longer be able to read,
-// so they have to go whenever the session or the household changes
 export function clearRecipeImageCache() {
   for (const recipeId of cachedRecipeImages.keys())
     revokeCachedRecipeImage(recipeId)
 
   cachedRecipeImages.clear()
+}
+
+function revokeCachedRecipeImage(recipeId: RecordId<'recipe'>['id']) {
+  const url = cachedRecipeImages.get(recipeId)
+  if (url)
+    URL.revokeObjectURL(url)
 }
 
 // RECIPE STATE + QUERY

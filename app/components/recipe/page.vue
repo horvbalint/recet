@@ -298,7 +298,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
                 </neb-menu>
               </div>
 
-              <neb-button v-if="recipe.steps?.length" class="cook-action" small @click="isCookModeOpen = true">
+              <neb-button v-if="recipe.steps?.length" type="secondary" class="cook-action" small @click="isCookModeOpen = true">
                 <icon name="material-symbols:chef-hat-outline-rounded" />
                 {{ $t('recipes.cook.start') }}
               </neb-button>
@@ -506,13 +506,14 @@ watch(currentHousehold, async () => await navigateTo('/'))
           </main>
 
           <recipe-cook-mode
-            v-model="isCookModeOpen"
+            v-if="isCookModeOpen"
             v-model:portions="portions"
             :name="recipe.name"
             :steps="recipe.steps"
             :ingredients="recipe.ingredients"
             :sub-recipes="recipe.recipes"
             :portion-ratio="portionRatio"
+            @close="isCookModeOpen = false"
           />
         </neb-state-content>
       </template>

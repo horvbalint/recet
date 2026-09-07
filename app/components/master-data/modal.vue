@@ -102,7 +102,7 @@ function handleCancel() {
     </template>
 
     <template #actions>
-      <neb-button type="tertiary-neutral" @click="handleCancel()">
+      <neb-button type="tertiary" intent="neutral" @click="handleCancel()">
         {{ $t('common.cancel') }}
       </neb-button>
 

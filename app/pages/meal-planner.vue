@@ -440,13 +440,13 @@ async function saveDayMeals() {
 
     <div class="calendar">
       <div class="actions">
-        <neb-button type="tertiary-neutral" small @click="shownWeek = shownWeek.subtract(1, 'week')">
+        <neb-button type="tertiary" intent="neutral" small @click="shownWeek = shownWeek.subtract(1, 'week')">
           <icon name="material-symbols:chevron-left-rounded" />
         </neb-button>
 
         <span class="week-label">{{ week[0]!.format('YYYY, MMM D') }} - {{ week[6]!.format('MMM D') }}</span>
 
-        <neb-button type="tertiary-neutral" small @click="shownWeek = shownWeek.add(1, 'week')">
+        <neb-button type="tertiary" intent="neutral" small @click="shownWeek = shownWeek.add(1, 'week')">
           <icon name="material-symbols:chevron-right-rounded" />
         </neb-button>
       </div>
@@ -591,7 +591,7 @@ async function saveDayMeals() {
           </template>
 
           <template #actions>
-            <neb-button type="tertiary-neutral" @click="openRuleModalForSingleDay()">
+            <neb-button type="tertiary" intent="neutral" @click="openRuleModalForSingleDay()">
               {{ $t('mealPlanner.addByRule') }}
             </neb-button>
           </template>

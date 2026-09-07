@@ -80,7 +80,7 @@ useSwipe(slideArea, {
   <neb-pop-up :model-value="true" :close-on-background-click="false">
     <div class="cook-mode">
       <header class="cook-header">
-        <neb-button type="tertiary-neutral" small @click="emit('close')">
+        <neb-button type="tertiary" intent="neutral" small @click="emit('close')">
           <icon name="material-symbols:close-rounded" />
           <span class="hide-on-mobile">{{ $t('recipes.cook.close') }}</span>
         </neb-button>
@@ -97,7 +97,8 @@ useSwipe(slideArea, {
 
         <neb-button
           v-if="!isIngredientSlide"
-          type="tertiary-neutral"
+          type="tertiary"
+          intent="neutral"
           small
           :title="showIngredients ? $t('recipes.cook.hideIngredients') : $t('recipes.cook.showIngredients')"
           @click="showIngredients = !showIngredients"
@@ -140,7 +141,7 @@ useSwipe(slideArea, {
       </div>
 
       <footer class="cook-footer">
-        <neb-button type="secondary-neutral" :disabled="slideIndex === 0" @click="goToSlide(slideIndex - 1)">
+        <neb-button type="secondary" intent="neutral" :disabled="slideIndex === 0" @click="goToSlide(slideIndex - 1)">
           <icon name="material-symbols:arrow-back-rounded" />
           <span class="hide-on-mobile">{{ $t('recipes.cook.previous') }}</span>
         </neb-button>

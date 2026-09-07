@@ -102,7 +102,8 @@ onBeforeUnmount(() => {
           <neb-search-input v-model="searchTerm" lazy />
 
           <neb-button
-            :type="conditionCount ? 'secondary' : 'secondary-neutral'"
+            type="secondary"
+            :intent="conditionCount ? 'primary' : 'neutral'"
             :disabled="filterStatus === 'pending'"
             :loading="filterStatus === 'pending'"
             small
@@ -163,7 +164,8 @@ onBeforeUnmount(() => {
           v-if="recipes.length < recipeCount!"
           ref="recipe-loader"
           :hidden="status !== 'pending'"
-          type="secondary-neutral"
+          type="secondary"
+          intent="neutral"
           disabled
           loading
         />

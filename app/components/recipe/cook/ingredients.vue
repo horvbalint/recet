@@ -41,13 +41,13 @@ function incrementPortions() {
     <neb-content-header :title="$t('recipes.cook.ingredients')" type="section">
       <template v-if="portions" #actions>
         <div class="portion-controls">
-          <neb-button small square type="tertiary-neutral" @click="decrementPortions()">
+          <neb-button small square type="tertiary" intent="neutral" @click="decrementPortions()">
             <icon name="material-symbols:remove-rounded" />
           </neb-button>
 
           {{ portions }}
 
-          <neb-button small square type="tertiary-neutral" @click="incrementPortions()">
+          <neb-button small square type="tertiary" intent="neutral" @click="incrementPortions()">
             <icon name="material-symbols:add-rounded" />
           </neb-button>
         </div>

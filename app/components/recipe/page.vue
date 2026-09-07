@@ -285,13 +285,13 @@ watch(currentHousehold, async () => await navigateTo('/'))
           <div class="recipe-hero">
             <recipe-image class="recipe-image" :recipe :width-px="600" :height-px="400">
               <div v-if="!isGuest" class="recipe-actions">
-                <neb-button type="secondary-neutral" small :disabled="inProgress" :loading="inProgress" @click="editRecipe()">
+                <neb-button type="secondary" intent="neutral" small :disabled="inProgress" :loading="inProgress" @click="editRecipe()">
                   <icon name="material-symbols:edit-outline-rounded" />
                 </neb-button>
 
                 <neb-menu :menus>
                   <template #trigger="{ toggle }">
-                    <neb-button type="secondary-neutral" small :disabled="inProgress" :loading="inProgress" @click="toggle()">
+                    <neb-button type="secondary" intent="neutral" small :disabled="inProgress" :loading="inProgress" @click="toggle()">
                       <icon name="material-symbols:more-horiz" />
                     </neb-button>
                   </template>
@@ -362,7 +362,7 @@ watch(currentHousehold, async () => await navigateTo('/'))
                 <template v-if="!isGuest || portions" #actions>
                   <neb-dropdown :floating-options="{ placement: 'bottom-end' }">
                     <template #trigger="{ toggle }">
-                      <neb-button type="tertiary-neutral" small :disabled="isAddingToList" :loading="isAddingToList" @click="toggle()">
+                      <neb-button type="tertiary" intent="neutral" small :disabled="isAddingToList" :loading="isAddingToList" @click="toggle()">
                         <icon name="material-symbols:more-vert" />
                       </neb-button>
                     </template>
@@ -372,13 +372,13 @@ watch(currentHousehold, async () => await navigateTo('/'))
                         <neb-content-header v-if="portions" :title="$t('recipes.detail.portions')" type="paragraph" :has-separator="!isGuest">
                           <template #actions>
                             <div class="portion-controls">
-                              <neb-button small square type="tertiary-neutral" @click="decrementPortions()">
+                              <neb-button small square type="tertiary" intent="neutral" @click="decrementPortions()">
                                 <icon name="material-symbols:remove-rounded" />
                               </neb-button>
 
                               {{ portions }}
 
-                              <neb-button small square type="tertiary-neutral" @click="incrementPortions()">
+                              <neb-button small square type="tertiary" intent="neutral" @click="incrementPortions()">
                                 <icon name="material-symbols:add-rounded" />
                               </neb-button>
                             </div>
@@ -396,7 +396,8 @@ watch(currentHousehold, async () => await navigateTo('/'))
                               v-for="list in shoppingLists!"
                               :key="list.id.id.toString()"
                               small
-                              type="tertiary-neutral"
+                              type="tertiary"
+                              intent="neutral"
                               full-width
                               @click="addToShoppingList(list.id); close()"
                             >

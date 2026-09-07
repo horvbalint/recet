@@ -144,7 +144,7 @@ const userMenus = computed<Menu[]>(() => [
         <div class="sidebar-footer">
           <neb-menu full-width :menus="userMenus" :floating-options="{ placement: 'top-start' }">
             <template #trigger="{ toggle }">
-              <neb-button class="user-button" type="tertiary-neutral" full-width @click="toggle()">
+              <neb-button class="user-button" type="tertiary" intent="neutral" full-width @click="toggle()">
                 <div class="label">
                   <icon name="material-symbols:account-circle-outline" />
                   <span class="username">{{ authUser?.username }}</span>
@@ -159,7 +159,8 @@ const userMenus = computed<Menu[]>(() => [
       <div class="main-area">
         <header class="top-bar">
           <neb-button
-            type="tertiary-neutral"
+            type="tertiary"
+            intent="neutral"
             small
             class="mobile-menu-button"
             @click="isMobileMenuOpen = true"

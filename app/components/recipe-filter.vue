@@ -259,7 +259,7 @@ watch(hasExcludeFilters, (has) => {
       </div>
     </neb-expand>
 
-    <neb-button small type="link-neutral" @click="advancedMode = !advancedMode">
+    <neb-button small type="link" intent="neutral" @click="advancedMode = !advancedMode">
       <template v-if="advancedMode">
         <icon name="material-symbols:keyboard-arrow-up-rounded" />
         {{ $t('filter.hideAdvanced') }}

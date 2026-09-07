@@ -72,7 +72,8 @@ const menus = computed(() => {
     <template #trigger="{ toggle }">
       <neb-button
         class="household-button"
-        type="secondary-neutral"
+        type="secondary"
+        intent="neutral"
         full-width
         @click="toggle()"
       >

@@ -13,7 +13,7 @@ const modelValue = defineModel<string | null | undefined>()
     <template #trigger="{ toggle, isOpen }">
       <neb-content-header :title="label" vertical-gap="var(--space-2)" type="paragraph">
         <template #bottom>
-          <neb-button class="trigger-button" small type="secondary-neutral" @click="toggle()">
+          <neb-button class="trigger-button" small type="secondary" intent="neutral" @click="toggle()">
             <div class="wrapper">
               <p v-if="modelValue" class="value">
                 {{ modelValue }}
@@ -35,7 +35,8 @@ const modelValue = defineModel<string | null | undefined>()
         <neb-button
           v-for="emoji in emojis"
           :key="emoji"
-          :type="emoji === modelValue ? 'secondary' : 'tertiary-neutral'"
+          :type="emoji === modelValue ? 'secondary' : 'tertiary'"
+          :intent="emoji === modelValue ? 'primary' : 'neutral'"
           small
           @click="modelValue = emoji; close()"
         >

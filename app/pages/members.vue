@@ -240,7 +240,7 @@ const roleDictionary: Record<OutMember['role'], string> = {
               </neb-badge>
 
               <code class="invitation-token">{{ invitation.token }}</code>
-              <neb-button type="link-neutral" small @click="copyToken(invitation.token.toString())">
+              <neb-button type="link" intent="neutral" small @click="copyToken(invitation.token.toString())">
                 <icon name="material-symbols:content-copy-outline-rounded" />
               </neb-button>
             </div>

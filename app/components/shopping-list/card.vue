@@ -72,7 +72,8 @@ async function deleteList() {
       <neb-menu :menus="menuItems" :floating-options="{ placement: 'bottom-end' }" @click.stop>
         <template #trigger="{ toggle }">
           <neb-button
-            type="tertiary-neutral"
+            type="tertiary"
+            intent="neutral"
             small
             @click="toggle()"
           >

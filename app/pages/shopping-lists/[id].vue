@@ -467,6 +467,7 @@ function onUnitCreated(unit: OutUnit) {
 <style scoped>
 .page-wrapper {
   position: relative;
+  height: 100%;
 }
 
 .shop-select-wrapper {
@@ -479,7 +480,8 @@ function onUnitCreated(unit: OutUnit) {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--neb-bg-backdrop);
+  background: transparent;
+  backdrop-filter: blur(20px);
   z-index: 10;
 }
 

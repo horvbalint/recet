@@ -1,3 +1,7 @@
+html {
+  scrollbar-gutter: stable;
+}
+
 .row-action {
   font-size: 20px !important;
   color: var(--neb-text-muted);

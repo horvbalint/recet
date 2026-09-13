@@ -39,10 +39,17 @@ export function startTransitionThen(fun: () => any) {
     fun()
   }
   else {
-    document.startViewTransition(() => new Promise((resolve) => {
+    const transition = document.startViewTransition(() => new Promise((resolve) => {
       resolveTransition = resolve
       fun()
     }))
+
+    // The browser plays its own back/forward swipe animation on top of ours, so the
+    // gesture is blocked for as long as the view transition is running.
+    document.documentElement.style.overscrollBehaviorX = 'none'
+    transition.finished.finally(() => {
+      document.documentElement.style.overscrollBehaviorX = ''
+    })
   }
 }
 export function resolvePendingViewTransition() {

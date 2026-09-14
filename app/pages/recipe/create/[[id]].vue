@@ -11,6 +11,7 @@ const formData = ref<Partial<InRecipe>>({
   tags: [],
   meal: [],
   cuisine: undefined,
+  subrecipe_only: false,
 })
 const selectedImage = ref<File | null>(null)
 
@@ -479,6 +480,8 @@ const { data: isAiEnabled } = useAsyncData(async () => {
                   </template>
                 </neb-select>
               </div>
+
+              <neb-toggle v-model="formData.subrecipe_only" :label="$t('recipes.create.subrecipeOnly.label')" />
             </div>
           </div>
 

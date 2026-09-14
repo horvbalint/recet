@@ -259,16 +259,20 @@ watch(hasExcludeFilters, (has) => {
       </div>
     </neb-expand>
 
-    <neb-button small type="link" intent="neutral" @click="advancedMode = !advancedMode">
-      <template v-if="advancedMode">
-        <icon name="material-symbols:keyboard-arrow-up-rounded" />
-        {{ $t('filter.hideAdvanced') }}
-      </template>
-      <template v-else>
-        <icon name="material-symbols:keyboard-arrow-down-rounded" />
-        {{ $t('filter.showAdvanced') }}
-      </template>
-    </neb-button>
+    <div class="filter-footer">
+      <neb-button small type="link" intent="neutral" @click="advancedMode = !advancedMode">
+        <template v-if="advancedMode">
+          <icon name="material-symbols:keyboard-arrow-up-rounded" />
+          {{ $t('filter.hideAdvanced') }}
+        </template>
+        <template v-else>
+          <icon name="material-symbols:keyboard-arrow-down-rounded" />
+          {{ $t('filter.showAdvanced') }}
+        </template>
+      </neb-button>
+
+      <slot name="extra-options" />
+    </div>
   </div>
 </template>
 
@@ -276,6 +280,14 @@ watch(hasExcludeFilters, (has) => {
 .recipe-filter {
   display: flex;
   flex-direction: column;
+  gap: var(--space-2);
+}
+
+.filter-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 

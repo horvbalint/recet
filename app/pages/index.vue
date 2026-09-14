@@ -28,6 +28,7 @@ export interface Recipe {
   }[]
   created_at: string
   public: boolean
+  subrecipe_only: boolean
 }
 
 const {
@@ -44,13 +45,18 @@ const {
   filter: {
     searchTerm,
     conditions: filterConditions,
+    showSubrecipes,
   },
 } = useRecipeState()
 
 const conditionCount = useConditionCount(filterConditions)
-const showFilter = ref(!!conditionCount.value)
+const activeFilterCount = computed(() => conditionCount.value + (showSubrecipes.value ? 1 : 0))
+const showFilter = ref(!!activeFilterCount.value)
 
 const { data: filterData, status: filterStatus, refresh: queryFilterData } = useFilterData()
+if (showFilter.value)
+  queryFilterData()
+
 async function toggleFilter() {
   if (!showFilter.value)
     await queryFilterData()
@@ -103,7 +109,7 @@ onBeforeUnmount(() => {
 
           <neb-button
             type="secondary"
-            :intent="conditionCount ? 'primary' : 'neutral'"
+            :intent="activeFilterCount ? 'primary' : 'neutral'"
             :disabled="filterStatus === 'pending'"
             :loading="filterStatus === 'pending'"
             small
@@ -111,7 +117,7 @@ onBeforeUnmount(() => {
           >
             <icon name="material-symbols:filter-list-rounded" />
             <span class="filter-span">{{ $t('recipes.list.filters') }}</span>
-            <span v-if="conditionCount">({{ conditionCount }})</span>
+            <span v-if="activeFilterCount">({{ activeFilterCount }})</span>
           </neb-button>
         </div>
 
@@ -119,7 +125,11 @@ onBeforeUnmount(() => {
           <recipe-filter
             v-model="filterConditions"
             :filter-data="filterData"
-          />
+          >
+            <template #extra-options>
+              <neb-toggle v-model="showSubrecipes" size="small" :label="$t('recipes.list.showSubrecipes')" />
+            </template>
+          </recipe-filter>
         </div>
       </div>
 

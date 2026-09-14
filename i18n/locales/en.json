@@ -177,6 +177,7 @@
       "addButton": "Add Recipe",
       "addFirstButton": "Add Your First Recipe",
       "filters": "Filters",
+      "showSubrecipes": "Show subrecipes",
       "empty": {
         "noResults": {
           "title": "No recipes found",
@@ -194,7 +195,8 @@
     "card": {
       "ingredients": "{count} ingredients",
       "recipes": "{count} recipes",
-      "steps": "{count} steps"
+      "steps": "{count} steps",
+      "subrecipeBadge": "Subrecipe"
     },
     "detail": {
       "ingredients": "{count} ingredients",
@@ -323,6 +325,9 @@
       "tags": {
         "label": "Tags",
         "placeholder": "Select tags"
+      },
+      "subrecipeOnly": {
+        "label": "Only used as a subrecipe (e.g. a dough or sauce) — hide from the recipe list"
       },
       "recipesSection": "Recipes",
       "recipe": {

@@ -220,6 +220,7 @@ export interface InRecipe {
   portions?: number | undefined
   public?: boolean
   steps?: Array<string>
+  subrecipe_only?: boolean
   tags?: Array<Required<InRecipeTag>['id']>
   updated_at: Date | string
 }
@@ -244,6 +245,7 @@ export interface OutRecipe {
   portions?: number | undefined
   public: boolean
   steps: Array<string>
+  subrecipe_only: boolean
   tags: Array<OutRecipeTag>
   updated_at: string
 }

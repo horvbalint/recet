@@ -177,6 +177,7 @@
       "addButton": "Recept hozzáadása",
       "addFirstButton": "Add hozzá az első recepted",
       "filters": "Szűrők",
+      "showSubrecipes": "Alreceptek megjelenítése",
       "empty": {
         "noResults": {
           "title": "Nem találtunk recepteket",
@@ -194,7 +195,8 @@
     "card": {
       "ingredients": "{count} hozzávaló",
       "recipes": "{count} recept",
-      "steps": "{count} lépés"
+      "steps": "{count} lépés",
+      "subrecipeBadge": "Alrecept"
     },
     "detail": {
       "ingredients": "{count} hozzávaló",
@@ -323,6 +325,9 @@
       "tags": {
         "label": "Címkék",
         "placeholder": "Válassz címkéket"
+      },
+      "subrecipeOnly": {
+        "label": "Csak alrecept (pl. tészta vagy szósz) — elrejtés a receptlistából"
       },
       "recipesSection": "Receptek",
       "recipe": {

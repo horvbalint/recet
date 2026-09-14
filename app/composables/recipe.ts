@@ -86,11 +86,15 @@ const recipeCount = ref<number | null>(null)
 
 const searchTerm = ref('')
 const filterConditions = ref<InMealRuleConditions>(createEmptyMealRuleConditions())
+const showSubrecipes = ref(false)
 
-export function constructWhereConditions(conditions: InMealRuleConditions, searchTerm: string | undefined): ExprLike {
+export function constructWhereConditions(conditions: InMealRuleConditions, searchTerm: string | undefined, includeSubrecipes = false): ExprLike {
   const query_conditions = [
     eq('household', currentHousehold.value!.id),
   ]
+
+  if (!includeSubrecipes)
+    query_conditions.push(not(eq('subrecipe_only', true)))
 
   if (searchTerm)
     query_conditions.push(matches('name', searchTerm))
@@ -151,7 +155,7 @@ export function constructWhereConditions(conditions: InMealRuleConditions, searc
 
 function constructListWhereConditions() {
   return and(
-    constructWhereConditions(filterConditions.value, searchTerm.value),
+    constructWhereConditions(filterConditions.value, searchTerm.value, showSubrecipes.value),
     lte('created_at', firstPageQueriedAt),
   )
 }
@@ -173,7 +177,8 @@ export const fieldsNeededForRecipeCard = `
   cuisine.{name, color, flag},
   tags.{name, color, icon},
   meal.{name, color},
-  public
+  public,
+  subrecipe_only
 `
 
 function constructRecipeQuery() {
@@ -235,7 +240,7 @@ export function useRecipeState() {
     flush: 'sync',
   })
 
-  watch([currentHousehold, searchTerm, filterConditions], () => {
+  watch([currentHousehold, searchTerm, filterConditions, showSubrecipes], () => {
     resetList()
     refresh()
   }, {
@@ -247,6 +252,7 @@ export function useRecipeState() {
     filter: {
       searchTerm,
       conditions: filterConditions,
+      showSubrecipes,
     },
     recipes: {
       data: {

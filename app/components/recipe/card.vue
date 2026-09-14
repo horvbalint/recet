@@ -35,6 +35,10 @@ function handleMiddleClick() {
           <h3 class="recipe-title">
             {{ recipe.name }}
           </h3>
+
+          <neb-badge v-if="recipe.subrecipe_only" small color="info">
+            {{ $t('recipes.card.subrecipeBadge') }}
+          </neb-badge>
         </div>
 
         <div class="recipe-meta">
@@ -119,8 +123,9 @@ function handleMiddleClick() {
 
 .recipe-header {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
 .recipe-title {

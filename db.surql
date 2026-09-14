@@ -32,7 +32,7 @@ DEFINE ANALYZER OVERWRITE english_analyzer
 
 // PLUGINS
 DEFINE BUCKET OVERWRITE plugins BACKEND $pluginsBucketPath PERMISSIONS NONE;
-DEFINE MODULE OVERWRITE mod::recet AS f"plugins:/recet.surli";
+DEFINE MODULE OVERWRITE mod::recet FROM f"plugins:/recet.surli" UNSIGNED;
 
 DEFINE ACCESS OVERWRITE desktop_user ON DATABASE TYPE RECORD
 	SIGNUP
@@ -157,6 +157,7 @@ DEFINE FIELD OVERWRITE meal ON recipe TYPE array<record<meal>> DEFAULT [] ASSERT
 DEFINE FIELD OVERWRITE image_blur_hash ON recipe TYPE option<string> ASSERT image != NONE;
 DEFINE FIELD OVERWRITE image ON recipe TYPE option<file>;
 DEFINE FIELD OVERWRITE public ON recipe TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE subrecipe_only ON recipe TYPE bool DEFAULT false;
 
 DEFINE INDEX OVERWRITE hungarian_search_name ON recipe FIELDS name FULLTEXT ANALYZER hungarian_analyzer;
 DEFINE INDEX OVERWRITE english_search_name ON recipe FIELDS name FULLTEXT ANALYZER english_analyzer;

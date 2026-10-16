@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { LiveSubscription, RecordId, Uuid } from 'surrealdb'
 import type { OutIngredient, OutIngredientCategory, OutRecipe, OutShop, OutShoppingList, OutUnit } from '~/db'
-import { raw, Table } from 'surrealdb'
+import { eq, raw, RecordId, Table, Value } from 'surrealdb'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -21,7 +20,7 @@ interface ShoppingListItem {
   marked?: boolean
 }
 
-const { data, status: dataStatus, error: dataError } = useAsyncData('shopping-list', async () => {
+const { data, status: dataStatus, error: dataError } = useAsyncData('shopping-list', async (_, { signal }) => {
   const [shoppingList, ingredients, units, categories, shops] = await db
     .query(surql`
       SELECT
@@ -37,6 +36,7 @@ const { data, status: dataStatus, error: dataError } = useAsyncData('shopping-li
       SELECT * FROM ingredient_category ORDER BY name ASC;
       SELECT * FROM shop ORDER BY name ASC FETCH categories;
     `)
+    .signal(signal)
     .collect<[OutShoppingList, OutIngredient[], OutUnit[], OutIngredientCategory[], OutShop[]]>()
   return { shoppingList, ingredients, units, categories, shops }
 })
@@ -54,7 +54,7 @@ const fieldsToSelectFromItem = `
   category.{id, name},
   marked
 `
-const { data: items, status: itemsStatus, error: itemsError, refresh: refreshItems } = useAsyncData('shopping-list-items', async () => {
+const { data: items, status: itemsStatus, error: itemsError, refresh: refreshItems } = useAsyncData('shopping-list-items', async (_, { signal }) => {
   const [items] = await db.query<[ShoppingListItem[]]>(surql`
     SELECT
       ${raw(fieldsToSelectFromItem)}
@@ -62,7 +62,7 @@ const { data: items, status: itemsStatus, error: itemsError, refresh: refreshIte
       shopping_list_item
     WHERE
       shopping_list = type::record('shopping_list', ${listId});`,
-  )
+  ).signal(signal)
 
   return items
 })
@@ -70,38 +70,45 @@ const { data: items, status: itemsStatus, error: itemsError, refresh: refreshIte
 const status = nebCombineStatuses(dataStatus, itemsStatus)
 const error = computed(() => dataError.value || itemsError.value)
 
-async function setUpLiveQuery() {
-  let liveQuery: LiveSubscription | null = null
+type DbShoppingListItem = ReturnType<typeof itemToDbItem>
 
-  onBeforeUnmount(() => {
-    if (liveQuery)
-      liveQuery.kill()
+function isSameAsLocalItem(localItem: ShoppingListItem, remoteItem: DbShoppingListItem) {
+  const localDbItem = itemToDbItem(localItem)
+  const fields = ['item', 'amount', 'unit', 'category', 'recipe', 'marked'] as const
+
+  return fields.every((field) => {
+    const local = localDbItem[field]
+    return local instanceof Value ? local.equals(remoteItem[field]) : local === remoteItem[field]
   })
+}
+
+async function setUpLiveQuery() {
+  const liveQueryController = new AbortController()
+  onBeforeUnmount(() => liveQueryController.abort())
 
   try {
-    const [liveSelectToken] = await db.query<[Uuid]>(surql`
-      LIVE SELECT
-        ${raw(fieldsToSelectFromItem)}
-      FROM
-        shopping_list_item
-      WHERE
-        shopping_list = type::record('shopping_list', ${listId})
-    `)
-    liveQuery = await db.liveOf(liveSelectToken)
+    const liveQuery = await db
+      .withSignal(liveQueryController.signal)
+      .live<DbShoppingListItem>(new Table('shopping_list_item'))
+      .where(eq('shopping_list', new RecordId('shopping_list', listId)))
+
     liveQuery.subscribe((event) => {
       if (event.action === 'KILLED')
         return
 
-      const localItem = items.value?.find(i => i.id.id === event.recordId.id)
+      const localItem = items.value?.find(i => i.id.equals(event.recordId))
 
       if (event.action === 'DELETE' && !localItem)
         return
 
-      if (!localItem || JSON.stringify(localItem) !== JSON.stringify(event.value) || event.action === 'DELETE')
+      if (!localItem || event.action === 'DELETE' || !isSameAsLocalItem(localItem, event.value))
         refreshItems()
     })
   }
   catch (err) {
+    if (liveQueryController.signal.aborted)
+      return
+
     console.error(err)
     useNebToast({ type: 'warning', title: t('shoppingLists.detail.liveUpdateWarning.title'), description: t('shoppingLists.detail.liveUpdateWarning.description') })
   }

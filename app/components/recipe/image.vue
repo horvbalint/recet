@@ -16,8 +16,8 @@ const props = defineProps<{
   heightPx: number
 }>()
 
-const { data: imageUrl, refresh, error } = useAsyncData(`recipe-image-${props.recipe.id.id}`, () => {
-  return getRecipeImageUrl(props.recipe.id)
+const { data: imageUrl, refresh, error } = useAsyncData(`recipe-image-${props.recipe.id.id}`, (_, { signal }) => {
+  return getRecipeImageUrl(props.recipe.id, signal)
 }, {
   immediate: false,
 })

@@ -28,7 +28,7 @@ interface UpsertableMealPlan extends Omit<OutMealPlan, 'id'> {
   id?: RecordId<'meal_plan'>
 }
 
-const { data: plansByDay, refresh } = useAsyncData(async () => {
+const { data: plansByDay, refresh } = useAsyncData(async (_, { signal }) => {
   const [plans] = await db
     .query(surql`
       SELECT
@@ -41,6 +41,7 @@ const { data: plansByDay, refresh } = useAsyncData(async () => {
       FROM meal_plan
       WHERE household = ${currentHousehold.value?.id} && date >= ${week.value[0]!.toDate()} && date <= ${week.value[6]!.toDate()} ORDER BY date ASC
     `)
+    .signal(signal)
     .collect<[UpsertableMealPlan[]]>()
 
   const plansByDay: Record<string, UpsertableMealPlan> = {}
@@ -118,9 +119,10 @@ const selectedRule = ref<MealRule | null>(null)
 const createRuleModal = ref(false)
 const createRuleInitialName = ref('')
 
-const { data: rules, refresh: refreshRules } = useAsyncData(async () => {
+const { data: rules, refresh: refreshRules } = useAsyncData(async (_, { signal }) => {
   const [rules] = await db
-    .query(`SELECT * FROM meal_rule WHERE household = ${currentHousehold.value?.id} ORDER BY name ASC`)
+    .query(surql`SELECT * FROM meal_rule WHERE household = ${currentHousehold.value?.id} ORDER BY name ASC`)
+    .signal(signal)
     .collect<[MealRule[]]>()
 
   return rules
@@ -199,12 +201,12 @@ async function applyRule() {
     ? chosenRecipes
     : [...chosenRecipes, ...Array.from({ length: dayCount - chosenRecipes.length }).map((_, i) => chosenRecipes[i % chosenRecipes.length])]
 
-  const promises = selectedDays.map((day, i) => {
+  const upserts = selectedDays.map((day, i) => {
     const mealsOperator = overWriteExistinMeals.value ? '=' : '+='
     const arrayStart = overWriteExistinMeals.value ? '[' : ``
     const arrayEnd = overWriteExistinMeals.value ? ']' : ``
 
-    return db.query(surql`
+    return surql`
       UPSERT
         meal_plan
       SET
@@ -214,10 +216,10 @@ async function applyRule() {
       WHERE
         household = ${currentHousehold.value?.id}
         && date = ${day.toDate()}
-    `)
+    `
   })
 
-  await Promise.all(promises)
+  await db.transaction(upserts, { retry: true })
 
   ruleModal.value = false
   overWriteExistinMeals.value = false
@@ -228,9 +230,10 @@ async function applyRule() {
   refresh()
 }
 
-const { data: recipes } = useAsyncData(async () => {
+const { data: recipes } = useAsyncData(async (_, { signal }) => {
   const [recipes] = await db
     .query(surql`SELECT id, name FROM recipe WHERE household = ${currentHousehold.value?.id} ORDER BY name ASC`)
+    .signal(signal)
     .collect<[Pick<OutRecipe, 'id' | 'name'>[]]>()
 
   return recipes
@@ -348,10 +351,10 @@ async function updatePlansOnDragEnd(
     const [removedItem] = plansByDay.value![dragStartDateKey]!.meals[dragStartedAt!.meal].splice(event.oldIndex!, 1)
     plansByDay.value![dayKey]!.meals[meal].splice(event.newIndex!, 0, removedItem!)
 
-    const query = createUpsertMealPlanQuery(dragStartedAt!.day, dragStartedAt!.meal)
-      .append(createUpsertMealPlanQuery(day, meal))
-
-    await db.query(query)
+    await db.transaction([
+      createUpsertMealPlanQuery(dragStartedAt!.day, dragStartedAt!.meal),
+      createUpsertMealPlanQuery(day, meal),
+    ], { retry: true })
   }
 
   catch (err) {
@@ -380,7 +383,7 @@ function createUpsertMealPlanQuery(day: dayjs.Dayjs, meal: Meal): BoundQuery {
       household: currentHousehold.value!.id,
       date: day.toDate(),
     }}
-    WHERE household = ${currentHousehold.value!.id} && date = ${day.toDate()};
+    WHERE household = ${currentHousehold.value!.id} && date = ${day.toDate()}
   `
 }
 

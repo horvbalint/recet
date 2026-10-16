@@ -12,7 +12,7 @@ export interface ShoppingList extends Omit<OutShoppingList, 'shop'> {
 
 const router = useRouter()
 
-const { data: shoppingLists, status, refresh, error } = useAsyncData('shopping-lists', async () => {
+const { data: shoppingLists, status, refresh, error } = useAsyncData('shopping-lists', async (_, { signal }) => {
   const [shoppingLists] = await db
     .query(surql`
       SELECT
@@ -26,6 +26,7 @@ const { data: shoppingLists, status, refresh, error } = useAsyncData('shopping-l
       ORDER BY
         updated_at DESC
     `)
+    .signal(signal)
     .collect<[ShoppingList[]]>()
 
   return shoppingLists

@@ -33,9 +33,10 @@ export function getRecipeViewTransitionNames(recipeId: RecordId<'recipe'>['id'])
 }
 
 // RECIPE IMAGE HANDLING
-export async function getRecipeImage(recipeId: RecordId<'recipe'>) {
+export async function getRecipeImage(recipeId: RecordId<'recipe'>, signal?: AbortSignal) {
   const [buffer] = await db
     .query(surql`fn::get_recipe_image(type::file('recipe_images', ${recipeId.id}))`)
+    .signal(signal)
     .collect<[ArrayBuffer | null]>()
 
   if (buffer)
@@ -45,11 +46,11 @@ export async function getRecipeImage(recipeId: RecordId<'recipe'>) {
 }
 
 const cachedRecipeImages = new Map<RecordId<'recipe'>['id'], string | null>()
-export async function getRecipeImageUrl(recipeId: RecordId<'recipe'>) {
+export async function getRecipeImageUrl(recipeId: RecordId<'recipe'>, signal?: AbortSignal) {
   if (cachedRecipeImages.has(recipeId.id))
     return cachedRecipeImages.get(recipeId.id)!
 
-  const image = await getRecipeImage(recipeId)
+  const image = await getRecipeImage(recipeId, signal)
 
   const url = image && URL.createObjectURL(image)
   cachedRecipeImages.set(recipeId.id, url)
@@ -218,14 +219,11 @@ export function resetList() {
 }
 
 export function useRecipeState() {
-  const { data, status, error, refresh } = useAsyncData('recipes', async () => {
-    const recipeQuery = constructRecipeQuery()
-    const countQuery = constructCountQuery()
-
-    const [[recipes], [count]] = await Promise.all([
-      db.query(recipeQuery).collect<[Recipe[]]>(),
-      db.query(countQuery).collect<[number]>(),
-    ])
+  const { data, status, error, refresh } = useAsyncData('recipes', async (_, { signal }) => {
+    const [recipes, count] = await db
+      .query([constructRecipeQuery(), constructCountQuery()])
+      .signal(signal)
+      .collect<[Recipe[], number]>()
 
     return { recipeChunks: recipes, recipeCount: count }
   }, { immediate: false, watch: [pageIndex] })

@@ -8,8 +8,8 @@ const props = defineProps<{
   recipeId: Recipe['id']
 }>()
 
-const { data: recipe, status, error } = useAsyncData(`recipe-card-${props.recipeId}`, async () => {
-  const [recipe] = await db.query<[Recipe]>(surql`SELECT ${raw(fieldsNeededForRecipeCard)} FROM ONLY ${props.recipeId}`)
+const { data: recipe, status, error } = useAsyncData(`recipe-card-${props.recipeId}`, async (_, { signal }) => {
+  const [recipe] = await db.query<[Recipe]>(surql`SELECT ${raw(fieldsNeededForRecipeCard)} FROM ONLY ${props.recipeId}`).signal(signal)
   return recipe
 })
 </script>

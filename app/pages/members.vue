@@ -44,9 +44,10 @@ const getQuery = computed(() => surql`
   ORDER username ASC
 `)
 
-const { data: members, status, refresh } = useAsyncData(async () => {
+const { data: members, status, refresh } = useAsyncData(async (_, { signal }) => {
   const [result] = await db
     .query(getQuery.value)
+    .signal(signal)
     .collect<[Member[]]>()
   return result || []
 }, { watch: [currentHousehold] })
@@ -57,9 +58,10 @@ const invitationsQuery = computed(() => surql`
   SELECT * FROM invitation WHERE household = ${currentHousehold.value!.id} ORDER created_at DESC
 `)
 
-const { data: invitations, refresh: refreshInvitations } = useAsyncData('invitations', async () => {
+const { data: invitations, refresh: refreshInvitations } = useAsyncData('invitations', async (_, { signal }) => {
   const [result] = await db
     .query(invitationsQuery.value)
+    .signal(signal)
     .collect<[Invitation[]]>()
   return result || []
 }, { watch: [currentHousehold] })

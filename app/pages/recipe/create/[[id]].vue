@@ -43,12 +43,13 @@ const headerDescription = computed(() => {
     return t('recipes.create.description.create')
 })
 
-const { data: recipeToEdit, status: recipeStatus, refresh: recipeRefresh, error: recipeError } = useAsyncData(async () => {
+const { data: recipeToEdit, status: recipeStatus, refresh: recipeRefresh, error: recipeError } = useAsyncData(async (_, { signal }) => {
   if (!recipeId)
     return null
 
   const [recipe] = await db
     .query(surql`SELECT * FROM ONLY type::record('recipe', ${recipeId})`)
+    .signal(signal)
     .collect<[InRecipe]>()
 
   return recipe
@@ -66,7 +67,7 @@ watchOnce(recipeToEdit, async () => {
   }
 })
 
-const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, error: masterDataError } = useAsyncData(async () => {
+const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, error: masterDataError } = useAsyncData(async (_, { signal }) => {
   const [recipes, ingredients, units, cuisines, meals, recipeTags] = await db
     .query(surql`
       SELECT id, name FROM recipe WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
@@ -76,6 +77,7 @@ const { data: masterData, status: masterDataStatus, refresh: masterDataRefresh, 
       SELECT id, name, color FROM meal WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
       SELECT id, name, color, icon FROM recipe_tag WHERE household = ${currentHousehold.value!.id} ORDER BY name ASC;
     `)
+    .signal(signal)
     .collect<[
     Pick<OutRecipe, 'id' | 'name'>[],
     OutIngredient[],
@@ -331,8 +333,8 @@ function createImportHint(value: string | number | undefined) {
     return t('recipes.create.import.hint', { value })
 }
 
-const { data: isAiEnabled } = useAsyncData(async () => {
-  const [response] = await db.query<[{ body: boolean, status: number }]>(surql`api::invoke('/is-ai-enabled')`)
+const { data: isAiEnabled } = useAsyncData(async (_, { signal }) => {
+  const [response] = await db.query<[{ body: boolean, status: number }]>(surql`api::invoke('/is-ai-enabled')`).signal(signal)
   if (response.status === 200)
     return response.body
 })

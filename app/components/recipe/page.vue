@@ -49,7 +49,7 @@ interface Recipe {
   public: boolean
 }
 
-const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncData<Recipe | null>(`recipe-${props.recipeId}`, async () => {
+const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncData<Recipe | null>(`recipe-${props.recipeId}`, async (_, { signal }) => {
   const [result] = await db
     .query(surql`
       SELECT
@@ -79,6 +79,7 @@ const { data: queriedRecipe, status: queryStatus, error, refresh } = useAsyncDat
       FROM ONLY
         type::record('recipe', ${props.recipeId})
     `)
+    .signal(signal)
     .collect<[Recipe]>()
 
   return result
@@ -108,7 +109,7 @@ const status = computed(() => {
     return queryStatus.value
 })
 
-const { data: shoppingLists, error: shoppingListError } = useAsyncData('shopping-lists-for-recipe', async () => {
+const { data: shoppingLists, error: shoppingListError } = useAsyncData('shopping-lists-for-recipe', async (_, { signal }) => {
   if (!currentHousehold.value)
     return []
 
@@ -118,6 +119,7 @@ const { data: shoppingLists, error: shoppingListError } = useAsyncData('shopping
       WHERE household = ${currentHousehold.value.id}
       ORDER BY updated_at DESC
     `)
+    .signal(signal)
     .collect<[{ id: RecordId<'shopping_list'>, name: string }[]]>()
 
   return lists

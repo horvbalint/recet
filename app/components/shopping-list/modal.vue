@@ -10,9 +10,10 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const modelValue = defineModel<boolean>({ required: true })
 
-const { data: shops } = useAsyncData('shops', async () => {
+const { data: shops } = useAsyncData('shops', async (_, { signal }) => {
   const [result] = await db
     .query(surql`SELECT * FROM shop ORDER BY name ASC`)
+    .signal(signal)
     .collect<[OutShop[]]>()
   return result || []
 })

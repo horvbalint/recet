@@ -12,9 +12,10 @@ const props = defineProps<{
 const { t } = useI18n()
 const showModal = ref(false)
 
-const { data, status, refresh } = useAsyncData(`${props.table}-master-data-layout`, async () => {
+const { data, status, refresh } = useAsyncData(`${props.table}-master-data-layout`, async (_, { signal }) => {
   const [result] = await db
     .query(props.getQuery)
+    .signal(signal)
     .collect<[T[]]>()
   return result || []
 }, { watch: [currentHousehold] })

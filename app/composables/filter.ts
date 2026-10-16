@@ -1,7 +1,7 @@
 import type { InMealRuleConditions, OutCuisine, OutIngredient, OutMeal, OutMealRuleConditions, OutRecipeTag } from '~/db'
 
 export function useFilterData() {
-  return useAsyncData('recipe-filter-data', async () => {
+  return useAsyncData('recipe-filter-data', async (_, { signal }) => {
     const household = currentHousehold.value!.id
     const [meals, tags, cuisines, ingredients] = await db
       .query(surql`
@@ -10,6 +10,7 @@ export function useFilterData() {
       SELECT id, name, color, flag FROM cuisine WHERE household = ${household} ORDER BY name ASC;
       SELECT id, name FROM ingredient WHERE household = ${household} ORDER BY name ASC;
     `)
+      .signal(signal)
       .collect<[OutMeal[], OutRecipeTag[], OutCuisine[], OutIngredient[]]>()
 
     return { meals, tags, cuisines, ingredients }

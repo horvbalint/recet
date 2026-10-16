@@ -14,9 +14,10 @@ const modelValue = defineModel<boolean>({ required: true })
 const dynamicCreateTable = ref<'ingredient_category' | null>(null)
 const dynamicCreateSearchTerm = ref<string>('')
 
-const { data: categories, refresh: refreshCategories } = useAsyncData(async () => {
+const { data: categories, refresh: refreshCategories } = useAsyncData(async (_, { signal }) => {
   const [result] = await db
     .query(surql`SELECT id, name FROM ingredient_category ORDER BY name ASC`)
+    .signal(signal)
     .collect<[OutIngredientCategory[]]>()
   return result || []
 })

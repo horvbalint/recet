@@ -26,34 +26,7 @@ fn scrape_for_recipe(
     };
 
     let mut info: RecipeInfo = serde_json::de::from_str(&chat_completion(SYSTEM_PROMPT, text)?)?;
-
-    if !info.ingredients.is_empty()
-        && match_ingredients_with_ai(&household, &mut info.ingredients).is_err()
-    {
-        for info in &mut info.ingredients {
-            info.ingredient = find_by_name(&household, "ingredient", info.name.clone())?;
-
-            if let Some(unit_string) = &info.unit_string {
-                info.unit = find_by_name(&household, "unit", unit_string.clone())?;
-            }
-        }
-    }
-
-    if let Some(cuisine_string) = &info.cuisine_string {
-        info.cuisine = find_by_name(&household, "cuisine", cuisine_string.clone())?;
-    }
-
-    for tag_string in &info.tag_strings {
-        if let Some(tag) = find_by_name(&household, "recipe_tag", tag_string.clone())? {
-            info.tags.push(tag);
-        }
-    }
-
-    for meal_string in &info.meal_strings {
-        if let Some(meal) = find_by_name(&household, "meal", meal_string.clone())? {
-            info.meals.push(meal);
-        }
-    }
+    match_records_with_ai(&household, &mut info)?;
 
     Ok(info)
 }
@@ -90,55 +63,54 @@ fn chat_completion(system_prompt: &str, user_prompt: String) -> Result<String> {
     Ok(choice.message.content)
 }
 
-fn match_ingredients_with_ai(household: &RecordId, ingredients: &mut [Ingredient]) -> Result<()> {
+fn match_records_with_ai(household: &RecordId, info: &mut RecipeInfo) -> Result<()> {
     let known_ingredients = list_names(household, "ingredient")?;
     let known_units = list_names(household, "unit")?;
-
-    if known_ingredients.is_empty() && known_units.is_empty() {
-        return Ok(());
-    }
+    let known_cuisines = list_names(household, "cuisine")?;
+    let known_tags = list_names(household, "recipe_tag")?;
+    let known_meals = list_names(household, "meal")?;
 
     let request = serde_json::json!({
-        "recipe_ingredients": ingredients
-            .iter()
-            .enumerate()
-            .map(|(index, ing)| serde_json::json!({
-                "index": index,
-                "name": ing.name,
-                "unit": ing.unit_string,
-                "description": ing.description,
-            }))
-            .collect::<Vec<_>>(),
-        "known_ingredients": known_ingredients
-            .iter()
-            .enumerate()
-            .map(|(index, record)| serde_json::json!({ "id": index, "name": record.name }))
-            .collect::<Vec<_>>(),
-        "known_units": known_units
-            .iter()
-            .enumerate()
-            .map(|(index, record)| serde_json::json!({ "id": index, "name": record.name }))
-            .collect::<Vec<_>>(),
+        "recipe": {
+            "ingredients": info
+                .ingredients
+                .iter()
+                .enumerate()
+                .map(|(index, ing)| serde_json::json!({
+                    "index": index,
+                    "name": ing.name,
+                    "unit": ing.unit_string,
+                    "description": ing.description,
+                }))
+                .collect::<Vec<_>>(),
+            "cuisine": info.cuisine_string,
+            "tags": info.tag_strings,
+            "meals": info.meal_strings,
+        },
+        "known": {
+            "ingredients": to_prompt_list(&known_ingredients),
+            "units": to_prompt_list(&known_units),
+            "cuisines": to_prompt_list(&known_cuisines),
+            "tags": to_prompt_list(&known_tags),
+            "meals": to_prompt_list(&known_meals),
+        },
     });
 
     let result: MatchResult =
         serde_json::de::from_str(&chat_completion(MATCH_PROMPT, request.to_string())?)?;
 
-    for matched in result.matches {
-        let Some(ing) = ingredients.get_mut(matched.index) else {
+    for matched in result.ingredients {
+        let Some(ing) = info.ingredients.get_mut(matched.index) else {
             continue;
         };
 
-        ing.ingredient = matched
-            .ingredient_id
-            .and_then(|id| known_ingredients.get(id))
-            .map(|record| record.id.clone());
-
-        ing.unit = matched
-            .unit_id
-            .and_then(|id| known_units.get(id))
-            .map(|record| record.id.clone());
+        ing.ingredient = resolve(&known_ingredients, matched.ingredient_id);
+        ing.unit = resolve(&known_units, matched.unit_id);
     }
+
+    info.cuisine = resolve(&known_cuisines, result.cuisine_id);
+    info.tags = resolve_all(&known_tags, result.tag_ids);
+    info.meals = resolve_all(&known_meals, result.meal_ids);
 
     Ok(())
 }
@@ -154,18 +126,33 @@ fn list_names(household: &RecordId, table: &str) -> Result<Vec<NamedRecord>> {
     Ok(result)
 }
 
-fn find_by_name(household: &RecordId, table: &str, name: String) -> Result<Option<RecordId>> {
-    let result: Option<RecordId> = sql_with_vars(
-        format!(
-            "SELECT VALUE id FROM ONLY {table} WHERE name @@ $name && household = $household LIMIT 1"
-        ),
-        vars! {
-            name: name,
-            household: household.clone()
-        },
-    )?;
+fn to_prompt_list(records: &[NamedRecord]) -> Vec<serde_json::Value> {
+    records
+        .iter()
+        .enumerate()
+        .map(|(index, record)| serde_json::json!({ "id": index, "name": record.name }))
+        .collect()
+}
 
-    Ok(result)
+fn resolve(records: &[NamedRecord], index: Option<usize>) -> Option<RecordId> {
+    index
+        .and_then(|index| records.get(index))
+        .map(|record| record.id.clone())
+}
+
+fn resolve_all(records: &[NamedRecord], indexes: Vec<usize>) -> Vec<RecordId> {
+    let mut ids: Vec<RecordId> = Vec::new();
+
+    for id in indexes
+        .into_iter()
+        .filter_map(|index| resolve(records, Some(index)))
+    {
+        if !ids.contains(&id) {
+            ids.push(id);
+        }
+    }
+
+    ids
 }
 
 #[derive(Debug, SurrealValue, Deserialize)]
@@ -207,7 +194,12 @@ struct NamedRecord {
 #[derive(Debug, Deserialize)]
 struct MatchResult {
     #[serde(default)]
-    matches: Vec<IngredientMatch>,
+    ingredients: Vec<IngredientMatch>,
+    cuisine_id: Option<usize>,
+    #[serde(default)]
+    tag_ids: Vec<usize>,
+    #[serde(default)]
+    meal_ids: Vec<usize>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -268,30 +260,38 @@ Guidelines:
 - cooking_time_minutes should be total time (prep + cook)
 - Return empty arrays [] for missing list fields, null for missing singular fields"#;
 
-const MATCH_PROMPT: &str = r#"You match ingredients extracted from a recipe to the ingredients and units already saved in a household's database. Return ONLY a raw JSON object.
+const MATCH_PROMPT: &str = r#"You match data extracted from a recipe to the records already saved in a household's database. Return ONLY a raw JSON object.
 
 The input is a JSON object with:
-- "recipe_ingredients": the ingredients of the recipe, each with an "index", a "name", a "unit" and a "description"
-- "known_ingredients": the household's saved ingredients, each with an "id" and a "name"
-- "known_units": the household's saved units, each with an "id" and a "name"
+- "recipe": what was extracted from the recipe
+  * "ingredients": each with an "index", a "name", a "unit" and a "description"
+  * "cuisine": string or null
+  * "tags": [string]
+  * "meals": [string]
+- "known": the household's saved records, each list item having an "id" and a "name"
+  * "ingredients", "units", "cuisines", "tags", "meals"
 
-The output must match this exact schema, with one entry for every recipe ingredient:
+The output must match this exact schema:
 {
-  "matches": [
+  "ingredients": [
     {
       "index": integer,
       "ingredient_id": integer or null,
       "unit_id": integer or null
     }
-  ]
+  ],
+  "cuisine_id": integer or null,
+  "tag_ids": [integer],
+  "meal_ids": [integer]
 }
 
 Guidelines:
-- "index" is the index of the recipe ingredient, "ingredient_id" and "unit_id" are ids from "known_ingredients" and "known_units"
+- Return one entry in "ingredients" for every recipe ingredient, "index" being the index of the recipe ingredient
+- Every id must be an id from the matching "known" list: ingredient_id from "known.ingredients", unit_id from "known.units", cuisine_id from "known.cuisines", tag_ids from "known.tags", meal_ids from "known.meals"
 - The recipe and the saved names may be in different languages, use singular or plural forms, abbreviations or synonyms: match by meaning, not spelling
   * "tbsp", "tablespoon", "evőkanál" are the same unit; "g", "gram", "gramm" are the same unit
-  * "eggs" matches "egg", "tojás" matches "egg"
+  * "eggs" matches "egg", "tojás" matches "egg"; "vacsora" matches "dinner"
 - An ingredient only matches a saved ingredient that is the same food. Preparation and state ("chopped", "fresh", "large") do not matter, so "fresh parsley" matches "parsley", but "garlic powder" does not match "garlic"
-- Use null when there is no good match, never guess an unrelated item
 - unit_id is null when the recipe ingredient has no unit
-- Only use ids that appear in the input"#;
+- Only include tags and meals that correspond to one of the recipe's "tags" and "meals"
+- Use null or leave the item out when there is no good match, never guess an unrelated record"#;

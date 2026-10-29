@@ -265,7 +265,6 @@ interface ImportedRecipe {
   tag_strings: string[]
   meal_strings: string[]
   meals: RecordId<'meal'>[]
-  image_url?: string
   image?: ArrayBuffer
 }
 

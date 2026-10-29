@@ -16,4 +16,7 @@ serde_json = "1.0.151"
 serde = { version = "1.0.229", features = [ "derive" ] }
 url = "2.5.8"
 html-to-markdown-rs = "3.19.0"
-ureq = { version = "3.5.0", default-features = false, features = ["json", "rustls"] }
+ureq = { version = "3.5.0", default-features = false, features = [
+  "json",
+  "rustls"
+] }

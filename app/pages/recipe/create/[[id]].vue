@@ -314,8 +314,6 @@ async function importRecipe() {
     }))
     formData.value.steps = recipe.steps
 
-    console.log(recipe.image)
-
     if (recipe.image)
       selectedImage.value = new File([recipe.image], 'imported-image', { type: 'image/*' })
 

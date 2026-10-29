@@ -32,7 +32,8 @@ DEFINE ANALYZER OVERWRITE english_analyzer
 
 // PLUGINS
 DEFINE BUCKET OVERWRITE plugins BACKEND $pluginsBucketPath PERMISSIONS NONE;
-DEFINE MODULE OVERWRITE mod::recet FROM f"plugins:/recet.surli" UNSIGNED;
+DEFINE EXTENSION OVERWRITE ext::recet FROM f"plugins:/recet.surli" UNSIGNED
+	CAPABILITIES { net: true, queries: true };
 
 DEFINE ACCESS OVERWRITE desktop_user ON DATABASE TYPE RECORD
 	SIGNUP
@@ -93,9 +94,9 @@ DEFINE FUNCTION OVERWRITE fn::has_guest_access($id: record) {
 	RETURN $access = 'recipe_guest'&& (
 		$auth == $id ||
 		$auth.author = $id ||
-		$auth.tags.includes($id) ||
+		$id IN $auth.tags ||
 		$auth.cuisine = $id ||
-		$auth.meal.includes($id) ||
+		$id IN $auth.meal ||
 		$auth.recipes.any(|$r| {
 			RETURN $r.recipe = $id;
 		}) ||
@@ -333,7 +334,7 @@ DEFINE BUCKET OVERWRITE recipe_images BACKEND $recipeImagesBucketPath PERMISSION
 	};
 
 DEFINE FUNCTION OVERWRITE fn::add_image_to_recipe($recipe_id: record<recipe>, $image: bytes) {
-	LET $result = mod::recet::process_image($image);
+	LET $result = ext::recet::process_image($image);
 
 	LET $file_handle = type::file("recipe_images", record::id($recipe_id));
 	file::put($file_handle, $result.bytes);
@@ -432,7 +433,7 @@ DEFINE API OVERWRITE "/recipe/scrape/:type" FOR post
 		LET $source = $request.body.source;
 		LET $household = $request.body.household;
 
-		LET $result = mod::recet::scrape_for_recipe($household, $type, $source);
+		LET $result = ext::recet::scrape_for_recipe($household, $type, $source);
 		RETURN { status: 200, body: $result };
 	};
 

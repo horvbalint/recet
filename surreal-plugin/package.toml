@@ -1,3 +1,6 @@
+target = "rust"
+abi = 4
+
 [package]
 organisation = "recet"
 name = "recet"
@@ -5,8 +8,4 @@ version = "1.0.0"
 
 [capabilities]
 allow_arbitrary_queries = true
-allow_functions = [
-  "http::get",
-  "http::post"
-]
-allow_net = [ "0.0.0.0/0" ]
+allow_net = [ '*' ]

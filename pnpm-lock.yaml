@@ -42,8 +42,8 @@ importers:
         specifier: 3.0.0
         version: 3.0.0
       surrealdb:
-        specifier: 2.1.1
-        version: 2.1.1(tslib@2.8.1)(typescript@6.0.3)
+        specifier: 2.2.0
+        version: 2.2.0(tslib@2.8.1)(typescript@6.0.3)
       vue:
         specifier: 3.5.44
         version: 3.5.44(typescript@6.0.3)
@@ -3127,8 +3127,8 @@ packages:
     resolution: {integrity: sha512-l/hNZ3ZCOJq8rzwx1y5ZV/8b2bYCWdhGqRVY33Pu50NAHyAW5qLsMn3ZBkZow77mAKwNCsbDsRGnyYEuU95mjw==}
     engines: {node: '>=18.0.0'}
 
-  '@surrealdb/sqon@0.1.6':
-    resolution: {integrity: sha512-rUUxuKYQJxsPy2ezYe2qy28Cd+LYUcYX7Qhi+eWl7d0KFnqBUGXyIkt6y7UgGhVlZjn0OBiGdJkM3fTzl8Qjjw==}
+  '@surrealdb/sqon@0.2.0':
+    resolution: {integrity: sha512-G+dXp5HLyDkz2s+W0jSAGBuHLCfwD2WXy8QRLxSQm0kd4VznqV83CB5wxvNX00CcFdjJt41JwAyJw1re4mOLzQ==}
     peerDependencies:
       tslib: ^2.6.3
       typescript: ^5.0.0
@@ -7011,8 +7011,8 @@ packages:
     resolution: {integrity: sha512-/GCvKIcR58bpWm4NtynS3anhnD4ZTAHN9EkN/Cb8Qao2cUcgNMfiT0fs+uwMJbDOpW07CRJsX2h/CF8zWzd5SA==}
     hasBin: true
 
-  surrealdb@2.1.1:
-    resolution: {integrity: sha512-FlJue1x8bH3gdLemHIwq3pQnxVLv7sKMFnMvAqlPtY/ePFjEylbWcQUORfD4S2V1RgABb9By8KRxOCA4QU5hgA==}
+  surrealdb@2.2.0:
+    resolution: {integrity: sha512-DNmL1SRkHJLqvtVJ21HqA0NCE5R5p3Xfpm34JY9HgQPpkoDCi4PVpowKjnEdSlCaiWPiv9UcbNrVsH+IW1UjOQ==}
     peerDependencies:
       tslib: ^2.6.3
       typescript: ^5.0.0 || ^6.0.0
@@ -11250,7 +11250,7 @@ snapshots:
 
   '@surrealdb/cbor@2.0.0-alpha.4': {}
 
-  '@surrealdb/sqon@0.1.6(tslib@2.8.1)(typescript@6.0.3)':
+  '@surrealdb/sqon@0.2.0(tslib@2.8.1)(typescript@6.0.3)':
     dependencies:
       '@surrealdb/cbor': 2.0.0-alpha.4
       tslib: 2.8.1
@@ -16587,9 +16587,9 @@ snapshots:
       surreal-ts-linux-x64: 3.0.0
       surreal-ts-windows-x64: 3.0.0
 
-  surrealdb@2.1.1(tslib@2.8.1)(typescript@6.0.3):
+  surrealdb@2.2.0(tslib@2.8.1)(typescript@6.0.3):
     dependencies:
-      '@surrealdb/sqon': 0.1.6(tslib@2.8.1)(typescript@6.0.3)
+      '@surrealdb/sqon': 0.2.0(tslib@2.8.1)(typescript@6.0.3)
       tslib: 2.8.1
       typescript: 6.0.3
 

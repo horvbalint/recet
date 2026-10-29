@@ -1,75 +1,63 @@
 use std::fmt::Debug;
 
-use anyhow::Result;
+use anyhow::{Context, Result, anyhow};
+use html_to_markdown_rs::{ConversionOptions, InlineDataMedia, PreprocessingOptions};
 use serde::Deserialize;
-use surrealdb_types::{RecordId, SurrealValue, object, vars};
-use surrealism::{imports::sql_with_vars, sql, surrealism};
+use serde_json::json;
+use surrealdb_types::{Bytes, RecordId, SurrealValue, object};
+use surrealism::{Transaction, surrealism};
+use url::Url;
 
+// HTTP goes through ureq rather than `http::*`: SurrealDB returns NONE for any content type other
+// than JSON, text or octet-stream (so images never come through), and discards error bodies.
 #[surrealism]
-fn scrape_for_recipe(
+async fn scrape_for_recipe(
+    tx: Transaction,
     household: RecordId,
     source_type: String,
     source_text: String,
 ) -> Result<RecipeInfo> {
-    let text = if source_type == "text" {
-        source_text
+    let (text, page_url) = if source_type == "text" {
+        (source_text, None)
     } else if source_type == "url" {
-        let html: String = sql_with_vars(
-            "http::get($url)",
-            vars! {
-                url: source_text
-            },
-        )?;
-        html2text::from_read(html.as_bytes(), usize::MAX)?
+        let html = ureq::get(&source_text)
+            .call()
+            .and_then(|mut response| response.body_mut().read_to_string())
+            .context("Failed to fetch the recipe page")?;
+
+        (html_to_markdown(&html, &source_text)?, Some(source_text))
     } else {
-        return Err(anyhow::anyhow!("Invalid source type"));
+        return Err(anyhow!("Invalid source type"));
     };
 
-    let ai_model: String = sql("$openAiModel")?;
-
-    let response: AiResult = sql_with_vars(
-        "http::post($openAiBaseUrl + '/v1/chat/completions', $body, {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + $openAiToken,
-        })",
-        vars! {
-            body: object! {
-                model: ai_model,
-                messages: vec![
-                    object! { role: "system", content: SYSTEM_PROMPT },
-                    object! { role: "user", content: text },
-                ],
-                stream: false,
-                response_format: object!{
-                    type: "json_object"
-                },
-            },
-            system_prompt: SYSTEM_PROMPT,
-        },
-    )?;
+    let response = call_ai(&tx, &text).await?;
 
     let mut info: RecipeInfo = serde_json::de::from_str(&response.choices[0].message.content)?;
 
+    if let (Some(image_url), Some(page_url)) = (&info.image_url, &page_url) {
+        info.image = fetch_image(page_url, image_url);
+    }
+
     for info in &mut info.ingredients {
-        info.ingredient = find_by_name(&household, "ingredient", info.name.clone())?;
+        info.ingredient = find_by_name(&tx, &household, "ingredient", info.name.clone()).await?;
 
         if let Some(unit_string) = &info.unit_string {
-            info.unit = find_by_name(&household, "unit", unit_string.clone())?;
+            info.unit = find_by_name(&tx, &household, "unit", unit_string.clone()).await?;
         }
     }
 
     if let Some(cuisine_string) = &info.cuisine_string {
-        info.cuisine = find_by_name(&household, "cuisine", cuisine_string.clone())?;
+        info.cuisine = find_by_name(&tx, &household, "cuisine", cuisine_string.clone()).await?;
     }
 
     for tag_string in &info.tag_strings {
-        if let Some(tag) = find_by_name(&household, "recipe_tag", tag_string.clone())? {
+        if let Some(tag) = find_by_name(&tx, &household, "recipe_tag", tag_string.clone()).await? {
             info.tags.push(tag);
         }
     }
 
     for meal_string in &info.meal_strings {
-        if let Some(meal) = find_by_name(&household, "meal", meal_string.clone())? {
+        if let Some(meal) = find_by_name(&tx, &household, "meal", meal_string.clone()).await? {
             info.meals.push(meal);
         }
     }
@@ -77,16 +65,85 @@ fn scrape_for_recipe(
     Ok(info)
 }
 
-fn find_by_name(household: &RecordId, table: &str, name: String) -> Result<Option<RecordId>> {
-    let result: Option<RecordId> = sql_with_vars(
-        format!(
-            "SELECT VALUE id FROM ONLY {table} WHERE name @@ $name && household = $household LIMIT 1"
-        ),
-        vars! {
-            name: name,
-            household: household.clone()
+/// Images inside links and table cells are only kept if their tag is in `keep_inline_images_in`,
+/// recipe cards and photo grids are usually wrapped in one of those.
+fn html_to_markdown(html: &str, page_url: &str) -> Result<String> {
+    let options = ConversionOptions {
+        base_url: Some(page_url.to_string()),
+        keep_inline_images_in: vec!["a".into(), "td".into(), "th".into()],
+        inline_data_media: InlineDataMedia::DropElement,
+        preprocessing: PreprocessingOptions {
+            enabled: true,
+            remove_navigation: true,
+            ..Default::default()
         },
-    )?;
+        ..Default::default()
+    };
+
+    let result = html_to_markdown_rs::convert(html, Some(options))?;
+    Ok(result.content.unwrap_or_default())
+}
+
+/// Fetched here rather than in the browser, because most image hosts don't send CORS headers.
+/// Returns `None` on any failure, a missing image must not fail the whole import.
+fn fetch_image(page_url: &str, image_url: &str) -> Option<Bytes> {
+    // `base_url` makes the converter's image links absolute, but the og:image in the metadata
+    // header is left as the page wrote it, which may be relative.
+    let image_url = Url::parse(page_url).ok()?.join(image_url).ok()?;
+
+    let mut response = ureq::get(image_url.as_str()).call().ok()?;
+    let bytes = response.body_mut().read_to_vec().ok()?;
+
+    Some(Bytes::from(bytes))
+}
+
+async fn call_ai(tx: &Transaction, text: &str) -> Result<AiResult> {
+    let base_url: String = tx.sql("$openAiBaseUrl").await?;
+    let model: String = tx.sql("$openAiModel").await?;
+    let token: String = tx.sql("$openAiToken").await?;
+
+    // Status errors are handled by hand, so the provider's explanation ends up in the error.
+    let mut response = ureq::post(format!("{base_url}/v1/chat/completions"))
+        .config()
+        .http_status_as_error(false)
+        .build()
+        .header("Authorization", format!("Bearer {token}"))
+        .send_json(json!({
+            "model": model,
+            "messages": [
+                { "role": "system", "content": SYSTEM_PROMPT },
+                { "role": "user", "content": text },
+            ],
+            "stream": false,
+            "response_format": { "type": "json_object" },
+        }))
+        .context("Failed to call the AI API")?;
+
+    if !response.status().is_success() {
+        let body = response.body_mut().read_to_string().unwrap_or_default();
+        return Err(anyhow!("AI API returned {}: {body}", response.status()));
+    }
+
+    Ok(response.body_mut().read_json()?)
+}
+
+async fn find_by_name(
+    tx: &Transaction,
+    household: &RecordId,
+    table: &str,
+    name: String,
+) -> Result<Option<RecordId>> {
+    let result: Option<RecordId> = tx
+        .sql_with_vars(
+            format!(
+                "SELECT VALUE id FROM ONLY {table} WHERE name @@ $name && household = $household LIMIT 1"
+            ),
+            object! {
+                name: name,
+                household: household.clone()
+            },
+        )
+        .await?;
 
     Ok(result)
 }
@@ -119,19 +176,21 @@ struct RecipeInfo {
     #[serde(default)]
     meals: Vec<RecordId>,
     image_url: Option<String>,
+    #[serde(skip)]
+    image: Option<Bytes>,
 }
 
-#[derive(Debug, SurrealValue)]
+#[derive(Debug, Deserialize)]
 struct AiResult {
     choices: Vec<AiChoice>,
 }
 
-#[derive(Debug, SurrealValue)]
+#[derive(Debug, Deserialize)]
 struct AiChoice {
     message: AiMessage,
 }
 
-#[derive(Debug, SurrealValue)]
+#[derive(Debug, Deserialize)]
 struct AiMessage {
     content: String,
 }
@@ -155,6 +214,7 @@ The JSON must match this exact schema:
   "cooking_time_minutes": integer or null,
   "tag_strings": [string],
   "meal_strings": [string],
+  "image_url": string or null
 }
 
 Guidelines:
@@ -169,5 +229,7 @@ Guidelines:
 - Identify the cuisine type (e.g., "Italian", "Mexican", "Asian")
 - Identify relevant tags found in the source (e.g., "vegetarian", "gluten-free", "quick")
 - Identify meal types found in the source (e.g., "breakfast", "lunch", "dinner", "dessert")
+- Images appear in the source as ![alt text](url). For image_url pick the one showing the finished dish of this recipe, copying its url exactly. Ignore logos, ads, author photos and images of other recipes; use null if unsure
+- The page's social preview image appears as the meta-og:image line of the metadata header; it is often but not always the photo of the dish, and can be used as image_url
 - cooking_time_minutes should be total time (prep + cook)
 - Return empty arrays [] for missing list fields, null for missing singular fields"#;

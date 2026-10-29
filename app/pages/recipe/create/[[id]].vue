@@ -266,6 +266,7 @@ interface ImportedRecipe {
   meal_strings: string[]
   meals: RecordId<'meal'>[]
   image_url?: string
+  image?: ArrayBuffer
 }
 
 const importModal = ref(false)
@@ -313,8 +314,10 @@ async function importRecipe() {
     }))
     formData.value.steps = recipe.steps
 
-    if (recipe.image_url)
-      selectedImage.value = new File([await fetch(recipe.image_url).then(res => res.blob())], 'imported-image')
+    console.log(recipe.image)
+
+    if (recipe.image)
+      selectedImage.value = new File([recipe.image], 'imported-image', { type: 'image/*' })
 
     importedRecipe.value = recipe
     importModal.value = false

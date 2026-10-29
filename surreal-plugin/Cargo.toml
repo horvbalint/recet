@@ -8,10 +8,12 @@ crate-type = [ "cdylib" ]
 
 [dependencies]
 image = "0.25.10"
-surrealism = "0.5.0"
-surrealdb-types = "3.2.4"
+surrealism = "0.7.0-beta.1"
+surrealdb-types = "4.0.0-beta.1"
 blurhash = "0.2.3"
 anyhow = "1.0.104"
 serde_json = "1.0.151"
 serde = { version = "1.0.229", features = [ "derive" ] }
-html2text = "0.17.1"
+url = "2.5.8"
+html-to-markdown-rs = "3.19.0"
+ureq = { version = "3.5.0", default-features = false, features = ["json", "rustls"] }

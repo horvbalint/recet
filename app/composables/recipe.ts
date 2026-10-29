@@ -200,7 +200,7 @@ function constructRecipeQuery() {
   query.append(surql` WHERE ${constructListWhereConditions()}`)
 
   if (searchTerm.value)
-    query.append(surql` ORDER BY score, created_at DESC`)
+    query.append(surql` ORDER BY score DESC, created_at DESC`)
   else
     query.append(surql` ORDER BY created_at DESC`)
 

@@ -30,7 +30,7 @@ const { data, status: dataStatus, error: dataError } = useAsyncData('shopping-li
           name,
           categories.{id, name}
         }
-      FROM ONLY type::record(shopping_list, ${listId});
+      FROM ONLY type::record('shopping_list', ${listId});
       SELECT * FROM ingredient FETCH category;
       SELECT * FROM unit ORDER BY name ASC;
       SELECT * FROM ingredient_category ORDER BY name ASC;

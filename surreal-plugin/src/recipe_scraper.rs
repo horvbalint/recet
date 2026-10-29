@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Result, anyhow};
 use html_to_markdown_rs::{ConversionOptions, InlineDataMedia, PreprocessingOptions};
 use serde::Deserialize;
 use serde_json::json;
@@ -23,7 +23,7 @@ async fn scrape_for_recipe(
         let html = ureq::get(&source_text)
             .call()
             .and_then(|mut response| response.body_mut().read_to_string())
-            .context("Failed to fetch the recipe page")?;
+            .map_err(|err| anyhow!("Failed to fetch the recipe page: {err}"))?;
 
         (html_to_markdown(&html, &source_text)?, Some(source_text))
     } else {
@@ -117,7 +117,7 @@ async fn call_ai(tx: &Transaction, text: &str) -> Result<AiResult> {
             "stream": false,
             "response_format": { "type": "json_object" },
         }))
-        .context("Failed to call the AI API")?;
+        .map_err(|err| anyhow!("Failed to call the AI API: {err}"))?;
 
     if !response.status().is_success() {
         let body = response.body_mut().read_to_string().unwrap_or_default();

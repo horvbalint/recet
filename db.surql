@@ -431,7 +431,12 @@ DEFINE API OVERWRITE "/recipe/scrape/:type" FOR post
 
 		LET $type = $request.params.type;
 		LET $source = $request.body.source;
-		LET $household = $request.body.household;
+		LET $household = <record<household>> $request.body.household;
+
+		// The extension's queries bypass table permissions, so it would read any household's lists
+		IF !fn::can_write_household($household) {
+			RETURN { status: 403, body: { error: "Forbidden" } };
+		};
 
 		LET $result = ext::recet::scrape_for_recipe($household, $type, $source);
 		RETURN { status: 200, body: $result };

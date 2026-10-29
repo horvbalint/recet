@@ -317,7 +317,11 @@ Step 1 - extraction, from the recipe source only:
   * "1 large diced onion" → name:"onion", amount:1, unit_string:null, description:"large, diced"
   * "Salt to taste" → name:"salt", amount:null, unit_string:null, description:"to taste"
   * "3 tbsp chopped fresh parsley" → name:"parsley", amount:3, unit_string:"tbsp", description:"chopped, fresh"
-- description holds preparation methods (diced, chopped, minced), state (fresh, dried) and special notes (to taste, optional)
+  * "10 dkg reszelt sajt" → name:"sajt", amount:10, unit_string:"dkg", description:"reszelt"
+  * "2 dl langyos víz" → name:"víz", amount:2, unit_string:"dl", description:"langyos"
+  * "1 doboz fokhagymás tejföl" → name:"tejföl", amount:1, unit_string:"doboz", description:"fokhagymás"
+- name is the ingredient itself. Words that make it a different ingredient stay in the name ("rizsliszt", "kókusztej", "chilli olaj"); words that only describe it go to description: preparation (reszelt, diced, chopped), state (fresh, dried), temperature (langyos, hideg), flavouring (fokhagymás) and notes (to taste, optional)
+- Nothing from an ingredient line may be lost: every word of it ends up in name, amount, unit_string or description. Matching a shorter household entry later never removes words from the line
 - steps: all step-by-step instructions, in order
 - cuisine_string: the cuisine type (e.g. "Italian", "Mexican", "Asian")
 - tag_strings: relevant tags found in the source (e.g. "vegetarian", "gluten-free", "quick")

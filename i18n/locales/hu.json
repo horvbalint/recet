@@ -611,6 +611,14 @@
       "placeholder": "Add meg a háztartás nevét"
     },
     "language": "Nyelv",
+    "import": {
+      "title": "Receptimportálás",
+      "description": "Mesélj a háztartásodról az importálónak, hogy az importált receptek illeszkedjenek ahhoz, ahogyan főztök",
+      "instructions": {
+        "label": "Utasítások az importálónak",
+        "placeholder": "Pl. Általános olajként olívaolajat használunk. A vaj mennyiségét grammban add meg."
+      }
+    },
     "success": {
       "title": "Háztartás frissítve!",
       "description": "A háztartás sikeresen frissítésre került."

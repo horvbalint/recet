@@ -611,6 +611,14 @@
       "placeholder": "Enter household name"
     },
     "language": "Language",
+    "import": {
+      "title": "Recipe import",
+      "description": "Tell the AI importer about your household, so imported recipes fit the way you cook",
+      "instructions": {
+        "label": "Instructions for the importer",
+        "placeholder": "E.g. We use olive oil as general oil. Write butter amounts in grams."
+      }
+    },
     "success": {
       "title": "Household updated!",
       "description": "The household has been successfully updated."

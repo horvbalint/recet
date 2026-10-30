@@ -236,6 +236,7 @@ DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
 	for delete, update WHERE fn::is_household_owner(id);
 DEFINE FIELD OVERWRITE name ON household TYPE string;
 DEFINE FIELD OVERWRITE language ON household TYPE 'en' | 'hu' DEFAULT 'en';
+DEFINE FIELD OVERWRITE import_instructions ON household TYPE option<string>;
 DEFINE FIELD OVERWRITE meal_rules ON household TYPE object DEFAULT {};
 DEFINE FIELD OVERWRITE meal_rules.breakfast ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household) DEFAULT [];
 DEFINE FIELD OVERWRITE meal_rules.lunch ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household) DEFAULT [];

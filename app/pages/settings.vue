@@ -35,6 +35,8 @@ async function handleSaveHousehold() {
   }
 }
 
+const { data: isAiEnabled } = useIsAiEnabled()
+
 const availableLanguages = [
   { code: 'en', name: 'English' },
   { code: 'hu', name: 'Magyar' },
@@ -77,6 +79,16 @@ const availableLanguages = [
               :allow-empty="false"
             />
           </div>
+
+          <template v-if="isAiEnabled">
+            <neb-content-header :title="$t('settings.import.title')" :description="$t('settings.import.description')" type="section" />
+
+            <neb-textarea
+              v-model="householdForm.import_instructions"
+              :label="$t('settings.import.instructions.label')"
+              :placeholder="$t('settings.import.instructions.placeholder')"
+            />
+          </template>
         </div>
       </neb-validator>
 

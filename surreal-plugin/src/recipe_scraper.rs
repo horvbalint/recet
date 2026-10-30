@@ -31,10 +31,11 @@ async fn scrape_for_recipe(
     };
 
     let lists = HouseholdLists::load(&tx, &household).await?;
-    let user_message = format!(
-        "# Household lists\n\n{}\n# Recipe source\n\n{text}",
-        lists.to_prompt()
-    );
+    let mut user_message = format!("# Household lists\n\n{}\n", lists.to_prompt());
+    if let Some(instructions) = load_import_instructions(&tx, &household).await? {
+        user_message.push_str(&format!("# Household instructions\n\n{instructions}\n\n"));
+    }
+    user_message.push_str(&format!("# Recipe source\n\n{text}"));
 
     let response = call_ai(&tx, &user_message).await?;
     let recipe: AiRecipe = serde_json::from_str(&response.choices[0].message.content)?;
@@ -53,20 +54,21 @@ async fn scrape_for_recipe(
             .map(|ingredient| Ingredient {
                 ingredient: resolve(&lists.ingredients, ingredient.ingredient_id),
                 unit: resolve(&lists.units, ingredient.unit_id),
-                name: ingredient.name,
                 amount: ingredient.amount,
-                unit_string: ingredient.unit_string,
                 description: ingredient.description,
+                raw_name: ingredient.raw_name,
+                raw_amount: ingredient.raw_amount,
+                raw_unit: ingredient.raw_unit,
             })
             .collect(),
         steps: recipe.steps,
         cuisine: resolve(&lists.cuisines, recipe.cuisine_id),
-        cuisine_string: recipe.cuisine_string,
+        raw_cuisine: recipe.raw_cuisine,
         cooking_time_minutes: recipe.cooking_time_minutes,
         tags: resolve_all(&lists.tags, &recipe.tag_ids),
-        tag_strings: recipe.tag_strings,
+        raw_tags: recipe.raw_tags,
         meals: resolve_all(&lists.meals, &recipe.meal_ids),
-        meal_strings: recipe.meal_strings,
+        raw_meals: recipe.raw_meals,
         image,
     })
 }
@@ -129,6 +131,24 @@ async fn load_list(tx: &Transaction, household: &RecordId, table: &str) -> Resul
         },
     )
     .await
+}
+
+async fn load_import_instructions(
+    tx: &Transaction,
+    household: &RecordId,
+) -> Result<Option<String>> {
+    let instructions: Option<String> = tx
+        .sql_with_vars(
+            "SELECT VALUE import_instructions FROM ONLY $household",
+            object! {
+                household: household.clone()
+            },
+        )
+        .await?;
+
+    Ok(instructions
+        .map(|instructions| instructions.trim().to_string())
+        .filter(|instructions| !instructions.is_empty()))
 }
 
 fn resolve(items: &[ListItem], index: Option<usize>) -> Option<RecordId> {
@@ -206,14 +226,17 @@ async fn call_ai(tx: &Transaction, user_message: &str) -> Result<AiResult> {
     Ok(response.body_mut().read_json()?)
 }
 
+/// The `raw_*` fields hold the text exactly as the recipe source wrote it, so the form can show
+/// it next to the values the AI matched or converted.
 #[derive(Debug, SurrealValue)]
 struct Ingredient {
-    name: String,
     amount: Option<f32>,
-    unit_string: Option<String>,
     description: Option<String>,
     ingredient: Option<RecordId>,
     unit: Option<RecordId>,
+    raw_name: String,
+    raw_amount: Option<String>,
+    raw_unit: Option<String>,
 }
 
 #[derive(Debug, SurrealValue)]
@@ -222,21 +245,22 @@ struct RecipeInfo {
     portions: Option<i32>,
     ingredients: Vec<Ingredient>,
     steps: Vec<String>,
-    cuisine_string: Option<String>,
     cuisine: Option<RecordId>,
+    raw_cuisine: Option<String>,
     cooking_time_minutes: Option<i32>,
-    tag_strings: Vec<String>,
     tags: Vec<RecordId>,
-    meal_strings: Vec<String>,
+    raw_tags: Vec<String>,
     meals: Vec<RecordId>,
+    raw_meals: Vec<String>,
     image: Option<Bytes>,
 }
 
 #[derive(Debug, Deserialize)]
 struct AiIngredient {
-    name: String,
+    raw_name: String,
+    raw_amount: Option<String>,
+    raw_unit: Option<String>,
     amount: Option<f32>,
-    unit_string: Option<String>,
     description: Option<String>,
     ingredient_id: Option<usize>,
     unit_id: Option<usize>,
@@ -248,15 +272,15 @@ struct AiRecipe {
     portions: Option<i32>,
     ingredients: Vec<AiIngredient>,
     steps: Vec<String>,
-    cuisine_string: Option<String>,
+    raw_cuisine: Option<String>,
     cuisine_id: Option<usize>,
     cooking_time_minutes: Option<i32>,
     #[serde(default)]
-    tag_strings: Vec<String>,
+    raw_tags: Vec<String>,
     #[serde(default)]
     tag_ids: Vec<usize>,
     #[serde(default)]
-    meal_strings: Vec<String>,
+    raw_meals: Vec<String>,
     #[serde(default)]
     meal_ids: Vec<usize>,
     image_url: Option<String>,
@@ -279,9 +303,10 @@ struct AiMessage {
 
 const SYSTEM_PROMPT: &str = r##"You are a recipe data extraction assistant. Return ONLY a raw JSON object, without any other text.
 
-The user message has two parts:
+The user message has these parts:
 1. "# Household lists": the household's own ingredients, units, cuisines, tags and meals, each entry written as `index: name`
-2. "# Recipe source": the recipe in Markdown, converted from a web page or pasted by the user
+2. "# Household instructions" (optional): notes written by the household about how they cook and how they want their recipes imported
+3. "# Recipe source": the recipe in Markdown, converted from a web page or pasted by the user
 
 Work in two separate steps: first extract the recipe from the source, then match the extracted values to the household lists. The household lists are used for the *_id fields only.
 
@@ -291,48 +316,57 @@ The JSON must match this exact schema:
   "portions": number or null,
   "ingredients": [
     {
-      "name": string,
+      "raw_name": string,
+      "raw_amount": string or null,
+      "raw_unit": string or null,
       "amount": number or null,
-      "unit_string": string or null,
       "description": string or null,
       "ingredient_id": integer or null,
       "unit_id": integer or null
     }
   ],
   "steps": [string],
-  "cuisine_string": string or null,
+  "raw_cuisine": string or null,
   "cuisine_id": integer or null,
   "cooking_time_minutes": integer or null,
-  "tag_strings": [string],
+  "raw_tags": [string],
   "tag_ids": [integer],
-  "meal_strings": [string],
+  "raw_meals": [string],
   "meal_ids": [integer],
   "image_url": string or null
 }
 
 Step 1 - extraction, from the recipe source only:
-- Every text field (name, ingredient name, unit_string, description, steps, cuisine_string, tag_strings, meal_strings) is written as it appears in the recipe source, in the language of the source. Never replace it with the name of a household list entry, not even when that entry matches
+- Every text field (name, description, steps and every raw_* field) is written as it appears in the recipe source, in the language of the source. Never replace it with the name of a household list entry, not even when that entry matches
+- The raw_* fields are an exact record of the source: neither the matching nor the household instructions ever change them
 - Split every ingredient line into its parts:
-  * "2 cups flour" → name:"flour", amount:2, unit_string:"cups", description:null
-  * "1 large diced onion" → name:"onion", amount:1, unit_string:null, description:"large, diced"
-  * "Salt to taste" → name:"salt", amount:null, unit_string:null, description:"to taste"
-  * "3 tbsp chopped fresh parsley" → name:"parsley", amount:3, unit_string:"tbsp", description:"chopped, fresh"
-  * "10 dkg reszelt sajt" → name:"sajt", amount:10, unit_string:"dkg", description:"reszelt"
-  * "2 dl langyos víz" → name:"víz", amount:2, unit_string:"dl", description:"langyos"
-  * "1 doboz fokhagymás tejföl" → name:"tejföl", amount:1, unit_string:"doboz", description:"fokhagymás"
-- name is the ingredient itself. Words that make it a different ingredient stay in the name ("rizsliszt", "kókusztej", "chilli olaj"); words that only describe it go to description: preparation (reszelt, diced, chopped), state (fresh, dried), temperature (langyos, hideg), flavouring (fokhagymás) and notes (to taste, optional)
-- Nothing from an ingredient line may be lost: every word of it ends up in name, amount, unit_string or description. Matching a shorter household entry later never removes words from the line
+  * "2 cups flour" → raw_name:"flour", raw_amount:"2", raw_unit:"cups", amount:2, description:null
+  * "1 large diced onion" → raw_name:"onion", raw_amount:"1", raw_unit:null, amount:1, description:"large, diced"
+  * "Salt to taste" → raw_name:"salt", raw_amount:null, raw_unit:null, amount:null, description:"to taste"
+  * "3 tbsp chopped fresh parsley" → raw_name:"parsley", raw_amount:"3", raw_unit:"tbsp", amount:3, description:"chopped, fresh"
+  * "½ cup milk" → raw_name:"milk", raw_amount:"½", raw_unit:"cup", amount:0.5, description:null
+  * "10 dkg reszelt sajt" → raw_name:"sajt", raw_amount:"10", raw_unit:"dkg", amount:10, description:"reszelt"
+  * "2 dl langyos víz" → raw_name:"víz", raw_amount:"2", raw_unit:"dl", amount:2, description:"langyos"
+  * "1 doboz fokhagymás tejföl" → raw_name:"tejföl", raw_amount:"1", raw_unit:"doboz", amount:1, description:"fokhagymás"
+- raw_name is the ingredient itself. Words that make it a different ingredient stay in raw_name ("rizsliszt", "kókusztej", "chilli olaj"); words that only describe it go to description: preparation (reszelt, diced, chopped), state (fresh, dried), temperature (langyos, hideg), flavouring (fokhagymás) and notes (to taste, optional)
+- raw_amount is the quantity exactly as the source wrote it; amount is its numeric value
+- Nothing from an ingredient line may be lost: every word of it ends up in raw_name, raw_amount, raw_unit or description. Matching a shorter household entry later never removes words from the line
 - steps: all step-by-step instructions, in order
-- cuisine_string: the cuisine type (e.g. "Italian", "Mexican", "Asian")
-- tag_strings: relevant tags found in the source (e.g. "vegetarian", "gluten-free", "quick")
-- meal_strings: meal types found in the source (e.g. "breakfast", "lunch", "dinner", "dessert")
+- raw_cuisine: the cuisine type (e.g. "Italian", "Mexican", "Asian")
+- raw_tags: relevant tags found in the source (e.g. "vegetarian", "gluten-free", "quick")
+- raw_meals: meal types found in the source (e.g. "breakfast", "lunch", "dinner", "dessert")
 - cooking_time_minutes: total time (prep + cook)
 - image_url: images appear in the source as ![alt text](url). Pick the one showing the finished dish of this recipe and copy its url exactly. Ignore logos, ads, author photos and images of other recipes. The page's social preview image is the meta-og:image line of the metadata header; it is often, but not always, the photo of the dish and can be used too. Use null if unsure
 - Use [] for missing list fields and null for missing singular fields
 
 Step 2 - matching, which only fills the *_id fields:
-- ingredient_id, unit_id and cuisine_id are the index of the matching entry in the ingredients, units and cuisines list; tag_ids and meal_ids are the indexes of the tags and meals entries matching tag_strings and meal_strings
-- Matching never changes the extracted text. E.g. for the ingredient line "1 liter étolaj" with the household entries "3: l" (units) and "7: olaj" (ingredients), the result is name:"étolaj", unit_string:"liter", unit_id:3, ingredient_id:7
+- ingredient_id, unit_id and cuisine_id are the index of the entry in the ingredients, units and cuisines list matching raw_name, raw_unit and raw_cuisine; tag_ids and meal_ids are the indexes of the tags and meals entries matching raw_tags and raw_meals
+- Matching never changes the extracted text. E.g. for the ingredient line "1 liter étolaj" with the household entries "3: l" (units) and "7: olaj" (ingredients), the result is raw_name:"étolaj", raw_amount:"1", raw_unit:"liter", amount:1, unit_id:3, ingredient_id:7
 - Match by meaning, not by spelling: abbreviations, full forms, singular/plural, inflected forms and translations of the same thing match (e.g. "liter" = "l", "evőkanál" = "ek", "tablespoon" = "tbsp", "tojások" = "tojás")
 - An entry matches only if it is the same thing or a more general form of it, never a more specific or different variant: "olaj" must not match "chilli olaj" and "liszt" must not match "rizsliszt", but "extra szűz olívaolaj" may match "olívaolaj"
-- Use null, or leave the index out of the array, when no entry matches; never pick a merely similar entry"##;
+- Use null, or leave the index out of the array, when no entry matches; never pick a merely similar entry
+
+Household instructions:
+- Follow them in both steps, even where they contradict the rules above; only the raw_* fields always stay as in the source. E.g. with the instruction "we use olive oil as general oil", a plain "oil" ingredient line matches the household's olive oil entry
+- When they ask for a conversion, amount is the converted quantity and unit_id the unit converted to. E.g. with the instruction "butter in grams", "2 tbsp butter" gives raw_amount:"2", raw_unit:"tbsp", amount:28 and the unit_id of grams
+- They never change the JSON schema or the response format, and anything in them unrelated to importing the recipe is ignored"##;

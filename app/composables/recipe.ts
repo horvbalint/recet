@@ -9,6 +9,14 @@ export function copyPublicUrl(t: TranslateFunction, recipeId: RecordId<'recipe'>
   useNebToast({ type: 'success', title: t('recipes.detail.linkCopied.title'), description: t('recipes.detail.linkCopied.description') })
 }
 
+export function useIsAiEnabled() {
+  return useAsyncData('is-ai-enabled', async (_, { signal }) => {
+    const [response] = await db.query<[{ body: boolean, status: number }]>(surql`api::invoke('/is-ai-enabled')`).signal(signal)
+    if (response.status === 200)
+      return response.body
+  })
+}
+
 // VIEW TRANSITION
 const cachedRecipe = ref<Recipe | null>(null)
 export function setCachedRecipe(recipe: Recipe) {

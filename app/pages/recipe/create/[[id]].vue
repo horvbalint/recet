@@ -250,21 +250,22 @@ interface ImportedRecipe {
   name: string
   portions?: number
   ingredients: {
-    name: string
     amount?: number
-    unit_string?: string
     description?: string
     ingredient?: RecordId<'ingredient'>
     unit?: RecordId<'unit'>
+    raw_name: string
+    raw_amount?: string
+    raw_unit?: string
   }[]
   steps: string[]
-  cuisine_string?: string
   cuisine?: RecordId<'cuisine'>
+  raw_cuisine?: string
   cooking_time_minutes?: number
   tags: RecordId<'recipe_tag'>[]
-  tag_strings: string[]
-  meal_strings: string[]
+  raw_tags: string[]
   meals: RecordId<'meal'>[]
+  raw_meals: string[]
   image?: ArrayBuffer
 }
 
@@ -333,11 +334,7 @@ function createImportHint(value: string | number | undefined) {
     return t('recipes.create.import.hint', { value })
 }
 
-const { data: isAiEnabled } = useAsyncData(async (_, { signal }) => {
-  const [response] = await db.query<[{ body: boolean, status: number }]>(surql`api::invoke('/is-ai-enabled')`).signal(signal)
-  if (response.status === 200)
-    return response.body
-})
+const { data: isAiEnabled } = useIsAiEnabled()
 </script>
 
 <template>
@@ -426,7 +423,7 @@ const { data: isAiEnabled } = useAsyncData(async (_, { signal }) => {
                   label-key="name"
                   :transform-fun="transformId"
                   use-only-tracked-key
-                  :hint="createImportHint(importedRecipe?.cuisine_string)"
+                  :hint="createImportHint(importedRecipe?.raw_cuisine)"
                   @new="handleCreateCuisine"
                 >
                   <template #option="{ option }">
@@ -448,7 +445,7 @@ const { data: isAiEnabled } = useAsyncData(async (_, { signal }) => {
                   :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
-                  :hint="createImportHint(importedRecipe?.meal_strings.join(', '))"
+                  :hint="createImportHint(importedRecipe?.raw_meals.join(', '))"
                   @new="handleCreateMeal"
                 >
                   <template #option="{ option }">
@@ -470,7 +467,7 @@ const { data: isAiEnabled } = useAsyncData(async (_, { signal }) => {
                   :transform-fun="transformId"
                   use-only-tracked-key
                   multiple
-                  :hint="createImportHint(importedRecipe?.tag_strings.join(', '))"
+                  :hint="createImportHint(importedRecipe?.raw_tags.join(', '))"
                   @new="handleCreateTag"
                 >
                   <template #option="{ option }">
@@ -533,7 +530,7 @@ const { data: isAiEnabled } = useAsyncData(async (_, { signal }) => {
                   :placeholder="$t('recipes.create.ingredient.placeholder')"
                   :transform-fun="transformId"
                   use-only-tracked-key
-                  :hint="createImportHint(importedRecipe?.ingredients[index]?.name)"
+                  :hint="createImportHint(importedRecipe?.ingredients[index]?.raw_name)"
                   required
                   @new="handleCreateIngredient($event, index)"
                 />
@@ -543,6 +540,7 @@ const { data: isAiEnabled } = useAsyncData(async (_, { signal }) => {
                   :label="$t('recipes.create.amount')"
                   type="number"
                   placeholder="0"
+                  :hint="createImportHint(importedRecipe?.ingredients[index]?.raw_amount)"
                 />
 
                 <neb-select
@@ -555,7 +553,7 @@ const { data: isAiEnabled } = useAsyncData(async (_, { signal }) => {
                   :transform-fun="transformId"
                   use-only-tracked-key
                   allow-empty
-                  :hint="createImportHint(importedRecipe?.ingredients[index]?.unit_string)"
+                  :hint="createImportHint(importedRecipe?.ingredients[index]?.raw_unit)"
                   @new="handleCreateUnit($event, index)"
                 />
 

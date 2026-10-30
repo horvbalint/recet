@@ -20,6 +20,7 @@ export interface OutCuisine {
 export interface InHousehold {
   id?: RecordId<'household'>
   created_at?: Date | string
+  import_instructions?: string | undefined
   language?: 'en' | 'hu'
   name: string
   updated_at: Date | string
@@ -28,6 +29,7 @@ export interface InHousehold {
 export interface OutHousehold {
   id: RecordId<'household'>
   created_at: string
+  import_instructions?: string | undefined
   language: 'en' | 'hu'
   name: string
   updated_at: string

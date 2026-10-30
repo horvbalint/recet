@@ -11,7 +11,7 @@ const houseHoldQueryKey = 'member-households'
 // I can't make this an async function, cause if I write async EVERYTHIN DIES. SO FUN :))
 export const householdQuery = useAsyncData(houseHoldQueryKey, (_, { signal }) => {
   return db
-    .query(surql`SELECT VALUE out.{ id, name, language } FROM member WHERE in = $auth`)
+    .query(surql`SELECT VALUE out.{ id, name, language, import_instructions } FROM member WHERE in = $auth`)
     .signal(signal)
     .collect<[OutHousehold[]]>()
     .then(results => results[0])

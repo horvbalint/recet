@@ -237,11 +237,6 @@ DEFINE TABLE OVERWRITE household SCHEMAFULL PERMISSIONS
 DEFINE FIELD OVERWRITE name ON household TYPE string;
 DEFINE FIELD OVERWRITE language ON household TYPE 'en' | 'hu' DEFAULT 'en';
 DEFINE FIELD OVERWRITE import_instructions ON household TYPE option<string>;
-DEFINE FIELD OVERWRITE meal_rules ON household TYPE object DEFAULT {};
-DEFINE FIELD OVERWRITE meal_rules.breakfast ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household) DEFAULT [];
-DEFINE FIELD OVERWRITE meal_rules.lunch ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household) DEFAULT [];
-DEFINE FIELD OVERWRITE meal_rules.dinner ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household) DEFAULT [];
-DEFINE FIELD OVERWRITE meal_rules.snack ON household TYPE array<record<meal_rule>> ASSERT $value.all(|$v| household = $v.household) DEFAULT [];
 fn::define_meta_fields("household");
 
 DEFINE EVENT OVERWRITE relate_owner ON household WHEN $event = "CREATE" THEN (
